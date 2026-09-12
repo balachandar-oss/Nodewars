@@ -1,0 +1,226 @@
+import express from 'express';
+import { authenticate } from '../middleware/auth';
+import prisma from '../utils/prisma';
+
+const router = express.Router();
+
+// GET /api/quiz/results
+router.get('/results', authenticate, async (req: any, res) => {
+  try {
+    const attempt = await prisma.quizAttempt.findUnique({
+      where: { userId: req.user.id },
+      include: {
+        questions: {
+          include: {
+            question: true
+          }
+        }
+      }
+    });
+
+    if (!attempt) {
+      return res.status(404).json({ error: 'No quiz attempt found' });
+    }
+
+    if (!attempt.isCompleted) {
+      return res.status(400).json({ error: 'Quiz attempt not completed yet' });
+    }
+
+    res.json(attempt);
+  } catch (error) {
+    console.error('Failed to get quiz results', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/quiz/start
+router.post('/start', authenticate, async (req: any, res) => {
+  try {
+    // 1. Check Mission 07 completion
+    const mission7Progress = await prisma.missionProgress.findUnique({
+      where: {
+        userId_missionId: {
+          userId: req.user.id,
+          missionId: 'mission-07'
+        }
+      }
+    });
+
+    if ((!mission7Progress || mission7Progress.status !== 'COMPLETE') && req.user?.role !== 'DEMO') {
+      return res.status(403).json({ error: 'Quiz Locked. Complete Mission 07 first.' });
+    }
+
+    // 2. Check for existing attempt
+    let attempt = await prisma.quizAttempt.findUnique({
+      where: { userId: req.user.id },
+      include: {
+        questions: {
+          include: {
+            question: {
+              select: {
+                id: true,
+                question: true,
+                options: true,
+                points: true,
+                difficulty: true
+              }
+            }
+          },
+          orderBy: { order: 'asc' }
+        }
+      }
+    });
+
+    if (attempt) {
+      // Return existing attempt. Correct answers are omitted due to the select clause above.
+      return res.json({
+        attemptId: attempt.id,
+        isCompleted: attempt.isCompleted,
+        questions: attempt.questions
+      });
+    }
+
+    // 3. Create new attempt
+    // Fetch all available questions
+    const allQuestions = await prisma.quizQuestion.findMany();
+    
+    // Shuffle and pick 20
+    const shuffled = allQuestions.sort(() => 0.5 - Math.random());
+    const selectedQuestions = shuffled.slice(0, 20);
+
+    // Create the attempt in a transaction
+    attempt = await prisma.$transaction(async (tx) => {
+      const newAttempt = await tx.quizAttempt.create({
+        data: {
+          userId: req.user.id,
+          totalQuestions: selectedQuestions.length
+        }
+      });
+
+      // Create AttemptQuestions
+      for (let i = 0; i < selectedQuestions.length; i++) {
+        await tx.attemptQuestion.create({
+          data: {
+            attemptId: newAttempt.id,
+            questionId: selectedQuestions[i].id,
+            order: i
+          }
+        });
+      }
+
+      return await tx.quizAttempt.findUnique({
+        where: { id: newAttempt.id },
+        include: {
+          questions: {
+            include: {
+              question: {
+                select: {
+                  id: true,
+                  question: true,
+                  options: true,
+                  points: true,
+                  difficulty: true
+                }
+              }
+            },
+            orderBy: { order: 'asc' }
+          }
+        }
+      });
+    }) as any;
+
+    res.json({
+      attemptId: attempt!.id,
+      isCompleted: false,
+      questions: attempt!.questions
+    });
+
+  } catch (error) {
+    console.error('Failed to start quiz', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/quiz/submit
+router.post('/submit', authenticate, async (req: any, res) => {
+  const { attemptId, answers } = req.body; // answers is { questionId: string, answer: string }[]
+
+  try {
+    const attempt = await prisma.quizAttempt.findUnique({
+      where: { id: attemptId },
+      include: {
+        questions: {
+          include: {
+            question: true
+          }
+        }
+      }
+    });
+
+    if (!attempt || attempt.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Invalid attempt' });
+    }
+
+    if (attempt.isCompleted) {
+      return res.status(400).json({ error: 'Attempt already completed' });
+    }
+
+    let score = 0;
+    let correctAnswers = 0;
+    const maxScore = attempt.questions.reduce((sum, q) => sum + q.question.points, 0);
+
+    // Score answers and update
+    await prisma.$transaction(async (tx) => {
+      for (const aq of attempt.questions) {
+        const submitted = answers.find((a: any) => a.questionId === aq.questionId);
+        const submittedAnswer = submitted ? submitted.answer : null;
+        const isCorrect = submittedAnswer === aq.question.correctAnswer;
+
+        if (isCorrect) {
+          score += aq.question.points;
+          correctAnswers += 1;
+        }
+
+        await tx.attemptQuestion.update({
+          where: { id: aq.id },
+          data: {
+            submittedAnswer,
+            isCorrect
+          }
+        });
+      }
+
+      const percentage = (score / maxScore) * 100;
+
+      await tx.quizAttempt.update({
+        where: { id: attemptId },
+        data: {
+          isCompleted: true,
+          score,
+          percentage,
+          correctAnswers,
+          completedAt: new Date()
+        }
+      });
+    });
+
+    // Fetch the final graded attempt to return
+    const gradedAttempt = await prisma.quizAttempt.findUnique({
+      where: { id: attemptId },
+      include: {
+        questions: {
+          include: {
+            question: true
+          }
+        }
+      }
+    });
+
+    res.json(gradedAttempt);
+  } catch (error) {
+    console.error('Failed to submit quiz', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+export default router;
