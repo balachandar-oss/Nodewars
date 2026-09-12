@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
-import { Play, CheckCircle, RotateCcw, Terminal as TerminalIcon, LayoutDashboard } from 'lucide-react';
+import { Play, CheckCircle, RotateCcw, Terminal as TerminalIcon, LayoutDashboard, BookOpen } from 'lucide-react';
 import Terminal from '../components/Terminal';
 import CastlePreview from '../components/CastlePreview';
 import HintPanel from '../components/HintPanel';
 import TestResults from '../components/TestResults';
 import { useGameSocket } from '../hooks/useGameSocket';
 import LiveSecurityMonitor from '../components/LiveSecurityMonitor';
+import TeachingLayer from '../components/TeachingLayer';
+import PostMissionDebrief from '../components/PostMissionDebrief';
+import { teachingRegistry } from '@node-wars/shared';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -21,6 +24,7 @@ const Lab = () => {
   
   const [evaluation, setEvaluation] = useState<any>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [showLesson, setShowLesson] = useState(false);
 
   const { user } = useOutletContext<{ user: any }>();
   const isDemoRole = user?.role === 'DEMO';
@@ -58,6 +62,9 @@ const Lab = () => {
           setCode(missionData.starterCode);
           setLogs([{ type: 'info', message: 'Mission loaded. Engineering environment ready.' }]);
           setEvaluation(null);
+          
+          // Always show lesson when navigating to a mission
+          setShowLesson(true);
           
           if ((progressData.status !== 'LOCKED' || isDemoRole) && missionData.order >= 6) {
              fetch(`${API_URL}/api/missions/${missionId}/enter`, {
@@ -140,16 +147,35 @@ const Lab = () => {
     }
   };
 
+  const handleContinue = () => {
+    if (mission && mission.order < 7) {
+      navigate(`/lab/mission-0${mission.order + 1}`);
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
   if (!mission) {
     return <div className="text-white font-mono p-8 animate-pulse text-xs tracking-widest">ESTABLISHING WORKSTATION LINK...</div>;
   }
 
   const objectives = JSON.parse(mission.objectives || '[]');
   const hints = JSON.parse(mission.hints || '[]');
+  const content = missionId ? teachingRegistry[missionId] : undefined;
 
   return (
     <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 p-6 max-w-[1920px] mx-auto z-10 relative animate-slide-in">
       
+      {showLesson && content && (
+        <TeachingLayer 
+          missionNumber={mission.order} 
+          content={content} 
+          onBeginChallenge={() => {
+            setShowLesson(false);
+          }} 
+        />
+      )}
+
       {/* FULL WORKSTATION GRID */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 min-h-0 border border-white/10 glass-panel shadow-[0_0_50px_rgba(0,0,0,0.5)]">
         
@@ -176,32 +202,77 @@ const Lab = () => {
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-6">
-            <div>
-              <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1">DIRECTIVE</div>
-              <p className="text-xs font-mono text-white/80 leading-relaxed uppercase">{mission.description}</p>
-            </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+            {evaluation?.success && content ? (
+              <PostMissionDebrief 
+                content={content} 
+                onReviewLesson={() => setShowLesson(true)} 
+                onContinue={handleContinue}
+                isFinalMission={mission.order >= 7}
+              />
+            ) : (
+              <div className="p-4 flex flex-col gap-6 h-full">
+                {content?.guidedTask ? (
+                  <div data-testid="guided-task">
+                    <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1 uppercase">GUIDED TASK</div>
+                    <p className="text-xs font-mono text-white/90 leading-relaxed mb-6 bg-white/5 p-3 rounded-sm border-l-2 border-neon-blue">
+                      {content.guidedTask.task}
+                    </p>
 
-            <div>
-              <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1">TACTICAL TASKS</div>
-              <ul className="space-y-2">
-                {objectives.map((obj: string, i: number) => {
-                  const isChecked = evaluation?.success === true; // Simplified checking for now
-                  return (
-                    <li key={i} className="flex gap-3 text-[10px] font-mono items-center">
-                      <div className={`w-3 h-3 border flex items-center justify-center shrink-0 ${isChecked ? 'border-neon-green text-neon-green' : 'border-white/30 text-transparent'}`}>
-                        <CheckCircle size={8} />
-                      </div>
-                      <span className={`leading-tight uppercase ${isChecked ? 'text-white/40' : 'text-white'}`}>{obj}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+                    <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1 uppercase">REQUIREMENTS</div>
+                    <ul className="space-y-2 mb-6" data-testid="task-requirements">
+                      {content.guidedTask.requirements.map((req: string, i: number) => (
+                        <li key={i} className="flex gap-3 text-xs font-mono items-start">
+                          <div className="text-neon-blue mt-0.5">■</div>
+                          <span className="leading-relaxed text-white/80">{req}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-            <div className="mt-auto">
-               <HintPanel hints={hints} />
-            </div>
+                    <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1 uppercase">SUCCESS CONDITION</div>
+                    <p className="text-xs font-mono text-white/60 leading-relaxed italic" data-testid="task-success">
+                      {content.guidedTask.successCondition}
+                    </p>
+                  </div>
+                ) : (
+                  // Fallback for missing guided task
+                  <div data-testid="fallback-task">
+                    <div>
+                      <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1">DIRECTIVE</div>
+                      <p className="text-xs font-mono text-white/80 leading-relaxed uppercase">{mission.description}</p>
+                    </div>
+
+                    <div className="mt-6">
+                      <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1">TACTICAL TASKS</div>
+                      <ul className="space-y-2">
+                        {objectives.map((obj: string, i: number) => {
+                          const isChecked = evaluation?.success === true;
+                          return (
+                            <li key={i} className="flex gap-3 text-[10px] font-mono items-center">
+                              <div className={`w-3 h-3 border flex items-center justify-center shrink-0 ${isChecked ? 'border-neon-green text-neon-green' : 'border-white/30 text-transparent'}`}>
+                                <CheckCircle size={8} />
+                              </div>
+                              <span className={`leading-tight uppercase ${isChecked ? 'text-white/40' : 'text-white'}`}>{obj}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-auto flex flex-col gap-4 pt-6">
+                   <HintPanel hints={hints} progressiveHints={content?.progressiveHints} />
+                   <button 
+                     onClick={() => setShowLesson(true)}
+                     className="flex items-center justify-center gap-2 w-full py-2 border border-neon-blue/30 bg-neon-blue/5 text-neon-blue font-mono text-[10px] tracking-widest hover:bg-neon-blue/20 transition-colors uppercase"
+                   >
+                     <BookOpen size={12} />
+                     REVIEW LESSON
+                   </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -331,6 +402,7 @@ const Lab = () => {
                  score={evaluation?.score || 0} 
                  total={evaluation?.checks?.length || 0} 
                  success={evaluation?.success} 
+                 failureGuidance={content?.failureGuidance}
                />
              </div>
           </div>

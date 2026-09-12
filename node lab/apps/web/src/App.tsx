@@ -7,6 +7,7 @@ import Leaderboard from './pages/Leaderboard';
 import BugArchitect from './pages/BugArchitect';
 import Hunt from './pages/Hunt';
 import AdminCastle from './pages/AdminCastle';
+import InstructorMode from './pages/InstructorMode';
 import AppLayout from './layouts/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -26,6 +27,7 @@ function App() {
         <Route path="/bug-architect" element={<BugArchitect />} />
             <Route path="/hunt" element={<Hunt />} />
             <Route path="/admin/castle" element={<AdminCastle />} />
+            <Route path="/instructor" element={<InstructorMode />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Route>

@@ -27,3 +27,6 @@ export interface MissionProgress {
   status: 'LOCKED' | 'ACTIVE' | 'COMPLETE';
   completedAt?: Date;
 }
+
+export * from './teaching';
+export { teachingRegistry } from './teaching';
