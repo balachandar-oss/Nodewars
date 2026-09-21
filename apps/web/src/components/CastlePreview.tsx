@@ -56,13 +56,13 @@ const CastlePreview: React.FC<CastlePreviewProps> = ({ componentName, missionOrd
           </defs>
           
           {/* Main vertical trunk */}
-          <line x1="50%" y1="15%" x2="50%" y2="85%" strokeWidth="2" className={getLineColor(4)} />
+          <line x1="50%" y1="10%" x2="50%" y2="90%" strokeWidth="2" className={getLineColor(4)} />
           
           {/* Branches */}
-          <line x1="50%" y1="25%" x2="25%" y2="25%" strokeWidth="2" className={getLineColor(2)} />
-          <line x1="50%" y1="45%" x2="75%" y2="45%" strokeWidth="2" className={getLineColor(3)} />
-          <line x1="50%" y1="65%" x2="25%" y2="65%" strokeWidth="2" className={getLineColor(5)} />
-          <line x1="50%" y1="85%" x2="75%" y2="85%" strokeWidth="2" className={getLineColor(6)} />
+          <line x1="50%" y1="30%" x2="12.5%" y2="30%" strokeWidth="2" className={getLineColor(2)} />
+          <line x1="50%" y1="50%" x2="87.5%" y2="50%" strokeWidth="2" className={getLineColor(3)} />
+          <line x1="50%" y1="70%" x2="12.5%" y2="70%" strokeWidth="2" className={getLineColor(5)} />
+          <line x1="50%" y1="90%" x2="87.5%" y2="90%" strokeWidth="2" className={getLineColor(6)} />
         </svg>
 
         {/* CSS GRID OVERLAY FOR NODES */}

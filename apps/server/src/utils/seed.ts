@@ -1,5 +1,8 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import fs from 'fs';
+import path from 'path';
 import { gameSeeds } from '../seeds/gameSeeds';
 
 const prisma = new PrismaClient();
@@ -67,6 +70,52 @@ async function main() {
       teamId: team.id,
     },
   });
+
+  // Seed organizer accounts (Bala & Vaishnav in ADMIN and INSTRUCTOR modes)
+  console.log('Seeding organizer accounts...');
+  let balaPass = process.env.ORGANIZER_BALA_PASSWORD;
+  let vaishnavPass = process.env.ORGANIZER_VAISHNAV_PASSWORD;
+
+  const credPath = path.resolve(__dirname, 'credentials.json');
+  if (fs.existsSync(credPath)) {
+    try {
+      const { admins } = JSON.parse(fs.readFileSync(credPath, 'utf-8'));
+      const balaAdmin = admins.find((a: any) => a.username === 'bala');
+      const vaishnavAdmin = admins.find((a: any) => a.username === 'vaishnav');
+      if (balaAdmin) balaPass = balaAdmin.password;
+      if (vaishnavAdmin) vaishnavPass = vaishnavAdmin.password;
+    } catch (e) {
+      console.warn('Could not read credentials.json:', e);
+    }
+  }
+
+  const fallbackAdminPass = process.env.ADMIN_PASSWORD || 'node-wars-master';
+  balaPass = balaPass || fallbackAdminPass;
+  vaishnavPass = vaishnavPass || fallbackAdminPass;
+
+  const organizers = [
+    { username: 'bala', name: 'Bala', role: 'ADMIN', pass: balaPass },
+    { username: 'bala-instructor', name: 'Bala (Instructor)', role: 'INSTRUCTOR', pass: balaPass },
+    { username: 'vaishnav', name: 'Vaishnav', role: 'ADMIN', pass: vaishnavPass },
+    { username: 'vaishnav-instructor', name: 'Vaishnav (Instructor)', role: 'INSTRUCTOR', pass: vaishnavPass }
+  ];
+
+  for (const org of organizers) {
+    const hash = await bcrypt.hash(org.pass, 10);
+    await prisma.user.upsert({
+      where: { username: org.username },
+      update: { passwordHash: hash, role: org.role },
+      create: {
+        username: org.username,
+        passwordHash: hash,
+        role: org.role,
+        level: 1,
+        xp: 0,
+        missionsCompleted: 0
+      }
+    });
+    console.log(`  Organizer account ready: ${org.username} (${org.role})`);
+  }
 
   const missions = [
     {

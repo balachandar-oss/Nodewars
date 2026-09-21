@@ -91,8 +91,8 @@ const Lab = () => {
   const [showNarrativeBriefing, setShowNarrativeBriefing] = useState(false);
 
   const { user } = useOutletContext<{ user: any }>();
-  const isDemoRole = user?.role === 'DEMO' || user?.role === 'ADMIN';
-  const isInstructorRole = user?.role === 'ADMIN';
+  const isDemoRole = user?.role === 'DEMO' || user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
+  const isInstructorRole = user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
   const showMonitor = mission && mission.order >= 6 && progress && (progress.status !== 'LOCKED' || isDemoRole);
   const { isConnected, events } = useGameSocket(!!showMonitor);
 

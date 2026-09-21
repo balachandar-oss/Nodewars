@@ -93,7 +93,7 @@ const Dashboard = () => {
   const getMissionVisualState = (order: number): SystemVisualState => {
     const m = missions.find(m => m.order === order);
     if (!m) return 'LOCKED';
-    const isAccessible = !('LOCKED' === m.status) || user.role === 'DEMO' || user.role === 'ADMIN';
+    const isAccessible = !('LOCKED' === m.status) || user.role === 'DEMO' || user.role === 'ADMIN' || user.role === 'INSTRUCTOR';
     return getSystemVisualState(m.status, isAccessible);
   };
   
@@ -276,7 +276,7 @@ const Dashboard = () => {
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+')] pointer-events-none opacity-40"></div>
 
               {/* SVG Blueprint Layer */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 1000" preserveAspectRatio="none">
                 <defs>
                   <style>
                     {`

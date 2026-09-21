@@ -73,9 +73,10 @@ async function main() {
     create: { name: 'PRINCESS', huntScore: 0 }
   });
 
-  console.log(`\nSeeding ${admins.length} admin accounts...`);
+  console.log(`\nSeeding ${admins.length} admin and instructor preview accounts...`);
   for (const admin of admins) {
     const passwordHash = await bcrypt.hash(admin.password, 10);
+    // 1. Admin/Control login
     await prisma.user.upsert({
       where: { username: admin.username },
       update: { passwordHash, role: 'ADMIN' },
@@ -89,6 +90,22 @@ async function main() {
       }
     });
     console.log(`  Admin ready: ${admin.username} (${admin.displayName})`);
+
+    // 2. Instructor/Preview login
+    const instructorUsername = `${admin.username}-instructor`;
+    await prisma.user.upsert({
+      where: { username: instructorUsername },
+      update: { passwordHash, role: 'INSTRUCTOR' },
+      create: {
+        username: instructorUsername,
+        passwordHash,
+        role: 'INSTRUCTOR',
+        level: 1,
+        xp: 0,
+        missionsCompleted: 0
+      }
+    });
+    console.log(`  Instructor ready: ${instructorUsername}`);
   }
 
   console.log(`\nSeeding ${students.length} student accounts...`);
