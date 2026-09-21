@@ -58,6 +58,10 @@ const Confetti: React.FC = () => {
 
 const RoyalRoom: React.FC<RoyalRoomProps> = ({ onVictory }) => {
   const { gameState } = useGameState();
+  // The royal figure being unlocked is the OPPOSING team's monarch:
+  // PRINCE-team players unlock the PRINCESS's "Queen"; PRINCESS-team players unlock the PRINCE's "King".
+  const homeTeam = gameState?.playerView?.homeTeam;
+  const royalTitle = homeTeam === 'PRINCESS' ? 'KING' : homeTeam === 'PRINCE' ? 'QUEEN' : 'ROYAL FIGURE';
   const [flagInput, setFlagInput] = useState('');
   const [isLocked, setIsLocked] = useState(true);
   const [attemptCount, setAttemptCount] = useState(0);
@@ -142,7 +146,7 @@ const RoyalRoom: React.FC<RoyalRoomProps> = ({ onVictory }) => {
               ✨✨✨
             </div>
             <h1 className="text-5xl font-title tracking-widest text-neon-green glow-text-green mb-2 animate-pulse">
-              ROYAL CHAMBER BREACHED
+              {royalTitle} UNLOCKED
             </h1>
             <div className="font-mono text-sm text-neon-green tracking-widest font-bold">
               [ FLAG VALIDATION SUCCESSFUL ]
@@ -180,7 +184,7 @@ const RoyalRoom: React.FC<RoyalRoomProps> = ({ onVictory }) => {
               <Trophy size={28} className="animate-bounce" style={{animationDelay: '0.2s'}} />
             </div>
             <div className="font-mono text-xs text-white/70 uppercase leading-relaxed">
-              You have successfully penetrated the Royal Chamber and recovered the final flag.
+              You have successfully unlocked the {royalTitle} and recovered the final flag.
               Your team's tactical excellence is recognized across all operational records.
             </div>
           </div>
@@ -228,14 +232,14 @@ const RoyalRoom: React.FC<RoyalRoomProps> = ({ onVictory }) => {
                   <>
                     <Lock size={64} className="text-neon-red/70 animate-pulse" />
                     <div className="font-mono text-[10px] text-neon-red/50 tracking-widest text-center">
-                      ROYAL CHAMBER<br/>LOCKED
+                      {royalTitle}<br/>LOCKED
                     </div>
                   </>
                 ) : (
                   <>
                     <Unlock size={64} className="text-neon-green animate-bounce" />
                     <div className="font-mono text-[10px] text-neon-green tracking-widest text-center">
-                      READY FOR<br/>ENTRY
+                      UNLOCK THE<br/>{royalTitle}
                     </div>
                   </>
                 )}
@@ -247,7 +251,7 @@ const RoyalRoom: React.FC<RoyalRoomProps> = ({ onVictory }) => {
           {isLocked && (
             <div className="text-center">
               <div className="font-mono text-xs text-neon-red/70 tracking-widest">
-                [ CHAMBER SEALED ] - Collect all flag fragments to unlock entry
+                [ {royalTitle} SEALED ] - Collect all flag fragments to unlock the {royalTitle}
               </div>
             </div>
           )}

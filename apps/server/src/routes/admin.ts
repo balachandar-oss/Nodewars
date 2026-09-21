@@ -6,12 +6,45 @@ import prisma from '../utils/prisma';
 
 const router = express.Router();
 
+// ============================================
+// In-memory 2-minute Bug Placement window timer.
+// A single setTimeout, keyed off a phase check when it fires (guards against
+// a stale timer firing after the admin manually advanced/restarted/ended the
+// game). No persistent job queue - intentionally simple per spec.
+// ============================================
+const PLACEMENT_WINDOW_MS = 120000;
+let placementTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearPlacementTimer() {
+  if (placementTimer) {
+    clearTimeout(placementTimer);
+    placementTimer = null;
+  }
+}
+
 // Development/Admin endpoint to force game phase
 router.post('/game/start-placement', authenticate, async (req: any, res) => {
   try {
     if (req.user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin privileges required' });
     const newPhase = await GameService.transitionTo('BUG_PLACEMENT');
-    res.json({ phase: newPhase });
+
+    clearPlacementTimer();
+    const placementEndsAt = new Date(Date.now() + PLACEMENT_WINDOW_MS).toISOString();
+    placementTimer = setTimeout(async () => {
+      try {
+        const currentPhase = await GameService.getPhase();
+        if (currentPhase === 'BUG_PLACEMENT') {
+          await GameService.transitionTo('HUNT');
+          console.log('[placement-timer] Auto-transitioned BUG_PLACEMENT -> HUNT after placement window expired');
+        }
+      } catch (err) {
+        console.error('[placement-timer] Auto-transition failed (non-fatal):', err);
+      } finally {
+        placementTimer = null;
+      }
+    }, PLACEMENT_WINDOW_MS);
+
+    res.json({ phase: newPhase, placementEndsAt });
   } catch (error: any) {
     res.status(400).json({ error: error.message || 'Transition failed' });
   }
@@ -21,6 +54,7 @@ router.post('/game/start-hunt', authenticate, async (req: any, res) => {
   try {
     if (req.user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin privileges required' });
     const newPhase = await GameService.transitionTo('HUNT');
+    clearPlacementTimer();
     res.json({ phase: newPhase });
   } catch (error: any) {
     res.status(400).json({ error: error.message || 'Transition failed' });
@@ -31,6 +65,7 @@ router.post('/game/complete', authenticate, async (req: any, res) => {
   try {
     if (req.user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin privileges required' });
     const newPhase = await GameService.transitionTo('COMPLETE');
+    clearPlacementTimer();
     res.json({ phase: newPhase });
   } catch (error: any) {
     res.status(400).json({ error: error.message || 'Transition failed' });
@@ -319,17 +354,17 @@ router.get('/game/state', authenticate, async (req: any, res) => {
       include: { users: true }
     });
 
-    // Get rankings for Bug Architects
-    const rankings = await LeaderboardService.getRankings();
-
-    // Map players with scores and architect status
+    // Map players with scores and architect status.
+    // NOTE: isBugArchitect is derived directly from user.role, not from
+    // LeaderboardService.getRankings()'s isBugArchitect flag, which is computed
+    // globally (index < 5) and does not account for per-team promotion.
     const playerList = players.map(user => ({
       id: user.id,
       username: user.username,
       teamId: user.teamId,
       teamName: user.team?.name || 'NO TEAM',
       score: user.quizAttempts[0]?.score || 0,
-      isBugArchitect: rankings.some(r => r.userId === user.id && r.isBugArchitect),
+      isBugArchitect: user.role === 'BUG_ARCHITECT',
       position: {
         x: Math.random(),
         y: Math.random()
@@ -413,6 +448,8 @@ router.post('/game/end', authenticate, async (req: any, res) => {
       return res.status(403).json({ error: 'Admin privileges required' });
     }
 
+    clearPlacementTimer();
+
     const gameState = await prisma.gameState.upsert({
       where: { id: 'singleton' },
       update: {
@@ -433,6 +470,92 @@ router.post('/game/end', authenticate, async (req: any, res) => {
     });
   } catch (error) {
     console.error('Failed to end game', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================
+// POST /api/admin/game/restart - Reset scores, bug statuses and Royal Room
+// progress, and return the game to a fresh ENGINEERING phase. Mission progress
+// and quiz results are left untouched.
+// ============================================
+router.post('/game/restart', authenticate, async (req: any, res) => {
+  try {
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Admin privileges required' });
+    }
+
+    clearPlacementTimer();
+
+    // Restore the placeholder architectUserId used at seed time, so a fresh
+    // reveal-scores run reassigns these DRAFT bugs cleanly rather than
+    // pointing at whichever architect had them last game.
+    const placeholderAdmin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+
+    // Scoped to the seedStudents.ts-managed bugs (id prefix "bug-") only —
+    // NOT the older demo bugs from seed.ts (random uuids), which stay
+    // PLANTED as-is so they don't pollute the 5-per-side architect pool.
+    await prisma.bug.updateMany({
+      where: { id: { startsWith: 'bug-' } },
+      data: {
+        status: 'DRAFT',
+        location: null,
+        claimedByUserId: null,
+        claimedByTeamId: null,
+        discoveredAt: null,
+        claimedAt: null,
+        resolvedAt: null,
+        ...(placeholderAdmin ? { architectUserId: placeholderAdmin.id } : {})
+      }
+    });
+
+    // The older demo bugs (from seed.ts) still get their transient hunt
+    // state cleared even though status/ownership isn't touched.
+    await prisma.bug.updateMany({
+      where: { id: { not: { startsWith: 'bug-' } } },
+      data: {
+        status: 'PLANTED',
+        claimedByUserId: null,
+        claimedByTeamId: null,
+        discoveredAt: null,
+        claimedAt: null,
+        resolvedAt: null
+      }
+    });
+
+    // Demote any players promoted to Bug Architect back to PLAYER
+    await prisma.user.updateMany({
+      where: { role: 'BUG_ARCHITECT' },
+      data: { role: 'PLAYER' }
+    });
+
+    await prisma.team.updateMany({ data: { huntScore: 0 } });
+
+    await prisma.user.updateMany({ data: { huntScore: 0 } });
+
+    await prisma.gameScore.deleteMany({});
+
+    const gameState = await prisma.gameState.upsert({
+      where: { id: 'singleton' },
+      update: {
+        phase: 'ENGINEERING',
+        startTime: null,
+        endTime: null,
+        countdownSeconds: null,
+        scoresRevealed: false
+      },
+      create: {
+        id: 'singleton',
+        phase: 'ENGINEERING'
+      }
+    });
+
+    res.json({
+      message: 'Game restarted - scores, bugs, and Royal Room progress reset',
+      phase: gameState.phase
+    });
+  } catch (error) {
+    console.error('Failed to restart game', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -478,10 +601,47 @@ router.post('/game/reveal-scores', authenticate, async (req: any, res) => {
       });
     }
 
+    // Assign each promoted architect exactly ONE unclaimed DRAFT bug, 1-to-1.
+    // omegaTop5 (PRINCE architects) get DRAFT bugs with architectTeamId=PRINCE
+    // (these already target PRINCESS). betaTop5 (PRINCESS architects) get DRAFT
+    // bugs with architectTeamId=PRINCESS (already target PRINCE). If fewer than
+    // 5 students completed the quiz on a team, assign to however many exist -
+    // zip stops at the shorter length, no crash.
+    const assignBugsToArchitects = async (architectUserIds: string[], teamId: string) => {
+      const draftBugs = await prisma.bug.findMany({
+        where: { architectTeamId: teamId, status: 'DRAFT' },
+        orderBy: { createdAt: 'asc' }
+      });
+
+      const assignments: { userId: string; bugId: string; vulnerabilityType: string; targetSystem: string }[] = [];
+      const count = Math.min(architectUserIds.length, draftBugs.length);
+
+      for (let i = 0; i < count; i++) {
+        const userId = architectUserIds[i];
+        const bug = draftBugs[i];
+        await prisma.bug.update({
+          where: { id: bug.id },
+          data: { architectUserId: userId }
+        });
+        assignments.push({
+          userId,
+          bugId: bug.id,
+          vulnerabilityType: bug.vulnerabilityType,
+          targetSystem: bug.targetSystem
+        });
+      }
+
+      return assignments;
+    };
+
+    const omegaAssignments = await assignBugsToArchitects(omegaTop5, omega.id);
+    const betaAssignments = await assignBugsToArchitects(betaTop5, beta.id);
+
     res.json({
-      message: 'Scores revealed. Top 5 from each team promoted to Bug Architects',
+      message: 'Scores revealed. Top 5 from each team promoted to Bug Architects and assigned one bug each',
       promotedCount: allTop10.length,
-      promotedUsers: allTop10
+      promotedUsers: allTop10,
+      assignments: [...omegaAssignments, ...betaAssignments]
     });
   } catch (error) {
     console.error('Failed to reveal scores', error);

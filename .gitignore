@@ -8,3 +8,4 @@ scratch/
 
 # Real participant/admin credentials - never commit to public repo
 apps/server/src/utils/credentials.json
+CREDENTIALS.md

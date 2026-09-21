@@ -151,4 +151,95 @@ router.post('/', authenticate, async (req: any, res) => {
   }
 });
 
+// ============================================
+// GET /api/bugs/my-assignment - The ONE bug auto-assigned to this Bug Architect
+// ============================================
+router.get('/my-assignment', authenticate, async (req: any, res) => {
+  try {
+    if (req.user.role !== 'BUG_ARCHITECT') {
+      return res.status(403).json({ error: 'Bug Architect privileges required.' });
+    }
+
+    const bug = await prisma.bug.findFirst({
+      where: { architectUserId: req.user.id },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    if (!bug) {
+      return res.status(404).json({ error: 'No bug assignment found for this architect.' });
+    }
+
+    let config: any = {};
+    try {
+      config = bug.configuration ? JSON.parse(bug.configuration) : {};
+    } catch {
+      config = {};
+    }
+
+    res.json({
+      id: bug.id,
+      vulnerabilityType: bug.vulnerabilityType,
+      targetSystem: bug.targetSystem,
+      difficulty: bug.difficulty || config.difficulty || 'UNKNOWN',
+      question: config.question,
+      options: config.options,
+      status: bug.status,
+      location: bug.location,
+      structureType: bug.structureType
+    });
+  } catch (error) {
+    console.error('Failed to fetch bug assignment', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================
+// POST /api/bugs/:bugId/plant - Plant the assigned bug at a location
+// ============================================
+router.post('/:bugId/plant', authenticate, async (req: any, res) => {
+  try {
+    if (req.user.role !== 'BUG_ARCHITECT') {
+      return res.status(403).json({ error: 'Bug Architect privileges required.' });
+    }
+
+    const { bugId } = req.params;
+    const { location, structureType } = req.body;
+
+    if (!location || typeof location !== 'string') {
+      return res.status(400).json({ error: 'location is required.' });
+    }
+    if (!structureType || typeof structureType !== 'string') {
+      return res.status(400).json({ error: 'structureType is required.' });
+    }
+
+    const bug = await prisma.bug.findUnique({ where: { id: bugId } });
+    if (!bug) {
+      return res.status(404).json({ error: 'Bug not found.' });
+    }
+
+    if (bug.architectUserId !== req.user.id) {
+      return res.status(403).json({ error: 'This bug is not assigned to you.' });
+    }
+
+    if (bug.status === 'PLANTED') {
+      return res.status(400).json({ error: 'Bug is already planted.' });
+    }
+
+    const updatedBug = await prisma.bug.update({
+      where: { id: bugId },
+      data: { status: 'PLANTED', location, structureType }
+    });
+
+    res.json({
+      id: updatedBug.id,
+      status: updatedBug.status,
+      location: updatedBug.location,
+      structureType: updatedBug.structureType
+    });
+  } catch (error) {
+    console.error('Failed to plant bug', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;

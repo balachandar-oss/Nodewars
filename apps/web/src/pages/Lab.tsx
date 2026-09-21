@@ -17,6 +17,66 @@ import { getSystemVisualState } from '../utils/systemState';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
+// Mission 07 ships with an intentionally buggy starter (missing authorization check)
+// so students can find and fix it. Instructors get the fixed version pre-loaded
+// so they can demo the working, secured code on the projector.
+const INSTRUCTOR_SOLUTIONS: Record<string, string> = {
+  'mission-07': `const express = require("express");
+const app = express();
+
+const NODE_ENV = process.env.NODE_ENV || "development";
+
+// Simulated user (in reality, parsed from a JWT)
+app.use((req, res, next) => {
+  try {
+    req.user = { username: "node_hacker", role: "PLAYER" };
+    next();
+  } catch (err) {
+    res.status(500).json({ error: "Auth setup error" });
+  }
+});
+
+const securityGate = (req, res, next) => {
+  try {
+    // 1. AUTHENTICATION: "Who are you?"
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // 2. AUTHORIZATION: "Are you allowed?" (this is what was missing)
+    if (req.user.role !== "ADMIN") {
+      return res.status(403).json({ error: "Insufficient permissions (ADMIN required)" });
+    }
+
+    // 3. ALLOW ACCESS
+    next();
+  } catch (err) {
+    if (NODE_ENV === "production") {
+      res.status(500).json({ error: "Server error" });
+    } else {
+      res.status(500).json({ error: err.message });
+    }
+  }
+};
+
+// PROTECTED ROUTE - only ADMIN can reach this now
+app.get("/admin", securityGate, (req, res) => {
+  try {
+    res.status(200).json({ secret: "FLAG", user: req.user });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to access admin resource" });
+  }
+});
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.listen(3004, () => console.log("Server running on port 3004"));
+`
+};
+
 const Lab = () => {
   const { missionId } = useParams();
   const navigate = useNavigate();
@@ -31,7 +91,8 @@ const Lab = () => {
   const [showNarrativeBriefing, setShowNarrativeBriefing] = useState(false);
 
   const { user } = useOutletContext<{ user: any }>();
-  const isDemoRole = user?.role === 'DEMO';
+  const isDemoRole = user?.role === 'DEMO' || user?.role === 'ADMIN';
+  const isInstructorRole = user?.role === 'ADMIN';
   const showMonitor = mission && mission.order >= 6 && progress && (progress.status !== 'LOCKED' || isDemoRole);
   const { isConnected, events } = useGameSocket(!!showMonitor);
 
@@ -63,7 +124,8 @@ const Lab = () => {
 
           setMission(missionData);
           setProgress(progressData);
-          setCode(missionData.starterCode);
+          const solvedCode = isInstructorRole ? INSTRUCTOR_SOLUTIONS[missionId] : undefined;
+          setCode(solvedCode || missionData.starterCode);
           setLogs([{ type: 'info', message: 'Mission loaded. Engineering environment ready.' }]);
           setEvaluation(null);
           
@@ -166,7 +228,8 @@ const Lab = () => {
 
   const handleReset = () => {
     if (mission) {
-      setCode(mission.starterCode);
+      const solvedCode = isInstructorRole ? INSTRUCTOR_SOLUTIONS[missionId || ''] : undefined;
+      setCode(solvedCode || mission.starterCode);
       setLogs([{ type: 'info', message: 'Code environment reset to original state.' }]);
       setEvaluation(null);
     }

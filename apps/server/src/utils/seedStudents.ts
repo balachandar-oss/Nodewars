@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
+import { gameSeeds, createGameBugConfiguration } from '../seeds/gameSeeds';
 
 const prisma = new PrismaClient();
 
@@ -129,6 +130,92 @@ async function main() {
     console.log(`  Initialized mission-01 progress for ${allStudentUsers.length} students`);
   } else {
     console.log('  Skipped mission progress init - run the main seed script first for missions');
+  }
+
+  // ============================================
+  // Seed exactly 5 DRAFT bugs per direction (10 total) from the gameSeeds
+  // catalog, varied by difficulty. These are NOT browsable - they are
+  // 1-to-1 auto-assigned to promoted Bug Architects inside
+  // POST /api/admin/game/reveal-scores. architectUserId here is only a
+  // placeholder (the field is required NOT NULL) and gets reassigned to the
+  // real architect at reveal-scores time.
+  // ============================================
+  console.log('\nSeeding DRAFT bugs (5 PRINCE->PRINCESS, 5 PRINCESS->PRINCE)...');
+
+  // Pick 5 varied-difficulty seeds per direction out of the 20 available.
+  const princeToPrincessSeedIds = [
+    'seed-bug-easy-01',
+    'seed-bug-medium-01',
+    'seed-bug-medium-05',
+    'seed-bug-hard-01',
+    'seed-bug-critical-01'
+  ];
+  const princessToPrinceSeedIds = [
+    'seed-bug-easy-02',
+    'seed-bug-medium-02',
+    'seed-bug-medium-06',
+    'seed-bug-hard-02',
+    'seed-bug-critical-02'
+  ];
+
+  const findSeed = (id: string) => {
+    const seed = gameSeeds.find(s => s.id === id);
+    if (!seed) throw new Error(`gameSeeds is missing expected seed id: ${id}`);
+    return seed;
+  };
+
+  // Placeholder architectUserId: prefer the first seeded admin, fall back to
+  // the first PRINCE user if no admin exists (architectUserId is NOT NULL).
+  const placeholderAdmin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+  const placeholderPrinceUser = placeholderAdmin
+    ? null
+    : await prisma.user.findFirst({ where: { teamId: princeTeam.id } });
+  const placeholderUserId = placeholderAdmin?.id || placeholderPrinceUser?.id;
+
+  if (!placeholderUserId) {
+    console.log('  Skipped DRAFT bug seeding - no admin or PRINCE user available for placeholder architectUserId');
+  } else {
+    const seedDraftBugs = async (
+      seedIds: string[],
+      direction: string,
+      architectTeamId: string,
+      targetTeamId: string
+    ) => {
+      for (const seedId of seedIds) {
+        const seed = findSeed(seedId);
+        const configuration = createGameBugConfiguration(seed);
+        // gameSeeds.ts uses underscore-separated targetSystem values (e.g.
+        // "SMART_DOOR"), but hunt.ts's ALL_SYSTEMS and bugs.ts's BUG_CATALOG
+        // use space-separated values (e.g. "SMART DOOR"). Normalize to the
+        // space format here so /api/hunt/targets can actually match planted
+        // bugs to a system.
+        const normalizedTargetSystem = seed.targetSystem.replace(/_/g, ' ');
+        await prisma.bug.upsert({
+          where: { id: `bug-${direction}-${seed.id}` },
+          // idempotent: only fix the targetSystem naming format on rows that
+          // already exist, never touch status/location (may be assigned/planted)
+          update: { targetSystem: normalizedTargetSystem },
+          create: {
+            id: `bug-${direction}-${seed.id}`,
+            architectUserId: placeholderUserId,
+            architectTeamId,
+            targetTeamId,
+            vulnerabilityType: seed.vulnerabilityType,
+            targetSystem: normalizedTargetSystem,
+            configuration: JSON.stringify(configuration),
+            status: 'DRAFT',
+            structureType: seed.targetSystem,
+            difficulty: seed.difficulty
+          }
+        });
+      }
+    };
+
+    await seedDraftBugs(princeToPrincessSeedIds, 'p2p', princeTeam.id, princessTeam.id);
+    await seedDraftBugs(princessToPrinceSeedIds, 'pr2p', princessTeam.id, princeTeam.id);
+
+    const draftCount = await prisma.bug.count({ where: { status: 'DRAFT' } });
+    console.log(`  DRAFT bugs seeded. Total DRAFT bugs in DB: ${draftCount}`);
   }
 
   console.log('\nDone. Team split:');

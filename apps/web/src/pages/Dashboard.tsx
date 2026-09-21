@@ -93,7 +93,7 @@ const Dashboard = () => {
   const getMissionVisualState = (order: number): SystemVisualState => {
     const m = missions.find(m => m.order === order);
     if (!m) return 'LOCKED';
-    const isAccessible = !('LOCKED' === m.status) || user.role === 'DEMO';
+    const isAccessible = !('LOCKED' === m.status) || user.role === 'DEMO' || user.role === 'ADMIN';
     return getSystemVisualState(m.status, isAccessible);
   };
   

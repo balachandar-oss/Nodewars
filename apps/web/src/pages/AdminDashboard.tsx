@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Square, Eye, EyeOff, Users, Bug, Lock, MapPin, Activity, AlertCircle } from 'lucide-react';
+import { Play, Square, RotateCcw, Eye, EyeOff, Users, Bug, Lock, MapPin, Activity, AlertCircle } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useAdminGameState } from '../hooks/useAdminGameState';
 
@@ -15,6 +15,7 @@ const AdminDashboard = () => {
   const [isEnding, setIsEnding] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const [isAdvancingPhase, setIsAdvancingPhase] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false);
 
   // Simulate countdown timer
   useEffect(() => {
@@ -124,6 +125,33 @@ const AdminDashboard = () => {
       addEvent('ERROR', 'Network error when ending game');
     } finally {
       setIsEnding(false);
+    }
+  };
+
+  const handleRestartGame = async () => {
+    if (!confirm('This resets all scores, bug statuses, and Royal Room progress, and returns to the lab phase. Continue?')) return;
+
+    setIsRestarting(true);
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch('http://localhost:3001/api/admin/game/restart', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        setShowScores(false);
+        setGameCountdown(null);
+        addEvent('GAME_RESTART', 'Game restarted - scores, bugs, and Royal Room progress reset');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        addEvent('ERROR', data.error || 'Failed to restart game');
+      }
+    } catch (err) {
+      addEvent('ERROR', 'Network error when restarting game');
+    } finally {
+      setIsRestarting(false);
     }
   };
 
@@ -278,6 +306,17 @@ const AdminDashboard = () => {
               >
                 <Square size={14} />
                 END GAME
+              </button>
+            )}
+            {(gameState?.phase === 'ENDED' || gameState?.phase === 'COMPLETE') && (
+              <button
+                onClick={handleRestartGame}
+                disabled={isRestarting}
+                className="cyber-button px-4 py-2 text-xs flex items-center gap-2"
+                style={{ borderColor: 'var(--accent-amber)', color: 'var(--accent-amber)' }}
+              >
+                <RotateCcw size={14} />
+                RESTART GAME
               </button>
             )}
           </div>
