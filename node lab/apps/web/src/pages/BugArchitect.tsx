@@ -140,7 +140,7 @@ const BugArchitect = () => {
             <div className="flex items-center gap-2 mt-2">
               <span className="w-2 h-2 bg-neon-purple animate-pulse"></span>
               <span className="text-[10px] font-mono text-neon-purple tracking-widest uppercase">
-                EXPLOIT DEPLOYMENT SYSTEM ACTIVE
+                DEFENDER → ATTACKER | EXPLOIT DEPLOYMENT SYSTEM ACTIVE
               </span>
             </div>
           </div>

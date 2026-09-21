@@ -164,7 +164,7 @@ const Quiz = () => {
           <Cpu className="text-neon-blue" size={24} /> 
           <div>
             <div>SECURITY ASSESSMENT</div>
-            <div className="text-[10px] font-mono text-neon-blue tracking-widest opacity-70 mt-1">NODE LAB // CERTIFICATION</div>
+            <div className="text-[10px] font-mono text-neon-blue tracking-widest opacity-70 mt-1">FINAL SYSTEM CHECK</div>
           </div>
         </h2>
         <div className="font-mono text-neon-amber text-sm px-4 py-2 bg-neon-amber/5 border border-neon-amber/20 tracking-widest">

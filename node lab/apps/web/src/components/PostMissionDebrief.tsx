@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
-import { BookOpen, CheckCircle, ArrowRight, XCircle } from 'lucide-react';
+import { BookOpen, CheckCircle, ArrowRight, XCircle, ShieldCheck } from 'lucide-react';
 import type { MissionTeachingContent } from '@node-wars/shared';
+import { getMissionIdentity } from '../utils/missionIdentity';
 
 interface PostMissionDebriefProps {
   content: MissionTeachingContent;
   onReviewLesson: () => void;
   onContinue: () => void;
   isFinalMission: boolean;
+  nextMissionId?: string;
 }
 
 const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
   content,
   onReviewLesson,
   onContinue,
-  isFinalMission
+  isFinalMission,
+  nextMissionId
 }) => {
   // Store selected answer index for each question index
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -29,16 +32,43 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
         MISSION COMPLETE // DEBRIEF
       </div>
 
+      {content.narrative && (
+        <div className="mb-6 bg-neon-green/5 border border-neon-green/30 p-4">
+          <div className="flex items-center gap-2 text-neon-green font-mono text-sm tracking-widest uppercase mb-4 pb-2 border-b border-neon-green/20">
+            <ShieldCheck size={18} />
+            {content.narrative.successMessage}
+          </div>
+          <div className="space-y-4">
+            <div>
+              <div className="text-neon-green/70 font-mono text-[10px] tracking-widest mb-1 uppercase">SYSTEM STATUS</div>
+              <p className="text-xs font-mono text-white/90">{content.narrative.systemStatus}</p>
+            </div>
+            {content.narrative.nextThreat && (
+              <div className="pt-3 border-t border-neon-green/10">
+                <div className="text-neon-amber/70 font-mono text-[10px] tracking-widest mb-1 uppercase">NEW THREAT</div>
+                <p className="text-xs font-mono text-white/90">{content.narrative.nextThreat}</p>
+              </div>
+            )}
+            {content.narrative.nextObjective && (
+              <div className="pt-3 border-t border-neon-amber/10">
+                <div className="text-neon-blue/70 font-mono text-[10px] tracking-widest mb-1 uppercase">NEXT OBJECTIVE</div>
+                <p className="text-xs font-mono text-white/90">{content.narrative.nextObjective}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {content.successGuidance && (
         <div className="mb-6 space-y-4">
           <div>
-            <div className="text-cyber-light/50 font-mono text-[10px] tracking-widest mb-1 uppercase">WHAT YOU DID</div>
+            <div className="text-cyber-light/50 font-mono text-[10px] tracking-widest mb-1 uppercase">WHAT YOU BUILT</div>
             <p className="text-xs font-mono text-white/90 leading-relaxed bg-white/5 p-3 rounded-sm border-l-2 border-neon-blue">
               {content.successGuidance.whatYouDid}
             </p>
           </div>
           <div>
-            <div className="text-cyber-light/50 font-mono text-[10px] tracking-widest mb-1 uppercase">WHY IT WORKS</div>
+            <div className="text-cyber-light/50 font-mono text-[10px] tracking-widest mb-1 uppercase">WHY IT MATTERS</div>
             <p className="text-xs font-mono text-white/80 leading-relaxed italic px-2">
               {content.successGuidance.whyItWorks}
             </p>
@@ -46,7 +76,7 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
         </div>
       )}
 
-      {content.reflection && (
+      {content.reflection && !content.narrative && (
         <div className="mb-6 space-y-4 bg-black/40 p-4 border border-white/5">
           <div>
             <div className="text-cyber-light/50 font-mono text-[10px] tracking-widest mb-2 uppercase">WHAT YOU JUST LEARNED</div>
@@ -135,24 +165,22 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
         </div>
       )}
 
-      <div className="mt-auto pt-6 flex flex-col gap-3">
-        <div className="grid grid-cols-2 gap-3">
-          <button 
-            onClick={onReviewLesson}
-            className="flex items-center justify-center gap-2 w-full py-3 border border-neon-blue/30 bg-neon-blue/5 text-neon-blue font-mono text-[10px] tracking-widest hover:bg-neon-blue/20 transition-colors uppercase"
-          >
-            <BookOpen size={12} />
-            REVIEW LESSON
-          </button>
-          
-          <button 
-            onClick={onContinue}
-            className="flex items-center justify-center gap-2 w-full py-3 border border-neon-green/30 bg-neon-green/10 text-neon-green font-mono text-[10px] font-bold tracking-widest hover:bg-neon-green/30 transition-colors uppercase"
-          >
-            {isFinalMission ? 'CONTINUE' : 'NEXT MISSION'}
-            <ArrowRight size={12} />
-          </button>
-        </div>
+      {/* Action Buttons */}
+      <div className="mt-8 pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-4 shrink-0">
+        <button 
+          onClick={onReviewLesson}
+          className="flex-1 py-3 border border-neon-blue/30 bg-neon-blue/5 text-neon-blue font-mono text-xs tracking-widest hover:bg-neon-blue/20 transition-colors uppercase flex items-center justify-center gap-2"
+        >
+          <BookOpen size={14} /> REVIEW LESSON
+        </button>
+        <button 
+          onClick={onContinue}
+          className="flex-1 py-3 border border-neon-green/30 bg-neon-green/10 text-neon-green font-mono text-xs tracking-widest hover:bg-neon-green/20 transition-colors uppercase flex items-center justify-center gap-2"
+        >
+          {isFinalMission 
+            ? 'NEXT: QUIZ / BUG ARCHITECT / BUG HUNT' 
+            : `NEXT SYSTEM: ${nextMissionId ? getMissionIdentity(nextMissionId).systemName : 'CONTINUE'}`} <ArrowRight size={14} />
+        </button>
       </div>
     </div>
   );

@@ -36,6 +36,17 @@ vi.mock('@node-wars/shared', () => ({
         task: 'Build a test task',
         requirements: ['Test Requirement 1'],
         successCondition: 'Test passes successfully'
+      },
+      narrative: {
+        act: 'ACT I — AWAKEN',
+        systemName: 'TEST CORE',
+        threatStatus: 'Test threat',
+        objective: 'Test objective',
+        systemConnection: 'Test connection',
+        successMessage: 'TEST ONLINE',
+        systemStatus: 'Test status',
+        nextThreat: 'Test next threat',
+        nextObjective: 'TEST NEXT'
       }
     },
     'mission-02': {
@@ -72,7 +83,7 @@ describe('Lab page integration', () => {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({ 
-            id: 'm1', 
+            id: 'mission-01', 
             order: 1, 
             title: 'Test Mission', 
             starterCode: '// start',
@@ -109,7 +120,8 @@ describe('Lab page integration', () => {
     );
   };
 
-  it('renders teaching layer if session storage does not have it marked as viewed', async () => {
+  it('renders teaching layer if session storage does not have it marked as viewed (but narrative viewed)', async () => {
+    sessionStorage.setItem('node-lab-narrative-viewed-mission-01', 'true');
     renderLab('mission-01');
     
     // Wait for fetch and render
@@ -120,6 +132,7 @@ describe('Lab page integration', () => {
 
   it('H. sessionStorage prevents automatic reopening during the same session', async () => {
     // Manually set session storage to simulate already viewed
+    sessionStorage.setItem('node-lab-narrative-viewed-mission-01', 'true');
     sessionStorage.setItem('node-lab-lesson-viewed-mission-01', 'true');
     renderLab('mission-01');
     
@@ -132,6 +145,7 @@ describe('Lab page integration', () => {
   });
 
   it('G. REVIEW LESSON reopens the teaching layer', async () => {
+    sessionStorage.setItem('node-lab-narrative-viewed-mission-01', 'true');
     sessionStorage.setItem('node-lab-lesson-viewed-mission-01', 'true');
     renderLab('mission-01');
     
@@ -159,6 +173,12 @@ describe('Lab page integration', () => {
   it('F. BEGIN CHALLENGE dismisses the Teaching Layer and J. reaches existing editor', async () => {
     renderLab('mission-01');
     
+    await waitFor(() => {
+      expect(screen.getByTestId('narrative-briefing')).toBeInTheDocument();
+    });
+    
+    fireEvent.click(screen.getByText(/ENTER MISSION/i));
+
     await waitFor(() => {
       expect(screen.getByTestId('teaching-overlay')).toBeInTheDocument();
     });

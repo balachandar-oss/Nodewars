@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { MissionTeachingContent } from '@node-wars/shared';
 import { ChevronRight, ChevronLeft, Target, BookOpen, Brain, TerminalSquare, ArrowRight, Lightbulb } from 'lucide-react';
+import { getMissionIdentity } from '../utils/missionIdentity';
 
 interface TeachingLayerProps {
   missionNumber: number;
@@ -17,6 +18,7 @@ const TeachingLayer: React.FC<TeachingLayerProps> = ({ missionNumber, content, o
   const conceptIndex = step - 1;
   const isLastConcept = conceptIndex === totalConcepts - 1;
   const currentConcept = isBriefing ? null : content.concepts[conceptIndex];
+  const identity = getMissionIdentity(`mission-0${missionNumber}`);
   
   const handleNext = () => {
     if (step <= totalConcepts) {
@@ -40,10 +42,18 @@ const TeachingLayer: React.FC<TeachingLayerProps> = ({ missionNumber, content, o
             <span className="font-title text-xl text-neon-blue font-bold">0{missionNumber}</span>
           </div>
           <div className="flex-1">
-            <div className="text-[10px] font-mono text-neon-blue tracking-widest mb-1 uppercase">
+            <div className="text-[10px] font-mono text-neon-blue tracking-widest mb-1 uppercase flex items-center gap-2">
+              {(() => {
+                const Icon = identity.icon;
+                return <Icon size={12} />;
+              })()}
+              {identity.systemName} / 0{missionNumber}/07
+              <span className="opacity-50 mx-1">|</span>
               {isBriefing ? 'MISSION BRIEFING' : `CONCEPT ${step} OF ${totalConcepts}`}
             </div>
-            <h2 className="text-xl font-mono text-white tracking-widest uppercase">{content.title}</h2>
+            <h2 className="text-xl font-mono text-white tracking-widest uppercase">
+              {content.title}
+            </h2>
           </div>
         </div>
 

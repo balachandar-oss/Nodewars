@@ -10,7 +10,10 @@ import { useGameSocket } from '../hooks/useGameSocket';
 import LiveSecurityMonitor from '../components/LiveSecurityMonitor';
 import TeachingLayer from '../components/TeachingLayer';
 import PostMissionDebrief from '../components/PostMissionDebrief';
+import NarrativeBriefing from '../components/NarrativeBriefing';
 import { teachingRegistry } from '@node-wars/shared';
+import { getMissionIdentity } from '../utils/missionIdentity';
+import { getSystemVisualState } from '../utils/systemState';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -25,6 +28,7 @@ const Lab = () => {
   const [evaluation, setEvaluation] = useState<any>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [showLesson, setShowLesson] = useState(false);
+  const [showNarrativeBriefing, setShowNarrativeBriefing] = useState(false);
 
   const { user } = useOutletContext<{ user: any }>();
   const isDemoRole = user?.role === 'DEMO';
@@ -63,8 +67,19 @@ const Lab = () => {
           setLogs([{ type: 'info', message: 'Mission loaded. Engineering environment ready.' }]);
           setEvaluation(null);
           
-          // Always show lesson when navigating to a mission
-          setShowLesson(true);
+          const hasViewedNarrative = sessionStorage.getItem(`node-lab-narrative-viewed-${missionId}`);
+          const hasViewedLesson = sessionStorage.getItem(`node-lab-lesson-viewed-${missionId}`);
+          
+          if (!hasViewedNarrative && missionData.order <= 7) {
+            setShowNarrativeBriefing(true);
+            setShowLesson(false);
+          } else if (!hasViewedLesson) {
+            setShowNarrativeBriefing(false);
+            setShowLesson(true);
+          } else {
+            setShowNarrativeBriefing(false);
+            setShowLesson(false);
+          }
           
           if ((progressData.status !== 'LOCKED' || isDemoRole) && missionData.order >= 6) {
              fetch(`${API_URL}/api/missions/${missionId}/enter`, {
@@ -82,6 +97,16 @@ const Lab = () => {
 
     fetchMission();
   }, [missionId, navigate]);
+
+  const handleEnterMission = () => {
+    if (missionId) {
+      sessionStorage.setItem(`node-lab-narrative-viewed-${missionId}`, 'true');
+    }
+    setShowNarrativeBriefing(false);
+    if (!sessionStorage.getItem(`node-lab-lesson-viewed-${missionId}`)) {
+      setShowLesson(true);
+    }
+  };
 
   const handleRun = async () => {
     if (isEvaluating || !code.trim()) return;
@@ -162,15 +187,47 @@ const Lab = () => {
   const objectives = JSON.parse(mission.objectives || '[]');
   const hints = JSON.parse(mission.hints || '[]');
   const content = missionId ? teachingRegistry[missionId] : undefined;
+  const identity = getMissionIdentity(mission.id);
+  const visualState = getSystemVisualState(progress?.status || 'LOCKED', true);
+  
+  const getStatusText = () => {
+    if (visualState === 'COMPLETED') return `${identity.systemName} ONLINE`;
+    switch (identity.missionId) {
+      case 'mission-01': return 'BOOT SEQUENCE';
+      case 'mission-02': return 'ROUTING LAYER';
+      case 'mission-03': return 'ACCESS CONTROL LAYER';
+      case 'mission-04': return 'RESOURCE STORAGE';
+      case 'mission-05': return 'ASYNC PROCESSING';
+      case 'mission-06': return 'EVENT MONITORING';
+      case 'mission-07': return 'CONTROLLED BREACH TEST';
+      default: return 'ACTIVE';
+    }
+  };
 
+  const isMission7 = mission.order === 7;
+  const accentColor = isMission7 ? 'text-neon-amber' : 'text-neon-blue';
+  const borderColor = isMission7 ? 'border-neon-amber/30' : 'border-neon-blue/30';
+  const bgColor = isMission7 ? 'bg-neon-amber/5' : 'bg-neon-blue/5';
+  
   return (
     <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 p-6 max-w-[1920px] mx-auto z-10 relative animate-slide-in">
       
-      {showLesson && content && (
+      {showNarrativeBriefing && content && (
+        <NarrativeBriefing
+          missionNumber={mission.order}
+          content={content}
+          onEnterMission={handleEnterMission}
+        />
+      )}
+
+      {showLesson && content && !showNarrativeBriefing && (
         <TeachingLayer 
           missionNumber={mission.order} 
           content={content} 
           onBeginChallenge={() => {
+            if (missionId) {
+              sessionStorage.setItem(`node-lab-lesson-viewed-${missionId}`, 'true');
+            }
             setShowLesson(false);
           }} 
         />
@@ -181,23 +238,43 @@ const Lab = () => {
         
         {/* LEFT COLUMN: MISSION CONTROL */}
         <div className="lg:col-span-3 flex flex-col border-r border-white/10 relative overflow-hidden bg-black/60">
-          <div className="p-4 border-b border-neon-blue/30 bg-neon-blue/5">
-            <h1 className="text-2xl font-title text-white tracking-widest uppercase mb-1">
-              MISSION 0{mission.order}
-            </h1>
-            <h2 className="text-sm font-mono text-neon-blue tracking-widest mb-3 uppercase">
-              {mission.title}
-            </h2>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 border border-white/5 bg-black/40">
-                <div className="text-[9px] font-mono text-white/50 mb-1">XP REWARD</div>
-                <div className="text-xs font-mono text-neon-green">+{mission.xpReward} XP</div>
+          <div className={`p-4 border-b ${borderColor} ${bgColor}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <identity.icon size={16} className={accentColor} />
+              <h1 className={`text-lg font-title tracking-widest uppercase ${accentColor}`}>
+                {identity.systemName}
+              </h1>
+            </div>
+            
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-mono text-white/70 tracking-widest uppercase">
+                  MISSION {identity.designation} · {identity.shortName}
+                </span>
+                <span className="text-[9px] font-mono text-white/40 tracking-widest uppercase mt-0.5">
+                  {identity.systemRole}
+                </span>
               </div>
-              <div className="p-2 border border-white/5 bg-black/40">
-                <div className="text-[9px] font-mono text-white/50 mb-1">STATUS</div>
-                <div className={`text-xs font-mono ${progress?.status === 'COMPLETE' ? 'text-neon-blue' : 'text-neon-amber animate-pulse'}`}>
-                  {progress?.status === 'COMPLETE' ? 'ONLINE' : 'BUILDING'}
-                </div>
+              {content?.narrative && (
+                <button 
+                  onClick={() => setShowNarrativeBriefing(true)}
+                  className={`text-[9px] font-mono border px-2 py-0.5 mt-0.5 transition-colors ${
+                    isMission7 
+                      ? 'border-neon-amber/30 text-neon-amber hover:bg-neon-amber/20' 
+                      : 'border-neon-blue/30 text-neon-blue hover:bg-neon-blue/20'
+                  }`}
+                >
+                  BRIEFING
+                </button>
+              )}
+            </div>
+            
+            <div className="p-2 border border-white/5 bg-black/40">
+              <div className="text-[9px] font-mono text-white/50 mb-1 tracking-widest">SYSTEM STATUS</div>
+              <div className={`text-xs font-mono tracking-widest uppercase ${
+                visualState === 'COMPLETED' ? 'text-neon-blue' : isMission7 ? 'text-neon-amber animate-pulse' : 'text-neon-green animate-pulse'
+              }`}>
+                {getStatusText()}
               </div>
             </div>
           </div>
@@ -209,6 +286,7 @@ const Lab = () => {
                 onReviewLesson={() => setShowLesson(true)} 
                 onContinue={handleContinue}
                 isFinalMission={mission.order >= 7}
+                nextMissionId={`mission-0${mission.order + 1}`}
               />
             ) : (
               <div className="p-4 flex flex-col gap-6 h-full">
@@ -262,7 +340,7 @@ const Lab = () => {
                 )}
 
                 <div className="mt-auto flex flex-col gap-4 pt-6">
-                   <HintPanel hints={hints} progressiveHints={content?.progressiveHints} />
+                   <HintPanel hints={hints} progressiveHints={content?.progressiveHints} hasFailed={!!evaluation && !evaluation.success} />
                    <button 
                      onClick={() => setShowLesson(true)}
                      className="flex items-center justify-center gap-2 w-full py-2 border border-neon-blue/30 bg-neon-blue/5 text-neon-blue font-mono text-[10px] tracking-widest hover:bg-neon-blue/20 transition-colors uppercase"
@@ -403,6 +481,11 @@ const Lab = () => {
                  total={evaluation?.checks?.length || 0} 
                  success={evaluation?.success} 
                  failureGuidance={content?.failureGuidance}
+                 successGuidance={content?.successGuidance}
+                 isEvaluating={isEvaluating}
+                 executionErrors={evaluation?.errors ?? []}
+                 hasRun={!!evaluation}
+                 systemName={identity.systemName}
                />
              </div>
           </div>

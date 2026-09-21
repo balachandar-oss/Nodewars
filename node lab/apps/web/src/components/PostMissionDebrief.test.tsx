@@ -31,7 +31,7 @@ const mockContent: MissionTeachingContent = {
 describe('PostMissionDebrief', () => {
   it('A. Successful evaluator result shows Success Guidance.', () => {
     render(<PostMissionDebrief content={mockContent} onReviewLesson={vi.fn()} onContinue={vi.fn()} isFinalMission={false} />);
-    expect(screen.getByText('WHAT YOU DID')).toBeInTheDocument();
+    expect(screen.getByText('WHAT YOU BUILT')).toBeInTheDocument();
     expect(screen.getByText('You did a thing.')).toBeInTheDocument();
   });
 
@@ -85,7 +85,7 @@ describe('PostMissionDebrief', () => {
     const onContinue = vi.fn();
     render(<PostMissionDebrief content={mockContent} onReviewLesson={vi.fn()} onContinue={onContinue} isFinalMission={false} />);
     
-    fireEvent.click(screen.getByText('NEXT MISSION'));
+    fireEvent.click(screen.getByText(/NEXT SYSTEM:/i));
     expect(onContinue).toHaveBeenCalled();
   });
 
@@ -93,7 +93,7 @@ describe('PostMissionDebrief', () => {
     const onContinue = vi.fn();
     render(<PostMissionDebrief content={mockContent} onReviewLesson={vi.fn()} onContinue={onContinue} isFinalMission={true} />);
     
-    fireEvent.click(screen.getByText('CONTINUE'));
+    fireEvent.click(screen.getByText(/NEXT: QUIZ/i));
     expect(onContinue).toHaveBeenCalled();
   });
   

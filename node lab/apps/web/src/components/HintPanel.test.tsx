@@ -10,7 +10,7 @@ describe('HintPanel', () => {
   });
 
   it('renders legacy hints with default labels', () => {
-    render(<HintPanel hints={['First hint string', 'Second hint string']} />);
+    render(<HintPanel hints={['First hint string', 'Second hint string']} hasFailed={true} />);
     
     // Hint 1 should be unlocked by default? No, wait, in my implementation Hint 1 is LOCKED initially.
     // Let me check my implementation. unlockedHints starts at 0. So Hint 1 is LOCKED.
@@ -27,7 +27,7 @@ describe('HintPanel', () => {
       { label: 'PARTIAL SOLUTION', text: 'Partial text' }
     ];
 
-    render(<HintPanel progressiveHints={progressiveHints} />);
+    render(<HintPanel progressiveHints={progressiveHints} hasFailed={true} />);
 
     // Initially 0 unlocked
     expect(screen.queryByTestId('hint-revealed-0')).not.toBeInTheDocument();

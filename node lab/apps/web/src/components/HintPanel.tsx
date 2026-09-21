@@ -7,9 +7,11 @@ interface HintPanelProps {
   hints?: string[];
   // New structured progressive hints
   progressiveHints?: TeachingHint[];
+  // True if the student has failed at least once
+  hasFailed?: boolean;
 }
 
-const HintPanel: React.FC<HintPanelProps> = ({ hints = [], progressiveHints = [] }) => {
+const HintPanel: React.FC<HintPanelProps> = ({ hints = [], progressiveHints = [], hasFailed = false }) => {
   const [unlockedHints, setUnlockedHints] = useState<number>(0);
 
   // Use progressive hints if available, otherwise fallback to legacy strings mapping
@@ -29,7 +31,15 @@ const HintPanel: React.FC<HintPanelProps> = ({ hints = [], progressiveHints = []
         <h3 className="text-xs font-mono glow-text-amber tracking-widest uppercase">ENGINEERING HINTS</h3>
       </div>
       
-      <div className="space-y-3">
+      {!hasFailed ? (
+        <div className="p-4 bg-black/40 border border-white/5 rounded-sm flex items-center justify-center text-center">
+          <div className="text-[10px] font-mono text-white/40 tracking-widest uppercase flex items-center gap-2">
+            <Lock size={12} />
+            Complete one failed attempt to unlock guidance
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
         {activeHints.map((hint, i) => {
           const isUnlocked = i < unlockedHints;
           const isNextToUnlock = i === unlockedHints;
@@ -91,6 +101,7 @@ const HintPanel: React.FC<HintPanelProps> = ({ hints = [], progressiveHints = []
           return null;
         })}
       </div>
+      )}
     </div>
   );
 };

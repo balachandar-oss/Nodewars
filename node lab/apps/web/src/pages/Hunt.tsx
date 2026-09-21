@@ -238,7 +238,7 @@ const Hunt = () => {
             <div className="flex items-center gap-2 mt-2">
               <span className="w-2 h-2 bg-neon-red animate-pulse"></span>
               <span className="text-[10px] font-mono text-neon-red tracking-widest uppercase">
-                TARGET: {gameState.playerView.targetTeam} INFRASTRUCTURE
+                ENTER THE BREACH | TARGET: {gameState.playerView.targetTeam} INFRASTRUCTURE
               </span>
             </div>
           </div>

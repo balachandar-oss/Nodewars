@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Shield, Target, Server as ServerIcon, DoorOpen, HardDrive, Zap, Bug, Activity, CheckCircle, Lock } from 'lucide-react';
+import { teachingRegistry } from '@node-wars/shared';
+import { getSystemVisualState, getPathVisualState, type SystemVisualState } from '../utils/systemState';
+import { getMissionIdentity } from '../utils/missionIdentity';
 
 interface UserData {
   username: string;
@@ -87,17 +90,19 @@ const Dashboard = () => {
   const completedCount = missions.filter(m => m.status === 'COMPLETE').length;
 
   // Helpers for Castle Blueprint
-  const getMissionStatus = (order: number) => {
+  const getMissionVisualState = (order: number): SystemVisualState => {
     const m = missions.find(m => m.order === order);
     if (!m) return 'LOCKED';
-    if (m.status === 'COMPLETE') return 'COMPLETE';
-    if (user.role === 'DEMO' || m.status === 'ACTIVE') return 'ACTIVE';
-    return 'LOCKED';
+    const isAccessible = !('LOCKED' === m.status) || user.role === 'DEMO';
+    return getSystemVisualState(m.status, isAccessible);
   };
   
-  const getPathClass = (status: string) => {
-    if (status === 'COMPLETE') return 'path-complete';
-    if (status === 'ACTIVE') return 'path-active';
+  const getPathClass = (sourceOrder: number, targetOrder: number) => {
+    const targetState = getMissionVisualState(targetOrder);
+
+    // If the target is accessible in the star topology, the path is active (green).
+    if (targetState !== 'LOCKED') return 'path-active';
+    
     return 'path-locked';
   };
 
@@ -153,56 +158,81 @@ const Dashboard = () => {
           
           <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-2 custom-scrollbar">
             {missions.length === 0 && <div className="text-cyber-light font-mono text-xs">Initializing network...</div>}
-            {missions.map((mission) => {
-              const isLocked = mission.status === 'LOCKED';
-              const isComplete = mission.status === 'COMPLETE';
-              const isDemo = user.role === 'DEMO';
-              const isAccessible = !isLocked || isDemo;
-              
-              let stateColor = 'text-cyber-light/30';
-              let borderColor = 'border-white/5';
-              let bgClass = 'bg-black/40';
-              let dotClass = 'bg-cyber-light/10';
+            {(() => {
+              let currentAct = '';
+              return missions.map((mission) => {
+                const content = teachingRegistry[mission.id];
+                const narrative = content?.narrative;
+                const displayAct = narrative?.act;
+                
+                const showActHeader = displayAct && displayAct !== currentAct;
+                if (displayAct) currentAct = displayAct;
+                const visualState = getMissionVisualState(mission.order);
+                const identity = getMissionIdentity(mission.id);
+                const isComplete = visualState === 'COMPLETED';
+                const isCurrent = visualState === 'CURRENT';
+                const isAccessible = visualState !== 'LOCKED';
+                
+                let stateColor = 'text-cyber-light/30';
+                let borderColor = 'border-white/5';
+                let bgClass = 'bg-black/40';
+                let dotClass = 'bg-cyber-light/10';
 
-              if (isComplete) {
-                stateColor = 'text-neon-blue';
-                borderColor = 'border-neon-blue/40';
-                bgClass = 'bg-neon-blue/5 hover:bg-neon-blue/10';
-                dotClass = 'bg-neon-blue glow-blue';
-              } else if (isAccessible) {
-                stateColor = 'text-neon-green glow-text-green';
-                borderColor = 'border-neon-green/60';
-                bgClass = 'bg-neon-green/10 hover:bg-neon-green/20';
-                dotClass = 'bg-neon-green animate-pulse glow-green';
-              }
+                if (isComplete) {
+                  stateColor = 'text-neon-blue';
+                  borderColor = 'border-neon-blue/40';
+                  bgClass = 'bg-neon-blue/5 hover:bg-neon-blue/10';
+                  dotClass = 'bg-neon-blue glow-blue';
+                } else if (isCurrent) {
+                  stateColor = 'text-neon-green glow-text-green';
+                  borderColor = 'border-neon-green/60';
+                  bgClass = 'bg-neon-green/10 hover:bg-neon-green/20';
+                  dotClass = 'bg-neon-green animate-pulse glow-green';
+                } else if (isAccessible) {
+                  stateColor = 'text-neon-green glow-text-green opacity-90';
+                  borderColor = 'border-neon-green/40';
+                  bgClass = 'bg-neon-green/10 hover:bg-neon-green/20';
+                  dotClass = 'bg-neon-green glow-green';
+                }
 
-              return (
-                <div 
-                  key={mission.id}
-                  onClick={() => isAccessible && navigate(`/lab/${mission.id}`)}
-                  className={`p-3 border transition-all flex items-center justify-between ${borderColor} ${bgClass} ${isAccessible ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="font-mono text-[10px] text-cyber-light/40 w-4 text-center">
-                      {mission.order.toString().padStart(2, '0')}
-                    </div>
-                    <div className={`font-mono text-xs tracking-widest ${stateColor}`}>
-                      {mission.title.toUpperCase()}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {isAccessible && <div className="text-[9px] font-mono text-cyber-light/50">{mission.xpReward}XP</div>}
-                    {isComplete ? (
-                      <CheckCircle size={12} className="text-neon-blue" />
-                    ) : !isAccessible ? (
-                      <Lock size={12} className="text-cyber-light/30" />
-                    ) : (
-                      <div className={`w-2 h-2 rounded-full ${dotClass}`}></div>
+                return (
+                  <React.Fragment key={mission.id}>
+                    {showActHeader && (
+                      <div className="mt-2 mb-1 text-[10px] font-mono text-neon-blue/80 tracking-widest uppercase border-b border-white/10 pb-1">
+                        {displayAct}
+                      </div>
                     )}
-                  </div>
-                </div>
-              );
-            })}
+                    <div 
+                      onClick={() => isAccessible && navigate(`/lab/${mission.id}`)}
+                      className={`p-3 border transition-all flex items-center justify-between ${borderColor} ${bgClass} ${isAccessible ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="font-mono text-[10px] text-cyber-light/40 w-4 text-center">
+                          {mission.order.toString().padStart(2, '0')}
+                        </div>
+                        <div className={`flex flex-col gap-0.5 font-mono text-xs tracking-widest ${stateColor}`}>
+                          <span className="text-[9px] opacity-70">{mission.title.toUpperCase()}</span>
+                          <span className="flex items-center gap-2">
+                            <identity.icon size={12} className="opacity-70" />
+                            {identity.systemName}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {isAccessible && <div className="text-[9px] font-mono text-cyber-light/50">{mission.xpReward}XP</div>}
+                        {isComplete ? (
+                          <CheckCircle size={12} className="text-neon-blue" />
+                        ) : !isAccessible ? (
+                          <Lock size={12} className="text-cyber-light/30" />
+                        ) : (
+                          <div className={`w-2 h-2 rounded-full ${dotClass}`}></div>
+                        )}
+                      </div>
+                    </div>
+                  </React.Fragment>
+                );
+              });
+            })()}
           </div>
           
           {/* Live Event Feed (Moved to Left Rail to prevent map overlap) */}
@@ -284,23 +314,23 @@ const Dashboard = () => {
 
                 {/* Data Conduits (Paths) */}
                 {/* Core (500,500) to Gate (250,325) */}
-                <path d="M 500 500 L 250 325" className={getPathClass(getMissionStatus(3))} />
+                <path d="M 500 500 L 250 325" className={getPathClass(1, 3)} />
                 {/* Core (500,500) to Vault (750,325) */}
-                <path d="M 500 500 L 750 325" className={getPathClass(getMissionStatus(4))} />
+                <path d="M 500 500 L 750 325" className={getPathClass(1, 4)} />
                 {/* Core (500,500) to Async (250,675) */}
-                <path d="M 500 500 L 250 675" className={getPathClass(getMissionStatus(5))} />
+                <path d="M 500 500 L 250 675" className={getPathClass(1, 5)} />
                 {/* Core (500,500) to Monitor (750,675) */}
-                <path d="M 500 500 L 750 675" className={getPathClass(getMissionStatus(6))} />
+                <path d="M 500 500 L 750 675" className={getPathClass(1, 6)} />
                 
                 {/* Gate (250,325) to Door (500,150) */}
-                <path d="M 250 325 L 500 150" className={getPathClass(getMissionStatus(2))} />
+                <path d="M 250 325 L 500 150" className={getPathClass(3, 2)} />
                 {/* Vault (750,325) to Door (500,150) */}
-                <path d="M 750 325 L 500 150" className={getPathClass(getMissionStatus(2))} />
+                <path d="M 750 325 L 500 150" className={getPathClass(4, 2)} />
                 
                 {/* Async (250,675) to Admin (500,850) */}
-                <path d="M 250 675 L 500 850" className={getPathClass(getMissionStatus(7))} />
+                <path d="M 250 675 L 500 850" className={getPathClass(5, 7)} />
                 {/* Monitor (750,675) to Admin (500,850) */}
-                <path d="M 750 675 L 500 850" className={getPathClass(getMissionStatus(7))} />
+                <path d="M 750 675 L 500 850" className={getPathClass(6, 7)} />
                 
                 {/* Cross Links for architectural density (always dim) */}
                 <path d="M 250 325 L 250 675" className="stroke-white/5 fill-none" strokeWidth="1" strokeDasharray="2 4" />
@@ -310,12 +340,16 @@ const Dashboard = () => {
               
               {/* HTML/CSS Nodes Overlay */}
               {missions.map((mission) => {
-                const Icon = getMissionIcon(mission.order);
-                const isLocked = mission.status === 'LOCKED';
-                const isComplete = mission.status === 'COMPLETE';
+                const visualState = getMissionVisualState(mission.order);
+                const identity = getMissionIdentity(mission.id);
+                const systemName = identity.systemName;
+                const Icon = identity.icon;
+                const isLocked = visualState === 'LOCKED';
+                const isComplete = visualState === 'COMPLETED';
+                const isCurrent = visualState === 'CURRENT';
+                const isAccessible = visualState !== 'LOCKED';
                 const isCore = mission.order === 1;
-                const isDemo = user.role === 'DEMO';
-                const isAccessible = !isLocked || isDemo;
+                const isMission7 = mission.order === 7;
                 
                 let stateColor = 'text-cyber-light/30';
                 let borderColor = 'border-white/10';
@@ -327,10 +361,15 @@ const Dashboard = () => {
                   borderColor = 'border-neon-blue';
                   glowClass = 'glow-blue';
                   bgClass = 'bg-neon-blue/10';
-                } else if (isAccessible) {
+                } else if (isCurrent) {
                   stateColor = 'text-neon-green glow-text-green';
                   borderColor = 'border-neon-green';
                   glowClass = 'glow-green';
+                  bgClass = 'bg-neon-green/10';
+                } else if (isAccessible) {
+                  stateColor = 'text-neon-green';
+                  borderColor = 'border-neon-green/60';
+                  glowClass = 'glow-green opacity-90';
                   bgClass = 'bg-neon-green/10';
                 }
 
@@ -340,6 +379,21 @@ const Dashboard = () => {
                 // Adjust size for Core
                 const sizeClass = isCore ? 'w-24 h-24 lg:w-32 lg:h-32' : 'w-16 h-16 lg:w-20 lg:h-20';
                 const iconSize = isCore ? 40 : 24;
+                
+                let statusLabel = isComplete ? 'ONLINE' : isCurrent ? 'CURRENT' : isAccessible ? 'READY' : 'LOCKED';
+                let displaySystemName = systemName;
+                
+                if (isMission7) {
+                  if (isComplete) {
+                    statusLabel = 'ONLINE';
+                  } else if (isCurrent) {
+                    statusLabel = 'READY';
+                    displaySystemName = 'SYSTEM TEST';
+                  } else if (isAccessible) {
+                    statusLabel = 'READY';
+                    displaySystemName = 'SYSTEM TEST';
+                  }
+                }
 
                 return (
                   <div 
@@ -349,8 +403,12 @@ const Dashboard = () => {
                   >
                     {/* Node Tooltip Label (Hover) */}
                     <div className="absolute bottom-full mb-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-48 text-center bg-black/90 border border-white/20 p-2 backdrop-blur-md shadow-[0_0_10px_rgba(0,0,0,0.8)] z-30">
-                      <div className={`text-xs font-title tracking-widest uppercase ${stateColor}`}>{mission.title}</div>
-                      <div className="text-[9px] font-mono text-cyber-light/60 mt-1 uppercase">{mission.status} // {mission.xpReward}XP</div>
+                      <div className={`text-xs font-title tracking-widest uppercase ${stateColor}`}>{displaySystemName}</div>
+                      <div className="text-[9px] font-mono text-cyber-light/60 mt-1 uppercase flex items-center justify-center gap-1">
+                        {isLocked && <Lock size={10} />}
+                        {isComplete && <CheckCircle size={10} />}
+                        {statusLabel} // {mission.xpReward}XP
+                      </div>
                     </div>
                     
                     {/* Core Rings (only if core) */}
@@ -362,7 +420,8 @@ const Dashboard = () => {
                     )}
 
                     {/* The Node Shape */}
-                    <div 
+                    <button 
+                      aria-label={`Mission ${mission.order}: ${displaySystemName}. Status: ${statusLabel}`}
                       onClick={() => isAccessible && navigate(`/lab/${mission.id}`)}
                       className={`${sizeClass} border-2 flex items-center justify-center transition-all duration-300 ${borderColor} ${bgClass} ${glowClass} ${isAccessible ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed opacity-60'} ${isCore ? 'rounded-lg rotate-45' : 'rounded-sm'}`}
                     >
@@ -370,11 +429,12 @@ const Dashboard = () => {
                       <div className={isCore ? '-rotate-45' : ''}>
                         <Icon size={iconSize} className={`${stateColor} ${isAccessible && !isComplete ? 'animate-pulse' : ''}`} />
                       </div>
-                    </div>
+                    </button>
                     
                     {/* Static Label below node */}
-                    <div className={`mt-3 font-mono text-[10px] tracking-widest text-center uppercase px-2 py-0.5 border border-white/5 bg-black/80 ${stateColor}`}>
-                      {isCore ? 'SERVER CORE' : mission.title}
+                    <div className={`mt-3 flex flex-col items-center font-mono text-[10px] tracking-widest text-center uppercase px-2 py-0.5 border border-white/5 bg-black/80 ${stateColor}`}>
+                      <span className="opacity-80 text-[8px] mb-0.5">{mission.order.toString().padStart(2, '0')} // {statusLabel}</span>
+                      <span>{displaySystemName}</span>
                     </div>
                   </div>
                 );
