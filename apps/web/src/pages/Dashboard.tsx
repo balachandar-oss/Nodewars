@@ -4,6 +4,7 @@ import { Shield, Target, Server as ServerIcon, DoorOpen, HardDrive, Zap, Bug, Ac
 import { teachingRegistry } from '@node-wars/shared';
 import { getSystemVisualState, getPathVisualState, type SystemVisualState } from '../utils/systemState';
 import { getMissionIdentity } from '../utils/missionIdentity';
+import { API_URL } from '../utils/api';
 
 interface UserData {
   username: string;
@@ -51,8 +52,8 @@ const Dashboard = () => {
 
       try {
         const [missionsRes, stateRes] = await Promise.all([
-          fetch('http://localhost:3001/api/missions', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:3001/api/game/state', { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${API_URL}/api/missions`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_URL}/api/game/state`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
         
         if (stateRes.ok) {

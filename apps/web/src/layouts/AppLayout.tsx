@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { LogOut, Terminal, User as UserIcon, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { API_URL } from '../utils/api';
 
 const AppLayout = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const AppLayout = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:3001/api/user/me', {
+      const res = await fetch(`${API_URL}/api/user/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

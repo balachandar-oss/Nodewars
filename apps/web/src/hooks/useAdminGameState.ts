@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { API_URL } from '../utils/api';
 
 export interface AdminGameState {
   gameId: string;
@@ -45,8 +46,8 @@ export function useAdminGameState(gameId?: string, pollInterval: number = 2000) 
 
     try {
       const url = gameId
-        ? `http://localhost:3001/api/admin/games/${gameId}/state`
-        : 'http://localhost:3001/api/admin/game/state';
+        ? `${API_URL}/api/admin/games/${gameId}/state`
+        : `${API_URL}/api/admin/game/state`;
 
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, CheckCircle, XCircle, Clock, Trophy } from 'lucide-react';
+import { API_URL } from '../utils/api';
 
 interface BountyPopupProps {
   bugId: string;
@@ -55,7 +56,7 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(`http://localhost:3001/api/bounties/${bugId}/answer`, {
+      const res = await fetch(`${API_URL}/api/bounties/${bugId}/answer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -259,7 +260,7 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
 
         {/* Footer */}
         <div className="p-6 border-t border-white/5 bg-black/40 flex gap-3">
-          {!feedback || feedback === 'incorrect' ? (
+          {!feedback ? (
             <>
               <button
                 onClick={onClose}

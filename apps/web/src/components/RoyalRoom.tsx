@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Lock, Unlock, Zap, Trophy, AlertTriangle, CheckCircle, X, Sparkles } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 import FlagAssembly from './FlagAssembly';
+import { API_URL } from '../utils/api';
 
 interface RoyalRoomProps {
   onVictory?: () => void;
@@ -95,7 +96,7 @@ const RoyalRoom: React.FC<RoyalRoomProps> = ({ onVictory }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/flags/validate', {
+      const response = await fetch(`${API_URL}/api/flags/validate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

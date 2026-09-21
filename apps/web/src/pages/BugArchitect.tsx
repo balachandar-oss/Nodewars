@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, Bug as BugIcon, Clock } from 'lucide-react';
 import BugArchitectPanel, { type BugAssignment } from '../components/BugArchitectPanel';
+import { API_URL } from '../utils/api';
 
 interface HuntStatus {
   phase: string;
@@ -25,7 +26,7 @@ const BugArchitect = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:3001/api/bugs/my-assignment', {
+      const res = await fetch(`${API_URL}/api/bugs/my-assignment`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -56,7 +57,7 @@ const BugArchitect = () => {
     if (!token) return;
 
     try {
-      const res = await fetch('http://localhost:3001/api/hunt/status', {
+      const res = await fetch(`${API_URL}/api/hunt/status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {

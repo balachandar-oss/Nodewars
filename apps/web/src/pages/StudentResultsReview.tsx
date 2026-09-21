@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Users, CheckCircle, XCircle, Award, Search, ChevronDown, ChevronRight, HelpCircle } from 'lucide-react';
+import { API_URL } from '../utils/api';
 
 interface QuestionReview {
   order: number;
@@ -71,7 +72,7 @@ const StudentResultsReview = () => {
 
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:3001/api/admin/student-results', {
+      const res = await fetch(`${API_URL}/api/admin/student-results`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

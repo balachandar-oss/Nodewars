@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Login from './Login';
+import { API_URL } from '../utils/api';
 
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
@@ -51,7 +52,7 @@ describe('Login UI - Real Seminar Authentication Terminal', () => {
     fireEvent.change(pwdInput, { target: { value: 'nw-k9X2#mP8q' } });
     fireEvent.click(submitBtn);
 
-    expect(mockFetch).toHaveBeenCalledWith('http://localhost:3001/api/auth/login', expect.objectContaining({
+    expect(mockFetch).toHaveBeenCalledWith(`${API_URL}/api/auth/login`, expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({ username: 'student02', password: 'nw-k9X2#mP8q' })
     }));

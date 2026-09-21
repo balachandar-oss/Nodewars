@@ -1,0 +1,280 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String            @id @default(uuid())
+  username          String            @unique
+  passwordHash      String
+  role              String            @default("PLAYER") // PLAYER, ADMIN
+  teamId            String?
+  team              Team?             @relation(fields: [teamId], references: [id])
+  level             Int               @default(1)
+  xp                Int               @default(0)
+  missionsCompleted Int               @default(0)
+  progress          MissionProgress[]
+  submissions       Submission[]
+  quizAttempts      QuizAttempt[]
+  plantedBugs       Bug[]             @relation("BugArchitect")
+  claimedBugs       Bug[]             @relation("BugClaimer")
+  huntScore         Int               @default(0)
+  gameScores        GameScore[]
+  bugArchitects     BugArchitect[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Team {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  users            User[]
+  plantedBugs      Bug[]             @relation("ArchitectTeam")
+  targetedBugs     Bug[]             @relation("TargetTeam")
+  claimedBugs      Bug[]             @relation("ClaimerTeam")
+  castleComponents CastleComponent[]
+  huntScore        Int               @default(0)
+  gamesAsTeamA     Game[]            @relation("GameTeamA")
+  gamesAsTeamB     Game[]            @relation("GameTeamB")
+  wonGames         Game[]            @relation("GameWinner")
+  gameScores       GameScore[]
+  bugArchitects    BugArchitect[]
+  flagFragments    FlagFragment[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model CastleComponent {
+  id           String   @id @default(uuid())
+  teamId       String
+  team         Team     @relation(fields: [teamId], references: [id])
+  systemId     String // e.g. "SECURITY_GATE"
+  physicalCode String   @unique // e.g. "NW:T:OMEGA:S:SECURITY_GATE"
+  displayName  String // e.g. "Security Gate"
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+model GameState {
+  id                String    @id @default("singleton")
+  phase             String    @default("ENGINEERING") // ENGINEERING, BUG_PLACEMENT, HUNT, COMPLETE, WAITING, ACTIVE, ENDED
+  startTime         DateTime?
+  endTime           DateTime?
+  countdownSeconds  Int?      // Countdown duration in seconds
+  scoresRevealed    Boolean   @default(false)
+  updatedAt         DateTime  @updatedAt
+}
+
+model Mission {
+  id              String            @id @default(uuid())
+  title           String
+  description     String
+  order           Int
+  difficulty      String // EASY, MEDIUM, HARD, CRITICAL
+  xpReward        Int
+  concepts        String // JSON string array
+  objectives      String // JSON string array
+  instructions    String
+  starterCode     String
+  hints           String // JSON string array
+  prerequisites   String // JSON string array of mission IDs
+  unlockComponent String
+  progress        MissionProgress[]
+  submissions     Submission[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model MissionProgress {
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  mission     Mission   @relation(fields: [missionId], references: [id])
+  missionId   String
+  status      String    @default("LOCKED") // LOCKED, ACTIVE, COMPLETE
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, missionId])
+}
+
+model Submission {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  mission   Mission  @relation(fields: [missionId], references: [id])
+  missionId String
+  code      String
+  status    String // PASSED, FAILED
+  createdAt DateTime @default(now())
+}
+
+model QuizQuestion {
+  id            String            @id @default(uuid())
+  missionId     String?
+  question      String
+  options       String // JSON string array
+  correctAnswer String
+  explanation   String
+  points        Int               @default(5)
+  difficulty    String            @default("MEDIUM")
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  attempts      AttemptQuestion[]
+}
+
+model QuizAttempt {
+  id             String            @id @default(uuid())
+  user           User              @relation(fields: [userId], references: [id])
+  userId         String
+  isCompleted    Boolean           @default(false)
+  score          Int               @default(0)
+  percentage     Float             @default(0)
+  correctAnswers Int               @default(0)
+  totalQuestions Int               @default(20)
+  questions      AttemptQuestion[]
+  completedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([userId]) // One official attempt per player
+}
+
+model AttemptQuestion {
+  id              String       @id @default(uuid())
+  attempt         QuizAttempt  @relation(fields: [attemptId], references: [id])
+  attemptId       String
+  question        QuizQuestion @relation(fields: [questionId], references: [id])
+  questionId      String
+  order           Int
+  submittedAnswer String? // The answer string the user submitted
+  isCorrect       Boolean? // Evaluated upon submission
+  createdAt       DateTime     @default(now())
+
+  @@unique([attemptId, questionId])
+}
+
+model Bug {
+  id                String        @id @default(uuid())
+  architectUserId   String
+  architect         User          @relation("BugArchitect", fields: [architectUserId], references: [id])
+  architectTeamId   String
+  architectTeam     Team          @relation("ArchitectTeam", fields: [architectTeamId], references: [id])
+  targetTeamId      String
+  targetTeam        Team          @relation("TargetTeam", fields: [targetTeamId], references: [id])
+  vulnerabilityType String
+  targetSystem      String
+  configuration     String // JSON string containing metadata
+  status            String        @default("PLANTED") // DRAFT, PLANTED, DISCOVERED, CLAIMED, RESOLVED
+  claimedByUserId   String?
+  claimedByUser     User?         @relation("BugClaimer", fields: [claimedByUserId], references: [id])
+  claimedByTeamId   String?
+  claimedByTeam     Team?         @relation("ClaimerTeam", fields: [claimedByTeamId], references: [id])
+  discoveredAt      DateTime?
+  claimedAt         DateTime?
+  resolvedAt        DateTime?
+  // Node Wars game fields
+  gameId            String?
+  game              Game?         @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  structureType     String? // Type of structure the bug targets
+  difficulty        String? // EASY, MEDIUM, HARD, CRITICAL
+  questionId        String?
+  bugQuestion       BugQuestion?  @relation(fields: [questionId], references: [id], onDelete: SetNull)
+  fragmentId        String?
+  flagFragment      FlagFragment? @relation(fields: [fragmentId], references: [id], onDelete: SetNull)
+  location          String? // Location/coordinates of the bug
+  createdAt         DateTime      @default(now())
+}
+
+model Game {
+  id           String         @id @default(uuid())
+  status       String         @default("WAITING") // WAITING, ACTIVE, ENDED
+  startTime    DateTime?
+  endTime      DateTime?
+  winnerTeamId String?
+  winnerTeam   Team?          @relation("GameWinner", fields: [winnerTeamId], references: [id], onDelete: SetNull)
+  teamAId      String
+  teamA        Team           @relation("GameTeamA", fields: [teamAId], references: [id])
+  teamBId      String
+  teamB        Team           @relation("GameTeamB", fields: [teamBId], references: [id])
+  bugs         Bug[]
+  scores       GameScore[]
+  architects   BugArchitect[]
+  fragments    FlagFragment[] @relation("GameFragments")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([teamAId])
+  @@index([teamBId])
+  @@index([status])
+}
+
+model BugQuestion {
+  id            String   @id @default(uuid())
+  text          String
+  options       String // JSON string array with 4 options
+  correctAnswer String
+  explanation   String
+  bugs          Bug[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model FlagFragment {
+  id        String   @id @default(uuid())
+  position  Int // 1-4 for flag fragment position
+  value     String // The actual fragment content
+  bugs      Bug[]
+  gameId    String?
+  game      Game?    @relation("GameFragments", fields: [gameId], references: [id], onDelete: SetNull)
+  teamId    String?
+  team      Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@unique([gameId, position])
+  @@index([teamId])
+}
+
+model GameScore {
+  id                 String   @id @default(uuid())
+  gameId             String
+  game               Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId             String?
+  team               Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  bugsDiscovered     Int      @default(0)
+  bugsSolved         Int      @default(0)
+  score              Int      @default(0)
+  fragmentsCollected Int      @default(0)
+  royalRoomUnlocked  Boolean  @default(false)
+  timestamp          DateTime @default(now())
+
+  @@unique([gameId, userId])
+  @@index([gameId])
+  @@index([userId])
+  @@index([teamId])
+}
+
+model BugArchitect {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId      String
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  bugsPlanted Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([gameId, userId])
+  @@index([gameId])
+  @@index([userId])
+  @@index([teamId])
+}

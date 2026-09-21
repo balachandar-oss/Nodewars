@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, ShieldCheck, Cpu } from 'lucide-react';
+import { API_URL } from '../utils/api';
 
 interface Question {
   id: string;
@@ -34,7 +35,7 @@ const Quiz = () => {
         return;
       }
       try {
-        const res = await fetch('http://localhost:3001/api/quiz/start', {
+        const res = await fetch(`${API_URL}/api/quiz/start`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -45,7 +46,7 @@ const Quiz = () => {
         }
         if (data.isCompleted) {
           // Already completed
-          const res2 = await fetch('http://localhost:3001/api/quiz/results', {
+          const res2 = await fetch(`${API_URL}/api/quiz/results`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res2.ok) setResult(await res2.json());
@@ -70,7 +71,7 @@ const Quiz = () => {
     }));
 
     try {
-      const res = await fetch('http://localhost:3001/api/quiz/submit', {
+      const res = await fetch(`${API_URL}/api/quiz/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

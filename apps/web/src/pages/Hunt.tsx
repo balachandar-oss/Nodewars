@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Crosshair, ShieldAlert, Cpu, AlertTriangle, ShieldCheck, Camera, X, Activity, Terminal as TerminalIcon, CheckCircle } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 import { Scanner } from '@yudiel/react-qr-scanner';
+import { API_URL } from '../utils/api';
 
 interface Target {
   system: string;
@@ -39,7 +40,7 @@ const Hunt = () => {
     }
     
     try {
-      const res = await fetch('http://localhost:3001/api/hunt/status', {
+      const res = await fetch(`${API_URL}/api/hunt/status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) {
@@ -52,7 +53,7 @@ const Hunt = () => {
         return;
       }
 
-      const tRes = await fetch('http://localhost:3001/api/hunt/targets', {
+      const tRes = await fetch(`${API_URL}/api/hunt/targets`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (tRes.ok) {
@@ -72,11 +73,11 @@ const Hunt = () => {
     try {
       let endpoint = '';
       if (action === 'discover') {
-        endpoint = `http://localhost:3001/api/hunt/targets/${id}/discover`;
+        endpoint = `${API_URL}/api/hunt/targets/${id}/discover`;
       } else if (action === 'solve') {
-        endpoint = `http://localhost:3001/api/hunt/bugs/${id}/solve`;
+        endpoint = `${API_URL}/api/hunt/bugs/${id}/solve`;
       } else {
-        endpoint = `http://localhost:3001/api/hunt/bugs/${id}/${action}`;
+        endpoint = `${API_URL}/api/hunt/bugs/${id}/${action}`;
       }
 
       const opts: RequestInit = {
@@ -95,7 +96,7 @@ const Hunt = () => {
       if (res.ok) {
         await fetchData();
         if (action === 'claim' || action === 'solve') {
-          const detailRes = await fetch(`http://localhost:3001/api/hunt/bugs/${id}`, {
+          const detailRes = await fetch(`${API_URL}/api/hunt/bugs/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (detailRes.ok) setBugDetails(await detailRes.json());
@@ -122,7 +123,7 @@ const Hunt = () => {
 
     if (target.status === 'UNDER_INVESTIGATION' && target.bugId) {
       const token = localStorage.getItem('token');
-      const detailRes = await fetch(`http://localhost:3001/api/hunt/bugs/${target.bugId}`, {
+      const detailRes = await fetch(`${API_URL}/api/hunt/bugs/${target.bugId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (detailRes.ok) setBugDetails(await detailRes.json());
@@ -135,7 +136,7 @@ const Hunt = () => {
     const token = localStorage.getItem('token');
     
     try {
-      const res = await fetch('http://localhost:3001/api/castle/scan', {
+      const res = await fetch(`${API_URL}/api/castle/scan`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

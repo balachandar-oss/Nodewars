@@ -1,6 +1,18 @@
 import jwt from 'jsonwebtoken';
 
-export const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-node-wars-key-change-in-prod';
+const DEFAULT_SECRET = 'super-secret-node-wars-key-change-in-prod';
+
+const getJwtSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === 'production') {
+    if (!secret || secret === DEFAULT_SECRET) {
+      throw new Error('[FATAL] JWT_SECRET must be set to a secure string in production environment.');
+    }
+  }
+  return secret || DEFAULT_SECRET;
+};
+
+export const JWT_SECRET = getJwtSecret();
 
 export interface JwtPayload {
   id: string;
