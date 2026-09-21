@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "PowerShell(npm *)",
+      "PowerShell(node *)",
+      "PowerShell(git *)",
+      "PowerShell(ts-node *)",
+      "PowerShell(npx *)",
+      "PowerShell(yarn *)",
+      "PowerShell(pnpm *)",
+      "PowerShell(ls)",
+      "PowerShell(cd *)",
+      "PowerShell(pwd)",
+      "PowerShell(echo *)",
+      "PowerShell(cat *)",
+      "PowerShell(mkdir *)",
+      "PowerShell(rm *)",
+      "PowerShell(cp *)",
+      "PowerShell(mv *)",
+      "Edit"
+    ]
+  }
+}
