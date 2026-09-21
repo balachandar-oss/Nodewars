@@ -52,7 +52,7 @@ app.use(express.json());
 app.use('/missions', missionRoutes);
 
 describe('Mission API - Evaluation Engine', () => {
-  const token = jwt.sign({ id: 'user-1', role: 'PLAYER' }, process.env.JWT_SECRET || 'super-secret-node-wars-key-change-in-prod');
+  const token = jwt.sign({ id: 'user-1', role: 'PLAYER' }, process.env.JWT_SECRET || 'test-secret');
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -347,12 +347,12 @@ describe('Mission API - Evaluation Engine', () => {
       
       const gameEventBus = new EventEmitter();
       gameEventBus.on("PLAYER_ENTERED", () => {});
-      gameEventBus.emit("PLAYER_ENTERED", { type: "PLAYER_ENTERED", teamId: "TEAM_OMEGA" });
+      gameEventBus.emit("PLAYER_ENTERED", { type: "PLAYER_ENTERED", teamId: "PRINCES" });
       
       function setupSocket(io) {
         io.on("connection", (socket) => {
-           socket.join("team:TEAM_OMEGA");
-           io.to("team:TEAM_OMEGA").emit("game_event", {});
+           socket.join("team:PRINCES");
+           io.to("team:PRINCES").emit("game_event", {});
         });
       }
     `;
@@ -391,7 +391,7 @@ describe('Mission API - Evaluation Engine', () => {
   describe('POST /api/missions/:id/enter', () => {
     it('should trigger PLAYER_ENTERED event for active mission >= 6', async () => {
       (prismaMock.mission.findUnique as jest.Mock).mockResolvedValue({ id: 'mission-06', order: 6, title: 'LIVE SECURITY MONITOR' });
-      (prismaMock.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1', username: 'test_user', teamId: 'team_omega' });
+      (prismaMock.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1', username: 'test_user', teamId: 'team_princes' });
       (prismaMock.missionProgress.findUnique as jest.Mock).mockResolvedValue({ status: 'ACTIVE' });
 
       // Mock GameEventBus
@@ -407,7 +407,7 @@ describe('Mission API - Evaluation Engine', () => {
         expect.objectContaining({
           type: 'PLAYER_ENTERED',
           playerId: 'test_user',
-          teamId: 'team_omega',
+          teamId: 'team_princes',
         })
       );
 
@@ -510,28 +510,8 @@ describe('Mission API - Evaluation Engine', () => {
     });
   });
 
-  describe('Demo Access Bypass', () => {
-    const demoToken = jwt.sign({ id: 'demo-1', role: 'DEMO' }, process.env.JWT_SECRET || 'super-secret-node-wars-key-change-in-prod');
-
-    it('DEMO can access and run a locked mission without modifying progress status before run', async () => {
-      // Mock db returns LOCKED
-      (prismaMock.mission.findUnique as jest.Mock).mockResolvedValue({ id: 'mission-02', order: 2, xpReward: 100 });
-      (prismaMock.missionProgress.findUnique as jest.Mock).mockResolvedValue({ status: 'LOCKED' });
-
-      // Incomplete code to just test bypass without worrying about $transaction
-      const code = `const app = express(); app.listen(3000);`;
-      
-      const res = await request(app)
-        .post('/missions/mission-02/run')
-        .set('Authorization', `Bearer ${demoToken}`)
-        .send({ code });
-
-      // Should return 200 (evaluation ran), NOT 403
-      expect(res.status).toBe(200);
-      expect(res.body.success).toBeDefined(); // evaluation result
-    });
-
-    it('Regular PLAYER remains blocked on locked missions', async () => {
+  describe('Strict Locked Mission Enforcement', () => {
+    it('PLAYER is blocked on locked missions', async () => {
       (prismaMock.mission.findUnique as jest.Mock).mockResolvedValue({ id: 'mission-02', order: 2, xpReward: 100 });
       (prismaMock.missionProgress.findUnique as jest.Mock).mockResolvedValue({ status: 'LOCKED' });
 
@@ -542,7 +522,7 @@ describe('Mission API - Evaluation Engine', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ code });
 
-      // Should be blocked
+      // Must be blocked with 403
       expect(res.status).toBe(403);
       expect(res.body.error).toBe('Mission is locked');
     });

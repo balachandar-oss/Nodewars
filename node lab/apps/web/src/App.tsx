@@ -8,6 +8,7 @@ import BugArchitect from './pages/BugArchitect';
 import Hunt from './pages/Hunt';
 import AdminCastle from './pages/AdminCastle';
 import InstructorMode from './pages/InstructorMode';
+import StudentResultsReview from './pages/StudentResultsReview';
 import AppLayout from './layouts/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -16,17 +17,20 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/admin/login" element={<Login />} />
+        <Route path="/instructor/login" element={<Login />} />
         
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/lab" element={<Navigate to="/dashboard" replace />} />
             <Route path="/lab/:missionId" element={<Lab />} />
-        <Route path="/quiz" element={<Quiz />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/bug-architect" element={<BugArchitect />} />
+            <Route path="/quiz" element={<Quiz />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/bug-architect" element={<BugArchitect />} />
             <Route path="/hunt" element={<Hunt />} />
             <Route path="/admin/castle" element={<AdminCastle />} />
+            <Route path="/admin/results" element={<StudentResultsReview />} />
             <Route path="/instructor" element={<InstructorMode />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Route>

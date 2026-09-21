@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../utils/prisma';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-node-wars-key-change-in-prod';
+import { JWT_SECRET } from '../utils/sharedAuth';
 
 router.post('/login', async (req, res) => {
   try {
@@ -48,35 +48,5 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.post('/demo-login', async (req, res) => {
-  try {
-    // Find the demo user
-    const user = await prisma.user.findUnique({
-      where: { username: 'demo_player' }
-    });
-
-    if (!user) {
-      return res.status(500).json({ error: 'Demo user not found. Has the database been seeded?' });
-    }
-
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error('Demo login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 export default router;
+

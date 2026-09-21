@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
-import { Shield, Target, Server as ServerIcon, DoorOpen, HardDrive, Zap, Bug, Activity, CheckCircle, Lock } from 'lucide-react';
+import { Activity, CheckCircle, Lock } from 'lucide-react';
 import { teachingRegistry } from '@node-wars/shared';
-import { getSystemVisualState, getPathVisualState, type SystemVisualState } from '../utils/systemState';
+import { getSystemVisualState, type SystemVisualState } from '../utils/systemState';
 import { getMissionIdentity } from '../utils/missionIdentity';
 
 interface UserData {
@@ -25,23 +25,12 @@ interface Mission {
   unlockComponent?: string;
 }
 
-const getMissionIcon = (order: number) => {
-  switch(order) {
-    case 1: return ServerIcon;
-    case 2: return DoorOpen;
-    case 3: return Shield;
-    case 4: return HardDrive;
-    case 5: return Zap;
-    case 6: return Activity;
-    case 7: return Bug;
-    default: return Target;
-  }
-};
-
 const Dashboard = () => {
   const { user } = useOutletContext<{ user: UserData }>();
   const [missions, setMissions] = useState<Mission[]>([]);
-  const [gameState, setGameState] = useState<{ phase: string } | null>(null);
+  const [gameState, setGameState] = useState<{ phase: string, placementEndsAt: string | null } | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,7 +46,7 @@ const Dashboard = () => {
         
         if (stateRes.ok) {
           const stateData = await stateRes.json();
-          setGameState({ phase: stateData.phase });
+          setGameState({ phase: stateData.phase, placementEndsAt: stateData.placementEndsAt });
         }
 
         if (missionsRes.ok) {
@@ -83,6 +72,32 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (gameState?.phase === 'BUG_PLACEMENT' && gameState.placementEndsAt) {
+      const endsAt = new Date(gameState.placementEndsAt).getTime();
+      
+      const updateTimer = () => {
+        const now = Date.now();
+        const remaining = Math.max(0, Math.floor((endsAt - now) / 1000));
+        setTimeLeft(remaining);
+        
+        if (remaining <= 0 && timerRef.current) {
+          clearInterval(timerRef.current);
+          setGameState(prev => prev ? { ...prev, phase: 'HUNT' } : null);
+        }
+      };
+
+      updateTimer();
+      timerRef.current = setInterval(updateTimer, 1000);
+      
+      return () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+      };
+    } else {
+      setTimeLeft(null);
+    }
+  }, [gameState?.phase, gameState?.placementEndsAt]);
+
   if (!user) return null;
 
   const nextLevelXp = user.level * 200;
@@ -93,11 +108,11 @@ const Dashboard = () => {
   const getMissionVisualState = (order: number): SystemVisualState => {
     const m = missions.find(m => m.order === order);
     if (!m) return 'LOCKED';
-    const isAccessible = !('LOCKED' === m.status) || user.role === 'DEMO';
+    const isAccessible = m.status !== 'LOCKED';
     return getSystemVisualState(m.status, isAccessible);
   };
   
-  const getPathClass = (sourceOrder: number, targetOrder: number) => {
+  const getPathClass = (_sourceOrder: number, targetOrder: number) => {
     const targetState = getMissionVisualState(targetOrder);
 
     // If the target is accessible in the star topology, the path is active (green).
@@ -124,7 +139,14 @@ const Dashboard = () => {
         <div className="flex items-center gap-6">
           <span className="text-white font-bold whitespace-nowrap">NODE LAB // COMMAND CENTER</span>
           <span className="text-cyber-light/30">|</span>
-          <span className="text-neon-amber whitespace-nowrap">PHASE: {gameState?.phase || 'INITIALIZING'}</span>
+          <span className={`whitespace-nowrap ${gameState?.phase === 'BUG_PLACEMENT' ? 'text-neon-red font-bold' : 'text-neon-amber'}`}>
+            PHASE: {gameState?.phase || 'INITIALIZING'}
+            {gameState?.phase === 'BUG_PLACEMENT' && timeLeft !== null && (
+              <span className="ml-2 bg-neon-red/20 px-2 py-0.5 border border-neon-red/50">
+                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+              </span>
+            )}
+          </span>
           <span className="text-cyber-light/30">|</span>
           <span className="text-neon-green flex items-center gap-2 whitespace-nowrap">
             <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse glow-green"></div> 
@@ -132,7 +154,9 @@ const Dashboard = () => {
           </span>
         </div>
         <div className="flex items-center gap-6">
-          <span className="text-neon-purple uppercase whitespace-nowrap">TEAM {user.team?.name || 'UNASSIGNED'}</span>
+          <span className="text-neon-purple uppercase whitespace-nowrap">
+            {user.role === 'ADMIN' ? 'ORGANIZER' : user.team?.name ? `TEAM ${user.team.name}` : 'UNASSIGNED'}
+          </span>
           <span className="text-cyber-light/30">|</span>
           <span className="text-white whitespace-nowrap">LVL {user.level.toString().padStart(2, '0')}</span>
           <span className="text-cyber-light/30">|</span>
@@ -276,7 +300,7 @@ const Dashboard = () => {
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+')] pointer-events-none opacity-40"></div>
 
               {/* SVG Blueprint Layer */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 1000" preserveAspectRatio="none">
                 <defs>
                   <style>
                     {`

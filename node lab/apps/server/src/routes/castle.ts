@@ -27,10 +27,28 @@ router.post('/scan', authenticate, async (req: any, res) => {
       return res.status(400).json({ error: 'No team assigned.' });
     }
 
-    const component = await prisma.castleComponent.findUnique({
+    // Support physical code lookup with backwards compatibility for legacy codes
+    let component = await prisma.castleComponent.findUnique({
       where: { physicalCode },
       include: { team: true }
     });
+
+    if (!component) {
+      // Map legacy prefix if needed: OMEGA -> PRINCES, BETA -> PRINCESSES
+      let mappedCode = physicalCode;
+      if (physicalCode.includes(':OMEGA:')) {
+        mappedCode = physicalCode.replace(':OMEGA:', ':PRINCES:');
+      } else if (physicalCode.includes(':BETA:')) {
+        mappedCode = physicalCode.replace(':BETA:', ':PRINCESSES:');
+      }
+
+      if (mappedCode !== physicalCode) {
+        component = await prisma.castleComponent.findUnique({
+          where: { physicalCode: mappedCode },
+          include: { team: true }
+        });
+      }
+    }
 
     if (!component) {
       return res.status(404).json({ error: 'Castle component not found.' });

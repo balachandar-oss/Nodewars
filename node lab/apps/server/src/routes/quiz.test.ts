@@ -54,7 +54,7 @@ app.use(express.json());
 app.use('/quiz', quizRoutes);
 
 describe('Quiz API', () => {
-  const token = jwt.sign({ id: 'user-1', role: 'PLAYER' }, process.env.JWT_SECRET || 'super-secret-node-wars-key-change-in-prod');
+  const token = jwt.sign({ id: 'user-1', role: 'PLAYER' }, process.env.JWT_SECRET || 'test-secret');
 
   beforeEach(() => {
     jest.clearAllMocks();

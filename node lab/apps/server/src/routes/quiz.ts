@@ -46,7 +46,7 @@ router.post('/start', authenticate, async (req: any, res) => {
       }
     });
 
-    if ((!mission7Progress || mission7Progress.status !== 'COMPLETE') && req.user?.role !== 'DEMO') {
+    if (!mission7Progress || mission7Progress.status !== 'COMPLETE') {
       return res.status(403).json({ error: 'Quiz Locked. Complete Mission 07 first.' });
     }
 

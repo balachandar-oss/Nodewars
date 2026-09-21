@@ -5,6 +5,7 @@ import InstructorMode from './InstructorMode';
 // Mock routing hooks
 vi.mock('react-router-dom', () => ({
   useOutletContext: vi.fn(),
+  useNavigate: () => vi.fn(),
   Navigate: () => <div data-testid="navigate-redirect" />
 }));
 

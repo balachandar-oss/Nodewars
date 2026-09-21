@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { teachingRegistry } from '@node-wars/shared';
 
 // The 150-minute seminar schedule template
@@ -20,8 +20,8 @@ const CHECKLIST = [
   'Backend running',
   'Frontend running',
   'Database available',
-  'Demo account verified',
-  'Student accounts ready',
+  'Admin accounts verified (admin04 / admin12)',
+  'Student accounts ready (49 participants)',
   'Missions 01–07 available',
   'Quiz available',
   'Display/projector tested'
@@ -29,9 +29,11 @@ const CHECKLIST = [
 
 const InstructorMode = () => {
   const { user } = useOutletContext<{ user?: { role?: string } }>();
+  const navigate = useNavigate();
   const [selectedMissionIndex, setSelectedMissionIndex] = useState(0);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
+  const [isStartingPlacement, setIsStartingPlacement] = useState(false);
 
   // Extract ordered missions
   const missions = Object.values(teachingRegistry)
@@ -53,7 +55,7 @@ const InstructorMode = () => {
   }, [timerActive, timerSeconds]);
 
   // Authorization Check
-  if (!user || user.role !== 'ADMIN') {
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#0a0510]">
         <div className="text-red-500 font-mono tracking-widest bg-black p-8 border border-red-500/50">
@@ -84,6 +86,46 @@ const InstructorMode = () => {
     else setTimerSeconds(0);
   };
 
+  const handleStartPlacement = async () => {
+    try {
+      setIsStartingPlacement(true);
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/api/admin/game/start-placement', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Failed to start placement');
+      } else {
+        alert('Bug Placement started! 120s timer is active.');
+      }
+    } catch (err) {
+      alert('Connection error starting placement.');
+    } finally {
+      setIsStartingPlacement(false);
+    }
+  };
+
+  const handleRestartGame = async () => {
+    if (!window.confirm('Are you sure you want to restore the kingdom and reset hunt progress?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/api/admin/game/restart', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Failed to restart game');
+      } else {
+        alert('Kingdom restored (Game Restarted).');
+      }
+    } catch (err) {
+      alert('Connection error restarting game.');
+    }
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 p-6 max-w-[1920px] mx-auto z-10 relative animate-slide-in font-mono text-white overflow-hidden">
       <header className="glass-panel shrink-0 p-4 border-t-2 border-t-neon-blue flex justify-between items-center bg-[#0a0510] mb-6">
@@ -92,19 +134,40 @@ const InstructorMode = () => {
           <p className="text-neon-blue text-[10px] mt-1 tracking-widest uppercase">Live Seminar Guidance System</p>
         </div>
         
-        {/* Timer UI */}
-        <div className="flex items-center gap-4 bg-black/50 p-2 border border-white/10 rounded-sm">
-          <div className="text-2xl font-bold tracking-widest w-24 text-center">
-            {formatTime(timerSeconds)}
+        {/* Timer & Navigation UI */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/admin/results')}
+            className="px-4 py-2 bg-neon-purple/20 text-neon-purple border border-neon-purple/50 hover:bg-neon-purple/30 text-xs tracking-widest uppercase font-bold"
+          >
+            [ STUDENT RESULTS REVIEW ]
+          </button>
+          <div className="flex items-center gap-4 bg-black/50 p-2 border border-white/10 rounded-sm">
+            <div className="text-2xl font-bold tracking-widest w-24 text-center">
+              {formatTime(timerSeconds)}
+            </div>
+            <div className="flex gap-2 text-[10px]">
+              {!timerActive ? (
+                <button data-testid="timer-start" onClick={handleStartTimer} className="px-3 py-1 bg-neon-green/10 text-neon-green border border-neon-green/30 hover:bg-neon-green/20">START</button>
+              ) : (
+                <button data-testid="timer-pause" onClick={handlePauseTimer} className="px-3 py-1 bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/20">PAUSE</button>
+              )}
+              <button data-testid="timer-reset" onClick={handleResetTimer} className="px-3 py-1 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20">RESET</button>
+            </div>
           </div>
-          <div className="flex gap-2 text-[10px]">
-            {!timerActive ? (
-              <button data-testid="timer-start" onClick={handleStartTimer} className="px-3 py-1 bg-neon-green/10 text-neon-green border border-neon-green/30 hover:bg-neon-green/20">START</button>
-            ) : (
-              <button data-testid="timer-pause" onClick={handlePauseTimer} className="px-3 py-1 bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/20">PAUSE</button>
-            )}
-            <button data-testid="timer-reset" onClick={handleResetTimer} className="px-3 py-1 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20">RESET</button>
-          </div>
+          <button
+            onClick={handleStartPlacement}
+            disabled={isStartingPlacement}
+            className="px-4 py-2 bg-neon-amber/20 text-neon-amber border border-neon-amber/50 hover:bg-neon-amber/30 text-xs tracking-widest uppercase font-bold disabled:opacity-50"
+          >
+            {isStartingPlacement ? 'STARTING...' : '[ START PLACEMENT ]'}
+          </button>
+          <button
+            onClick={handleRestartGame}
+            className="px-4 py-2 bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30 text-xs tracking-widest uppercase font-bold"
+          >
+            [ RESTORE KINGDOM (RESTART) ]
+          </button>
         </div>
       </header>
 

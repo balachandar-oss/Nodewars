@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Terminal, ShieldAlert, Cpu } from 'lucide-react';
 
 const Login = () => {
@@ -8,6 +8,11 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isInstructorLogin = location.pathname.includes('/instructor/login');
+  const isAdminLogin = location.pathname.includes('/admin/login');
+  const terminalTitle = isAdminLogin ? 'ADMINISTRATOR LOGIN' : isInstructorLogin ? 'INSTRUCTOR PREVIEW LOGIN' : 'AUTHENTICATION TERMINAL';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,30 +33,6 @@ const Login = () => {
         navigate('/dashboard');
       } else {
         setError(data.error || 'Login failed');
-      }
-    } catch (err) {
-      setError('Network error. Is the server running?');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async () => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const res = await fetch('http://localhost:3001/api/auth/demo-login', {
-        method: 'POST',
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        localStorage.setItem('token', data.token);
-        navigate('/dashboard');
-      } else {
-        setError(data.error || 'Demo login failed');
       }
     } catch (err) {
       setError('Network error. Is the server running?');
@@ -101,13 +82,13 @@ const Login = () => {
             <div className="text-center mb-10 border-b border-white/5 pb-6">
               <Terminal className="text-neon-blue mx-auto mb-4" size={32} />
               <h1 className="text-4xl font-title font-bold text-white tracking-widest uppercase">
-                NODE LAB
+                NODE WARS
               </h1>
               <h2 className="text-xs font-mono text-neon-blue tracking-widest mt-2 uppercase opacity-80">
-                ENGINEERING LAB // SECURE ACCESS
+                {terminalTitle}
               </h2>
               <div className="mt-8 font-mono text-[10px] text-white/50 tracking-widest">
-                {'>'} AWAITING ENGINEER IDENTIFICATION...
+                {'>'} AWAITING PARTICIPANT CREDENTIALS...
               </div>
             </div>
 
@@ -125,7 +106,7 @@ const Login = () => {
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label className="block text-[10px] font-mono text-cyber-light/50 mb-2 tracking-widest uppercase">
-                  PLAYER ID
+                  LOGIN ID
                 </label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neon-blue/50 font-mono text-xs">{'>'}</div>
@@ -134,7 +115,7 @@ const Login = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full bg-black/40 border-b border-white/10 pl-10 pr-3 py-4 text-white font-mono text-sm focus:outline-none focus:border-neon-blue focus:bg-neon-blue/5 transition-all"
-                    placeholder="ENTER PLAYER ID"
+                    placeholder="ENTER LOGIN ID"
                     disabled={loading}
                     autoComplete="off"
                     spellCheck="false"
@@ -144,7 +125,7 @@ const Login = () => {
               
               <div>
                 <label className="block text-[10px] font-mono text-cyber-light/50 mb-2 tracking-widest uppercase mt-6">
-                  ACCESS KEY
+                  PASSWORD
                 </label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neon-blue/50 font-mono text-xs">{'>'}</div>
@@ -153,7 +134,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-black/40 border-b border-white/10 pl-10 pr-3 py-4 text-white font-mono text-sm focus:outline-none focus:border-neon-blue focus:bg-neon-blue/5 transition-all"
-                    placeholder="ENTER ACCESS KEY"
+                    placeholder="ENTER PASSWORD"
                     disabled={loading}
                   />
                 </div>
@@ -170,21 +151,10 @@ const Login = () => {
                     <span>[ AUTHENTICATING... ]</span>
                   </>
                 ) : (
-                  <span>[ {'>'}{'>'}{'>'} INITIATE ACCESS ]</span>
+                  <span>[ AUTHENTICATE ]</span>
                 )}
               </button>
             </form>
-
-            <div className="mt-8 pt-6 border-t border-white/10 flex justify-center">
-              <button
-                onClick={handleDemoLogin}
-                disabled={loading}
-                className="text-xs font-mono text-cyber-light/50 hover:text-neon-purple hover:glow-text-purple transition-colors flex flex-col items-center gap-1 group cursor-pointer"
-              >
-                <span>[ ◈ DEMO ACCESS ]</span>
-                <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">TRAINING ENVIRONMENT</span>
-              </button>
-            </div>
           </div>
         </div>
 

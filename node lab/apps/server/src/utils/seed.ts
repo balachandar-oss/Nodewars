@@ -1,60 +1,115 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { gameSeeds, createGameBugConfiguration } from '../seeds/gameSeeds';
 
 const prisma = new PrismaClient();
+
+import { SEMINAR_ACCOUNTS } from './seminarAccounts';
 
 async function main() {
   console.log('Seeding database...');
 
-  // Create demo team
-  const team = await prisma.team.upsert({
-    where: { name: 'TEAM_OMEGA' },
+  // Create primary seminar teams if not exist: PRINCES and PRINCESSES
+  const teamPrinces = await prisma.team.upsert({
+    where: { name: 'PRINCES' },
     update: {},
     create: {
-      name: 'TEAM_OMEGA',
+      name: 'PRINCES',
     },
   });
 
-  // Create demo user
-  const passwordHash = await bcrypt.hash('demo123', 10);
-  
-  const user = await prisma.user.upsert({
-    where: { username: 'demo_player' },
-    update: {
-      passwordHash,
-      teamId: team.id,
-    },
+  const teamPrincesses = await prisma.team.upsert({
+    where: { name: 'PRINCESSES' },
+    update: {},
     create: {
-      username: 'demo_player',
-      passwordHash,
-      role: 'DEMO',
-      level: 1,
-      xp: 0,
-      missionsCompleted: 0,
-      teamId: team.id,
+      name: 'PRINCESSES',
     },
   });
 
-  // Create seminar_demo user
-  const seminarPasswordHash = await bcrypt.hash('NodeWars@2026', 10);
-  
-  await prisma.user.upsert({
-    where: { username: 'seminar_demo' },
-    update: {
-      passwordHash: seminarPasswordHash,
-      role: 'PLAYER',
-      teamId: team.id,
-    },
-    create: {
-      username: 'seminar_demo',
-      passwordHash: seminarPasswordHash,
-      role: 'PLAYER',
-      level: 1,
-      xp: 0,
-      missionsCompleted: 0,
-      teamId: team.id,
-    },
-  });
+  console.log(`Seeding ${SEMINAR_ACCOUNTS.length} seminar accounts...`);
+  const createdUsers = [];
+
+  for (let i = 0; i < SEMINAR_ACCOUNTS.length; i++) {
+    const acc = SEMINAR_ACCOUNTS[i];
+    const passwordHash = await bcrypt.hash(acc.initialPassword, 10);
+    
+    // Explicit team assignment from seminar account definition:
+    // PRINCES -> teamPrinces.id, PRINCESSES -> teamPrincesses.id, ADMIN -> null
+    let teamId: string | null = null;
+    if (acc.team === 'PRINCES') {
+      teamId = teamPrinces.id;
+    } else if (acc.team === 'PRINCESSES') {
+      teamId = teamPrincesses.id;
+    }
+
+    const user = await prisma.user.upsert({
+      where: { rollNumber: acc.rollNumber },
+      update: {
+        username: acc.username,
+        name: acc.name,
+        classification: acc.classification || null,
+        passwordHash,
+        role: acc.role,
+        teamId,
+      },
+      create: {
+        username: acc.username,
+        name: acc.name,
+        classification: acc.classification || null,
+        rollNumber: acc.rollNumber,
+        passwordHash,
+        role: acc.role,
+        level: 1,
+        xp: 0,
+        missionsCompleted: 0,
+        teamId,
+      },
+    });
+    createdUsers.push(user);
+  }
+
+  // ==========================================
+  // ORGANIZER ACCOUNTS
+  // ==========================================
+  console.log('Seeding organizer accounts...');
+  const organizerPasswords = {
+    bala: process.env.ORGANIZER_BALA_PASSWORD || 'fallback-pass',
+    vaishnav: process.env.ORGANIZER_VAISHNAV_PASSWORD || 'fallback-pass'
+  };
+
+  const organizers = [
+    { username: 'bala', name: 'Bala', role: 'ADMIN', pass: organizerPasswords.bala },
+    { username: 'bala-instructor', name: 'Bala (Instructor)', role: 'INSTRUCTOR', pass: organizerPasswords.bala },
+    { username: 'vaishnav', name: 'Vaishnav', role: 'ADMIN', pass: organizerPasswords.vaishnav },
+    { username: 'vaishnav-instructor', name: 'Vaishnav (Instructor)', role: 'INSTRUCTOR', pass: organizerPasswords.vaishnav }
+  ];
+
+  for (const org of organizers) {
+    if (org.pass === 'fallback-pass') {
+       console.warn(`WARNING: Missing environment variable password for ${org.username}`);
+    }
+    const hash = await bcrypt.hash(org.pass, 10);
+    await prisma.user.upsert({
+      where: { username: org.username },
+      update: {
+        name: org.name,
+        passwordHash: hash,
+        role: org.role,
+        teamId: null
+      },
+      create: {
+        username: org.username,
+        name: org.name,
+        passwordHash: hash,
+        role: org.role,
+        level: 99,
+        xp: 9999,
+        missionsCompleted: 7,
+        teamId: null
+      }
+    });
+  }
 
   const missions = [
     {
@@ -142,7 +197,7 @@ async function main() {
       concepts: JSON.stringify(['EventEmitter', 'Events', 'Socket.IO', 'Broadcasting']),
       objectives: JSON.stringify(['Instantiate an EventEmitter', 'Register an event listener', 'Emit an event', 'Initialize Socket.IO', 'Join a room', 'Broadcast a structured event payload']),
       instructions: 'Set up an event-driven architecture using Node.js EventEmitter and integrate Socket.IO to broadcast events in real-time to connected clients.',
-      starterCode: 'const EventEmitter = require("events");\nconst { Server } = require("socket.io");\n\n// 1. Initialize Event Bus\nconst gameEventBus = new EventEmitter();\n\n// 2. Listen for PLAYER_ENTERED events\ngameEventBus.on("PLAYER_ENTERED", (eventData) => {\n  console.log("Player entered:", eventData);\n  \n  // TODO: Broadcast the event using Socket.IO\n  // Hint: io.to(room).emit("game_event", eventData)\n});\n\n// 3. Initialize Socket.IO connection handling\nfunction setupSocket(io) {\n  io.on("connection", (socket) => {\n    // Simulated authenticated user data\n    const teamId = "TEAM_OMEGA";\n    \n    // TODO: Join the authorized team room\n\n  });\n}\n\n// 4. Emit a sample event\ngameEventBus.emit("PLAYER_ENTERED", {\n  type: "PLAYER_ENTERED",\n  playerId: "demo_player",\n  teamId: "TEAM_OMEGA",\n  timestamp: new Date().toISOString()\n});\n',
+      starterCode: 'const EventEmitter = require("events");\nconst { Server } = require("socket.io");\n\n// 1. Initialize Event Bus\nconst gameEventBus = new EventEmitter();\n\n// 2. Listen for PLAYER_ENTERED events\ngameEventBus.on("PLAYER_ENTERED", (eventData) => {\n  console.log("Player entered:", eventData);\n  \n  // TODO: Broadcast the event using Socket.IO\n  // Hint: io.to(room).emit("game_event", eventData)\n});\n\n// 3. Initialize Socket.IO connection handling\nfunction setupSocket(io) {\n  io.on("connection", (socket) => {\n    // Simulated authenticated user data\n    const teamId = "PRINCES";\n    \n    // TODO: Join the authorized team room\n\n  });\n}\n\n// 4. Emit a sample event\ngameEventBus.emit("PLAYER_ENTERED", {\n  type: "PLAYER_ENTERED",\n  playerId: "demo_player",\n  teamId: "PRINCES",\n  timestamp: new Date().toISOString()\n});\n',
       hints: JSON.stringify(['Use `socket.join("team:" + teamId)` to restrict broadcasts.', 'Use `io.to("team:" + teamId).emit(...)` to send the event payload.']),
       prerequisites: JSON.stringify(['mission-05']),
       unlockComponent: 'LIVE SECURITY MONITOR'
@@ -183,25 +238,27 @@ async function main() {
     });
   }
   
-  // Create progress entries for demo player
-  for (const m of missions) {
-    await prisma.missionProgress.upsert({
-      where: {
-        userId_missionId: {
-          userId: user.id,
-          missionId: m.id
+  // Initialize mission progress for all seminar users
+  for (const seminarUser of createdUsers) {
+    for (const m of missions) {
+      await prisma.missionProgress.upsert({
+        where: {
+          userId_missionId: {
+            userId: seminarUser.id,
+            missionId: m.id
+          }
+        },
+        update: {},
+        create: {
+          userId: seminarUser.id,
+          missionId: m.id,
+          status: m.order === 1 ? 'ACTIVE' : 'LOCKED'
         }
-      },
-      update: {},
-      create: {
-        userId: user.id,
-        missionId: m.id,
-        status: m.order === 1 ? 'ACTIVE' : 'LOCKED'
-      }
-    });
+      });
+    }
   }
 
-  console.log('Database seeded successfully with 7 missions.');
+  console.log(`Database seeded successfully with 7 missions across ${createdUsers.length} seminar users.`);
 
   // ==========================================
   // QUIZ SEEDING
@@ -491,6 +548,83 @@ async function main() {
   }
 
   console.log(`Database seeded with ${quizQuestions.length} quiz questions.`);
+
+  // ============================================
+  // Seed exactly 10 dedicated seminar DRAFT bugs (5 PRINCES->PRINCESSES, 5 PRINCESSES->PRINCES)
+  // These bugs have:
+  // - isSeminarPool: true
+  // - status: 'DRAFT'
+  // - architectUserId: null (no placeholder ownership!)
+  // - space-normalized targetSystem matching hunt.ts
+  // Idempotent: upsert using stable IDs without overwriting assigned or planted states.
+  // ============================================
+  console.log('\nSeeding dedicated seminar DRAFT bugs (5 PRINCES->PRINCESSES, 5 PRINCESSES->PRINCES)...');
+
+  const princeToPrincessSeedIds = [
+    'seed-bug-easy-01',
+    'seed-bug-medium-01',
+    'seed-bug-medium-05',
+    'seed-bug-hard-01',
+    'seed-bug-critical-01'
+  ];
+
+  const princessToPrinceSeedIds = [
+    'seed-bug-easy-02',
+    'seed-bug-medium-02',
+    'seed-bug-medium-06',
+    'seed-bug-hard-02',
+    'seed-bug-critical-02'
+  ];
+
+  const findSeed = (id: string) => {
+    const seed = gameSeeds.find(s => s.id === id);
+    if (!seed) throw new Error(`gameSeeds missing seed id: ${id}`);
+    return seed;
+  };
+
+  const seedSeminarBugs = async (
+    seedIds: string[],
+    direction: string,
+    architectTeamId: string,
+    targetTeamId: string
+  ) => {
+    for (const seedId of seedIds) {
+      const seed = findSeed(seedId);
+      const configuration = createGameBugConfiguration(seed);
+      const normalizedTargetSystem = seed.targetSystem.replace(/_/g, ' ');
+      const bugId = `bug-${direction}-${seed.id}`;
+
+      await prisma.bug.upsert({
+        where: { id: bugId },
+        update: {
+          targetSystem: normalizedTargetSystem,
+          difficulty: seed.difficulty,
+          isSeminarPool: true
+        },
+        create: {
+          id: bugId,
+          architectUserId: null,
+          architectTeamId,
+          targetTeamId,
+          vulnerabilityType: seed.vulnerabilityType,
+          targetSystem: normalizedTargetSystem,
+          configuration: JSON.stringify(configuration),
+          status: 'DRAFT',
+          isSeminarPool: true,
+          structureType: seed.targetSystem,
+          difficulty: seed.difficulty
+        }
+      });
+    }
+  };
+
+  await seedSeminarBugs(princeToPrincessSeedIds, 'p2p', teamPrinces.id, teamPrincesses.id);
+  await seedSeminarBugs(princessToPrinceSeedIds, 'pr2p', teamPrincesses.id, teamPrinces.id);
+
+  const seminarDraftCount = await prisma.bug.count({
+    where: { isSeminarPool: true, status: 'DRAFT' }
+  });
+  console.log(`Dedicated seminar DRAFT bugs seeded. Total: ${seminarDraftCount}`);
 }
 
 main()

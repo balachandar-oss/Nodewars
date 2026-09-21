@@ -7,7 +7,9 @@ const router = express.Router();
 
 router.get('/state', authenticate, async (req: any, res) => {
   try {
-    const phase = await GameService.getPhase();
+    const state = await prisma.gameState.findUnique({ where: { id: 'singleton' } });
+    const phase = state?.phase || 'ENGINEERING';
+    const placementEndsAt = state?.placementEndsAt || null;
     
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
@@ -31,17 +33,18 @@ router.get('/state', authenticate, async (req: any, res) => {
       }
     }
 
-    // Generate score summary
-    const omega = await prisma.team.findUnique({ where: { name: 'TEAM OMEGA' } });
-    const beta = await prisma.team.findUnique({ where: { name: 'TEAM BETA' } });
+    // Generate score summary for PRINCES and PRINCESSES
+    const princes = await prisma.team.findUnique({ where: { name: 'PRINCES' } });
+    const princesses = await prisma.team.findUnique({ where: { name: 'PRINCESSES' } });
 
     const scoreSummary = {
-      'TEAM OMEGA': omega?.huntScore || 0,
-      'TEAM BETA': beta?.huntScore || 0,
+      'PRINCES': princes?.huntScore || 0,
+      'PRINCESSES': princesses?.huntScore || 0,
     };
 
     res.json({
       phase,
+      placementEndsAt,
       playerView: {
         homeTeam,
         targetTeam

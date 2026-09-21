@@ -47,7 +47,7 @@ const Hunt = () => {
         return;
       }
       const data = await res.json();
-      if (data.phase !== 'HUNT') {
+      if (data.phase !== 'HUNT' && data.phase !== 'COMPLETE') {
         setError('HUNT PHASE NOT ACTIVE');
         return;
       }
@@ -224,6 +224,33 @@ const Hunt = () => {
     );
   }
 
+  if (gameState.phase === 'COMPLETE') {
+    const opposingRoyal = gameState.playerView?.homeTeam === 'PRINCES' ? 'QUEEN' : 'KING';
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] text-center p-12 animate-slide-in">
+        <ShieldCheck size={80} className="text-neon-blue mb-8 animate-pulse" />
+        <h1 className="text-5xl font-title text-white mb-4 tracking-widest">ROYAL ROOM SECURED</h1>
+        <p className="text-neon-blue font-mono tracking-widest text-xl mb-12 uppercase">
+          YOU DEFEATED THE {opposingRoyal}
+        </p>
+        <div className="flex gap-8 bg-black/60 p-6 border border-white/20 mb-12">
+          <div className="text-right">
+            <div className="text-xs text-white/50 font-mono tracking-widest mb-2">TEAM PRINCES</div>
+            <div className="text-4xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['PRINCES'] || 0}</div>
+          </div>
+          <div className="w-px bg-white/20"></div>
+          <div className="text-left">
+            <div className="text-xs text-white/50 font-mono tracking-widest mb-2">TEAM PRINCESSES</div>
+            <div className="text-4xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['PRINCESSES'] || 0}</div>
+          </div>
+        </div>
+        <button onClick={() => navigate('/dashboard')} className="cyber-button px-12 py-4 bg-neon-blue/10 text-neon-blue border-neon-blue hover:bg-neon-blue/20 tracking-widest font-bold">
+          RETURN TO COMMAND
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-[1600px] mx-auto h-[calc(100vh-60px)] -mt-6 p-6 flex flex-col gap-4 animate-slide-in relative z-10">
       
@@ -246,13 +273,13 @@ const Hunt = () => {
         
         <div className="flex gap-8 bg-black/60 p-4 border border-white/5">
           <div className="text-right">
-            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1">TEAM OMEGA</div>
-            <div className="text-2xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['TEAM OMEGA'] || 0}</div>
+            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1">TEAM PRINCES</div>
+            <div className="text-2xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['PRINCES'] || 0}</div>
           </div>
           <div className="w-px bg-white/10"></div>
           <div className="text-left">
-            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1">TEAM BETA</div>
-            <div className="text-2xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['TEAM BETA'] || 0}</div>
+            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1">TEAM PRINCESSES</div>
+            <div className="text-2xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['PRINCESSES'] || 0}</div>
           </div>
         </div>
       </div>

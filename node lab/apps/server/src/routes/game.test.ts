@@ -13,6 +13,9 @@ jest.mock('../utils/prisma', () => {
       team: {
         findFirst: jest.fn(),
         findUnique: jest.fn()
+      },
+      gameState: {
+        findUnique: jest.fn()
       }
     }
   };
@@ -34,7 +37,7 @@ app.use(express.json());
 app.use('/game', gameRoutes);
 
 describe('Game State API', () => {
-  const token = jwt.sign({ id: 'user-1', role: 'PLAYER' }, process.env.JWT_SECRET || 'super-secret-node-wars-key-change-in-prod');
+  const token = jwt.sign({ id: 'user-1', role: 'PLAYER' }, process.env.JWT_SECRET || 'test-secret');
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -42,22 +45,23 @@ describe('Game State API', () => {
 
   it('returns valid game state for an authenticated user', async () => {
     (GameService.getPhase as jest.Mock).mockResolvedValue('HUNT');
+    (prismaMock.gameState.findUnique as jest.Mock).mockResolvedValue({ id: 'singleton', phase: 'HUNT', placementEndsAt: null });
     
     (prismaMock.user.findUnique as jest.Mock).mockResolvedValue({
       id: 'user-1',
-      teamId: 'team-omega',
-      team: { name: 'TEAM OMEGA' }
+      teamId: 'team-princes',
+      team: { name: 'PRINCES' }
     });
 
     (prismaMock.team.findFirst as jest.Mock).mockResolvedValue({
-      id: 'team-beta',
-      name: 'TEAM BETA'
+      id: 'team-princesses',
+      name: 'PRINCESSES'
     });
 
     (prismaMock.team.findUnique as jest.Mock)
       .mockImplementation(async (args) => {
-        if (args.where.name === 'TEAM OMEGA') return { huntScore: 120 };
-        if (args.where.name === 'TEAM BETA') return { huntScore: 90 };
+        if (args.where.name === 'PRINCES') return { huntScore: 120 };
+        if (args.where.name === 'PRINCESSES') return { huntScore: 90 };
         return null;
       });
 
@@ -66,9 +70,9 @@ describe('Game State API', () => {
     expect(res.status).toBe(200);
     expect(res.body.phase).toBe('HUNT');
     expect(res.body.huntAvailable).toBe(true);
-    expect(res.body.playerView.homeTeam).toBe('TEAM OMEGA');
-    expect(res.body.playerView.targetTeam).toBe('TEAM BETA');
-    expect(res.body.scoreSummary['TEAM OMEGA']).toBe(120);
-    expect(res.body.scoreSummary['TEAM BETA']).toBe(90);
+    expect(res.body.playerView.homeTeam).toBe('PRINCES');
+    expect(res.body.playerView.targetTeam).toBe('PRINCESSES');
+    expect(res.body.scoreSummary['PRINCES']).toBe(120);
+    expect(res.body.scoreSummary['PRINCESSES']).toBe(90);
   });
 });

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { Play, CheckCircle, RotateCcw, Terminal as TerminalIcon, LayoutDashboard, BookOpen } from 'lucide-react';
 import Terminal from '../components/Terminal';
@@ -30,9 +30,7 @@ const Lab = () => {
   const [showLesson, setShowLesson] = useState(false);
   const [showNarrativeBriefing, setShowNarrativeBriefing] = useState(false);
 
-  const { user } = useOutletContext<{ user: any }>();
-  const isDemoRole = user?.role === 'DEMO';
-  const showMonitor = mission && mission.order >= 6 && progress && (progress.status !== 'LOCKED' || isDemoRole);
+  const showMonitor = mission && mission.order >= 6 && progress && progress.status !== 'LOCKED';
   const { isConnected, events } = useGameSocket(!!showMonitor);
 
   useEffect(() => {
@@ -55,15 +53,28 @@ const Lab = () => {
           const progressData = await progressRes.json();
           
           if (progressData.status === 'LOCKED') {
-            if (!isDemoRole) {
-              navigate('/dashboard');
-              return;
-            }
+            navigate('/dashboard');
+            return;
           }
+
+          // Define solutions for instructors
+          const INSTRUCTOR_SOLUTIONS: Record<string, string> = {
+            'mission-01': 'const http = require("http");\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200);\n  res.end("OK");\n});\n\nserver.listen(3000);\n',
+            'mission-02': 'const express = require("express");\nconst app = express();\n\napp.use(express.json());\n\napp.get("/door/status", (req, res) => {\n  res.json({ status: "locked" });\n});\n\napp.get("/door/open", (req, res) => {\n  res.json({ status: "open" });\n});\n\napp.post("/door/access", (req, res) => {\n  res.json({ access: "granted" });\n});\n\napp.listen(3001, () => console.log("Smart Door running"));\n',
+            'mission-03': 'const express = require("express");\nconst app = express();\n\napp.use((req, res, next) => {\n  req.user = { username: "node_hacker", role: "ADMIN" };\n  next();\n});\n\nconst securityGate = (req, res, next) => {\n  if (!req.user) {\n    return res.status(401).json({ error: "Unauthorized" });\n  }\n  if (req.user.role !== "ADMIN") {\n    return res.status(403).json({ error: "Forbidden" });\n  }\n  next();\n};\n\napp.get("/vault", securityGate, (req, res) => {\n  res.json({ message: "Welcome to the Resource Vault, Admin." });\n});\n\napp.listen(3002);\n',
+            'mission-04': 'const express = require("express");\nconst app = express();\napp.use(express.json());\n\nconst db = {\n  gold: [],\n  async create(item) { this.gold.push(item); return item; },\n  async find() { return this.gold; },\n  async update(id, data) { return { id, ...data }; },\n  async delete(id) { return true; }\n};\n\napp.post("/vault/gold", async (req, res) => {\n  try {\n    const item = await db.create(req.body);\n    res.json(item);\n  } catch (err) {\n    res.status(500).json({ error: "DB Error" });\n  }\n});\n\napp.get("/vault/gold", async (req, res) => {\n  const items = await db.find();\n  res.json(items);\n});\n\napp.put("/vault/gold/:id", async (req, res) => {\n  const item = await db.update(req.params.id, req.body);\n  res.json(item);\n});\n\napp.delete("/vault/gold/:id", async (req, res) => {\n  await db.delete(req.params.id);\n  res.json({ success: true });\n});\n\napp.listen(3003);\n',
+            'mission-05': '// Simulated Asynchronous Systems (Returns Promises)\nfunction authenticatePower() {\n  return new Promise(resolve => setTimeout(() => resolve("AUTH_OK"), 300));\n}\n\nfunction loadResources() {\n  return new Promise(resolve => setTimeout(() => resolve("RES_OK"), 300));\n}\n\nfunction activateSystems() {\n  return new Promise(resolve => setTimeout(() => resolve("SYS_OK"), 300));\n}\n\nasync function startGrid() {\n  try {\n    await authenticatePower();\n    await loadResources();\n    await activateSystems();\n    console.log("Power Grid Online!");\n  } catch (error) {\n    console.error("Startup failed", error);\n  }\n}\n\nstartGrid();\n',
+            'mission-06': 'const EventEmitter = require("events");\nconst { Server } = require("socket.io");\n\nconst gameEventBus = new EventEmitter();\n\nconst io = new Server();\n\ngameEventBus.on("PLAYER_ENTERED", (eventData) => {\n  console.log("Player entered:", eventData);\n  if (eventData.teamId) {\n    io.to("team:" + eventData.teamId).emit("game_event", eventData);\n  }\n});\n\nfunction setupSocket(io) {\n  io.on("connection", (socket) => {\n    const teamId = "PRINCES";\n    socket.join("team:" + teamId);\n  });\n}\n\nsetupSocket(io);\n\ngameEventBus.emit("PLAYER_ENTERED", {\n  type: "PLAYER_ENTERED",\n  playerId: "demo_player",\n  teamId: "PRINCES",\n  timestamp: new Date().toISOString()\n});\n',
+            'mission-07': 'const express = require("express");\nconst app = express();\n\napp.use((req, res, next) => {\n  req.user = { username: "node_hacker", role: "PLAYER" }; \n  next();\n});\n\nconst securityGate = (req, res, next) => {\n  if (!req.user) {\n    return res.status(401).json({ error: "Unauthorized" });\n  }\n  \n  if (req.user.role !== "ADMIN") {\n    return res.status(403).json({ error: "Forbidden" });\n  }\n  \n  next();\n};\n\napp.get("/admin", securityGate, (req, res) => {\n  res.json({ secret: "FLAG" });\n});\n\napp.listen(3004);\n'
+          };
 
           setMission(missionData);
           setProgress(progressData);
-          setCode(missionData.starterCode);
+          if (progressData.status === 'INSTRUCTOR_PREVIEW') {
+            setCode(INSTRUCTOR_SOLUTIONS[missionData.id] || missionData.starterCode);
+          } else {
+            setCode(missionData.starterCode);
+          }
           setLogs([{ type: 'info', message: 'Mission loaded. Engineering environment ready.' }]);
           setEvaluation(null);
           
@@ -81,7 +92,7 @@ const Lab = () => {
             setShowLesson(false);
           }
           
-          if ((progressData.status !== 'LOCKED' || isDemoRole) && missionData.order >= 6) {
+          if (progressData.status !== 'LOCKED' && missionData.order >= 6) {
              fetch(`${API_URL}/api/missions/${missionId}/enter`, {
                method: 'POST',
                headers: { 'Authorization': `Bearer ${token}` }
@@ -146,7 +157,7 @@ const Lab = () => {
 
       setLogs(prev => [...prev, ...newLogs]);
 
-      if (data.success && progress.status !== 'COMPLETE') {
+      if (data.success && progress.status !== 'COMPLETE' && progress.status !== 'INSTRUCTOR_PREVIEW') {
         setProgress((prev: any) => ({ ...prev, status: 'COMPLETE' }));
         setLogs(prev => [
           ...prev, 
@@ -166,7 +177,20 @@ const Lab = () => {
 
   const handleReset = () => {
     if (mission) {
-      setCode(mission.starterCode);
+      if (progress?.status === 'INSTRUCTOR_PREVIEW') {
+        const INSTRUCTOR_SOLUTIONS: Record<string, string> = {
+          'mission-01': 'const http = require("http");\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200);\n  res.end("OK");\n});\n\nserver.listen(3000);\n',
+          'mission-02': 'const express = require("express");\nconst app = express();\n\napp.use(express.json());\n\napp.get("/door/status", (req, res) => {\n  res.json({ status: "locked" });\n});\n\napp.get("/door/open", (req, res) => {\n  res.json({ status: "open" });\n});\n\napp.post("/door/access", (req, res) => {\n  res.json({ access: "granted" });\n});\n\napp.listen(3001, () => console.log("Smart Door running"));\n',
+          'mission-03': 'const express = require("express");\nconst app = express();\n\napp.use((req, res, next) => {\n  req.user = { username: "node_hacker", role: "ADMIN" };\n  next();\n});\n\nconst securityGate = (req, res, next) => {\n  if (!req.user) {\n    return res.status(401).json({ error: "Unauthorized" });\n  }\n  if (req.user.role !== "ADMIN") {\n    return res.status(403).json({ error: "Forbidden" });\n  }\n  next();\n};\n\napp.get("/vault", securityGate, (req, res) => {\n  res.json({ message: "Welcome to the Resource Vault, Admin." });\n});\n\napp.listen(3002);\n',
+          'mission-04': 'const express = require("express");\nconst app = express();\napp.use(express.json());\n\nconst db = {\n  gold: [],\n  async create(item) { this.gold.push(item); return item; },\n  async find() { return this.gold; },\n  async update(id, data) { return { id, ...data }; },\n  async delete(id) { return true; }\n};\n\napp.post("/vault/gold", async (req, res) => {\n  try {\n    const item = await db.create(req.body);\n    res.json(item);\n  } catch (err) {\n    res.status(500).json({ error: "DB Error" });\n  }\n});\n\napp.get("/vault/gold", async (req, res) => {\n  const items = await db.find();\n  res.json(items);\n});\n\napp.put("/vault/gold/:id", async (req, res) => {\n  const item = await db.update(req.params.id, req.body);\n  res.json(item);\n});\n\napp.delete("/vault/gold/:id", async (req, res) => {\n  await db.delete(req.params.id);\n  res.json({ success: true });\n});\n\napp.listen(3003);\n',
+          'mission-05': '// Simulated Asynchronous Systems (Returns Promises)\nfunction authenticatePower() {\n  return new Promise(resolve => setTimeout(() => resolve("AUTH_OK"), 300));\n}\n\nfunction loadResources() {\n  return new Promise(resolve => setTimeout(() => resolve("RES_OK"), 300));\n}\n\nfunction activateSystems() {\n  return new Promise(resolve => setTimeout(() => resolve("SYS_OK"), 300));\n}\n\nasync function startGrid() {\n  try {\n    await authenticatePower();\n    await loadResources();\n    await activateSystems();\n    console.log("Power Grid Online!");\n  } catch (error) {\n    console.error("Startup failed", error);\n  }\n}\n\nstartGrid();\n',
+          'mission-06': 'const EventEmitter = require("events");\nconst { Server } = require("socket.io");\n\nconst gameEventBus = new EventEmitter();\n\nconst io = new Server();\n\ngameEventBus.on("PLAYER_ENTERED", (eventData) => {\n  console.log("Player entered:", eventData);\n  if (eventData.teamId) {\n    io.to("team:" + eventData.teamId).emit("game_event", eventData);\n  }\n});\n\nfunction setupSocket(io) {\n  io.on("connection", (socket) => {\n    const teamId = "PRINCES";\n    socket.join("team:" + teamId);\n  });\n}\n\nsetupSocket(io);\n\ngameEventBus.emit("PLAYER_ENTERED", {\n  type: "PLAYER_ENTERED",\n  playerId: "demo_player",\n  teamId: "PRINCES",\n  timestamp: new Date().toISOString()\n});\n',
+          'mission-07': 'const express = require("express");\nconst app = express();\n\napp.use((req, res, next) => {\n  req.user = { username: "node_hacker", role: "PLAYER" }; \n  next();\n});\n\nconst securityGate = (req, res, next) => {\n  if (!req.user) {\n    return res.status(401).json({ error: "Unauthorized" });\n  }\n  \n  if (req.user.role !== "ADMIN") {\n    return res.status(403).json({ error: "Forbidden" });\n  }\n  \n  next();\n};\n\napp.get("/admin", securityGate, (req, res) => {\n  res.json({ secret: "FLAG" });\n});\n\napp.listen(3004);\n'
+        };
+        setCode(INSTRUCTOR_SOLUTIONS[mission.id] || mission.starterCode);
+      } else {
+        setCode(mission.starterCode);
+      }
       setLogs([{ type: 'info', message: 'Code environment reset to original state.' }]);
       setEvaluation(null);
     }

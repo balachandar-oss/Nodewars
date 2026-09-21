@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, Bug as BugIcon, Target, Activity, Cpu } from 'lucide-react';
+import { ShieldAlert, Bug as BugIcon, Target, Activity, Cpu, Lock } from 'lucide-react';
 
 interface BugCatalog {
   vulnerabilities: Array<{
@@ -32,6 +32,10 @@ const BugArchitect = () => {
   const [selectedTarget, setSelectedTarget] = useState('');
   const [isDeploying, setIsDeploying] = useState(false);
   const [deploySuccess, setDeploySuccess] = useState<any>(null);
+  
+  const [gameState, setGameState] = useState<{ phase: string, placementEndsAt: string | null } | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,6 +61,14 @@ const BugArchitect = () => {
         } else if (myRes.status === 403) {
           setError('BUG ARCHITECT PRIVILEGES REQUIRED');
         }
+
+        const stateRes = await fetch('http://localhost:3001/api/game/state', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (stateRes.ok) {
+          const stateData = await stateRes.json();
+          setGameState({ phase: stateData.phase, placementEndsAt: stateData.placementEndsAt });
+        }
       } catch (err) {
         console.error('Failed to load Bug Architect console', err);
         setError('CONNECTION ERROR');
@@ -67,6 +79,32 @@ const BugArchitect = () => {
     
     fetchData();
   }, [navigate]);
+
+  useEffect(() => {
+    if (gameState?.phase === 'BUG_PLACEMENT' && gameState.placementEndsAt) {
+      const endsAt = new Date(gameState.placementEndsAt).getTime();
+      
+      const updateTimer = () => {
+        const now = Date.now();
+        const remaining = Math.max(0, Math.floor((endsAt - now) / 1000));
+        setTimeLeft(remaining);
+        
+        if (remaining <= 0 && timerRef.current) {
+          clearInterval(timerRef.current);
+          setGameState(prev => prev ? { ...prev, phase: 'HUNT' } : null);
+        }
+      };
+
+      updateTimer();
+      timerRef.current = setInterval(updateTimer, 1000);
+      
+      return () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+      };
+    } else {
+      setTimeLeft(null);
+    }
+  }, [gameState?.phase, gameState?.placementEndsAt]);
 
   const handleDeploy = async () => {
     const token = localStorage.getItem('token');
@@ -146,10 +184,21 @@ const BugArchitect = () => {
           </div>
         </div>
         
-        <div className="text-right bg-black/60 p-4 border border-white/5">
-          <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1 uppercase">DEPLOYMENT CAPACITY</div>
-          <div className="text-2xl font-bold font-mono text-white leading-none">
-            {bugsRemaining} <span className="text-white/30 text-lg">/ 3</span>
+        <div className="flex gap-6">
+          {gameState?.phase === 'BUG_PLACEMENT' && timeLeft !== null && (
+            <div className="text-right bg-neon-amber/20 p-4 border border-neon-amber/50">
+              <div className="text-[10px] text-neon-amber font-mono tracking-widest mb-1 uppercase">PLACEMENT WINDOW</div>
+              <div className="text-2xl font-bold font-mono text-neon-amber leading-none flex items-center justify-end gap-2">
+                <Activity size={20} className="animate-pulse" />
+                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+              </div>
+            </div>
+          )}
+          <div className="text-right bg-black/60 p-4 border border-white/5">
+            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1 uppercase">DEPLOYMENT CAPACITY</div>
+            <div className="text-2xl font-bold font-mono text-white leading-none">
+              {bugsRemaining} <span className="text-white/30 text-lg">/ 3</span>
+            </div>
           </div>
         </div>
       </div>
@@ -165,6 +214,19 @@ const BugArchitect = () => {
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-8 relative z-10">
+            
+            {gameState?.phase !== 'BUG_PLACEMENT' && (
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-8 text-center border border-white/10">
+                <Lock size={48} className="text-white/20 mb-4" />
+                <h3 className="text-xl font-title text-white tracking-widest uppercase mb-2">SYSTEM LOCKED</h3>
+                <p className="font-mono text-xs text-white/50 tracking-widest">
+                  THREAT DEPLOYMENT IS ONLY AVAILABLE DURING THE BUG PLACEMENT PHASE.
+                </p>
+                <div className="mt-4 px-4 py-1 bg-white/10 text-[10px] font-mono text-white/70 uppercase tracking-widest border border-white/20">
+                  CURRENT PHASE: {gameState?.phase || 'UNKNOWN'}
+                </div>
+              </div>
+            )}
             
             {error && (
               <div className="mb-8 p-4 border border-neon-red text-neon-red bg-neon-red/5 font-mono text-xs flex items-center gap-3">
@@ -276,9 +338,9 @@ const BugArchitect = () => {
           <div className="p-4 border-t border-white/5 bg-black/80 shrink-0 flex justify-end">
             <button 
               onClick={handleDeploy}
-              disabled={!selectedVuln || !selectedTarget || isDeploying || bugsRemaining === 0}
+              disabled={!selectedVuln || !selectedTarget || isDeploying || bugsRemaining === 0 || gameState?.phase !== 'BUG_PLACEMENT'}
               className={`cyber-button px-10 py-4 font-bold transition-all text-xs tracking-widest ${
-                !selectedVuln || !selectedTarget || bugsRemaining === 0
+                !selectedVuln || !selectedTarget || bugsRemaining === 0 || gameState?.phase !== 'BUG_PLACEMENT'
                   ? 'opacity-50 border-white/10 text-white/30 cursor-not-allowed bg-black'
                   : 'border-neon-red bg-neon-red/10 text-neon-red hover:bg-neon-red/20 shadow-[0_0_15px_rgba(255,0,60,0.2)]'
               }`}

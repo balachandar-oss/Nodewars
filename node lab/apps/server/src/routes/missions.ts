@@ -72,6 +72,16 @@ router.get('/:id/progress', authenticate, async (req: AuthRequest, res) => {
       }
     });
 
+    if (req.user?.role === 'INSTRUCTOR') {
+      // Virtual progress for instructors
+      return res.json({
+        userId,
+        missionId: id,
+        status: 'INSTRUCTOR_PREVIEW',
+        isInstructorPreview: true
+      });
+    }
+
     if (!progress) {
       const mission = await prisma.mission.findUnique({ where: { id } });
       if (!mission) {
@@ -116,7 +126,7 @@ router.post('/:id/enter', authenticate, async (req: AuthRequest, res) => {
       where: { userId_missionId: { userId, missionId: id } }
     });
 
-    if (req.user?.role === 'DEMO' || (progress && progress.status !== 'LOCKED')) {
+    if (progress && progress.status !== 'LOCKED') {
       // Emit the event to the bus
       gameEventBus.emitEvent({
         type: 'PLAYER_ENTERED',
@@ -158,16 +168,16 @@ router.post('/:id/run', authenticate, async (req: AuthRequest, res) => {
     });
 
     if (!progress || progress.status === 'LOCKED') {
-      if (req.user?.role !== 'DEMO') {
-        return res.status(403).json({ error: 'Mission is locked' });
-      }
+      return res.status(403).json({ error: 'Mission is locked' });
     }
 
     // 2. Evaluate Code
     const evaluation = await executionService.run(id, code);
 
     // 3. Handle Success & Progression
-    if (evaluation.success && (!progress || progress.status !== 'COMPLETE')) {
+    const isInstructor = req.user?.role === 'INSTRUCTOR';
+    
+    if (evaluation.success && (!progress || progress.status !== 'COMPLETE') && !isInstructor) {
       // Use transaction to prevent duplicate XP awards and update progress atomically
       await prisma.$transaction(async (tx) => {
         // Mark current mission as COMPLETE

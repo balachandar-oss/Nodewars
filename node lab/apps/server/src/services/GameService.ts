@@ -2,6 +2,8 @@ import prisma from '../utils/prisma';
 import { gameEventBus } from './GameEventBus';
 
 export class GameService {
+  private static placementTimer: NodeJS.Timeout | null = null;
+
   static async getPhase(): Promise<string> {
     const state = await prisma.gameState.findUnique({
       where: { id: 'singleton' }
@@ -17,12 +19,18 @@ export class GameService {
     return state.phase;
   }
 
-  static async transitionTo(newPhase: string): Promise<string> {
+  static async transitionTo(newPhase: string, durationMs?: number): Promise<string> {
     const currentState = await prisma.gameState.findUnique({
       where: { id: 'singleton' }
     });
 
     const currentPhase = currentState ? currentState.phase : 'ENGINEERING';
+
+    if (newPhase === 'BUG_PLACEMENT') {
+      if (!currentState || !currentState.scoresRevealed) {
+        throw new Error('BUG_PLACEMENT transition failed: Scores have not been revealed yet.');
+      }
+    }
 
     const validTransitions: Record<string, string> = {
       'ENGINEERING': 'BUG_PLACEMENT',
@@ -36,34 +44,57 @@ export class GameService {
 
     if (newPhase === 'HUNT') {
       // Validate both teams have at least one bug planted
-      const omega = await prisma.team.findUnique({ where: { name: 'TEAM OMEGA' } });
-      const beta = await prisma.team.findUnique({ where: { name: 'TEAM BETA' } });
+      const princes = await prisma.team.findUnique({ where: { name: 'PRINCES' } });
+      const princesses = await prisma.team.findUnique({ where: { name: 'PRINCESSES' } });
 
-      if (!omega || !beta) throw new Error('Teams not configured properly.');
+      if (!princes || !princesses) throw new Error('Teams not configured properly.');
 
-      const omegaBugs = await prisma.bug.count({
-        where: { targetTeamId: beta.id, status: 'PLANTED' } // OMEGA plants on BETA
+      const princesBugs = await prisma.bug.count({
+        where: { targetTeamId: princesses.id, status: 'PLANTED' } // PRINCES plants on PRINCESSES
       });
 
-      const betaBugs = await prisma.bug.count({
-        where: { targetTeamId: omega.id, status: 'PLANTED' } // BETA plants on OMEGA
+      const princessesBugs = await prisma.bug.count({
+        where: { targetTeamId: princes.id, status: 'PLANTED' } // PRINCESSES plants on PRINCES
       });
 
-      if (omegaBugs === 0 || betaBugs === 0) {
+      if (princesBugs === 0 || princessesBugs === 0) {
         throw new Error('HUNT start validation failed: Both teams must have at least one valid PLANTED bug.');
       }
+    }
+
+    // Clear any existing timer when transitioning
+    if (this.placementTimer) {
+      clearTimeout(this.placementTimer);
+      this.placementTimer = null;
+    }
+
+    const updateData: any = { phase: newPhase };
+    
+    if (newPhase === 'BUG_PLACEMENT' && durationMs) {
+      updateData.placementEndsAt = new Date(Date.now() + durationMs);
+    } else if (newPhase === 'ENGINEERING') {
+      updateData.placementEndsAt = null;
     }
 
     // Atomic update
     const result = await prisma.gameState.updateMany({
       where: { id: 'singleton', phase: currentPhase },
-      data: { phase: newPhase }
+      data: updateData
     });
 
     if (result.count === 0) {
       throw new Error('Concurrent transition conflict or invalid phase state.');
     }
 
+    if (newPhase === 'BUG_PLACEMENT' && durationMs) {
+      this.placementTimer = setTimeout(() => {
+        GameService.transitionTo('HUNT').catch(e => {
+          console.error('[GameService] Auto-transition to HUNT failed:', e.message);
+        });
+      }, durationMs);
+    }
+
+    // Wait
     // Emit event safely after atomic DB commit
     gameEventBus.emit('ANY_EVENT', {
       type: 'GAME_PHASE_CHANGED',
@@ -71,5 +102,27 @@ export class GameService {
     });
 
     return newPhase;
+  }
+
+  static async initTimerOnBoot() {
+    const state = await prisma.gameState.findUnique({
+      where: { id: 'singleton' }
+    });
+
+    if (state?.phase === 'BUG_PLACEMENT' && state.placementEndsAt) {
+      const remaining = state.placementEndsAt.getTime() - Date.now();
+      if (remaining <= 0) {
+        // Expired while offline
+        console.log('[GameService] BUG_PLACEMENT timer expired while offline. Transitioning to HUNT.');
+        this.transitionTo('HUNT').catch(e => console.error('[GameService] Boot transition failed:', e.message));
+      } else {
+        console.log(`[GameService] Resuming BUG_PLACEMENT timer. ${Math.round(remaining / 1000)}s remaining.`);
+        this.placementTimer = setTimeout(() => {
+          this.transitionTo('HUNT').catch(e => {
+            console.error('[GameService] Auto-transition to HUNT failed:', e.message);
+          });
+        }, remaining);
+      }
+    }
   }
 }

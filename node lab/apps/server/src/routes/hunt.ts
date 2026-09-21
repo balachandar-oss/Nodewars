@@ -134,6 +134,13 @@ router.post('/targets/:systemId/discover', authenticate, async (req: any, res) =
       where: { id: user.id },
       data: { huntScore: { increment: 10 } }
     });
+    
+    if (user.teamId) {
+      await prisma.team.update({
+        where: { id: user.teamId },
+        data: { huntScore: { increment: 10 } }
+      });
+    }
 
     // We don't have the specific bugId from updateMany easily without a findFirst, but we can just emit system
     // Actually, finding the bugId isn't strictly necessary for the event, but we'll fetch it just for the event
@@ -189,6 +196,13 @@ router.post('/bugs/:id/claim', authenticate, async (req: any, res) => {
       where: { id: user.id },
       data: { huntScore: { increment: 10 } }
     });
+    
+    if (user.teamId) {
+      await prisma.team.update({
+        where: { id: user.teamId },
+        data: { huntScore: { increment: 10 } }
+      });
+    }
 
     gameEventBus.emit('ANY_EVENT', { type: 'BUG_CLAIMED', teamId: user.teamId, bugId, payload: { userId: user.id } });
 
@@ -249,9 +263,17 @@ router.post('/bugs/:id/solve', authenticate, async (req: any, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
 
     // Validate solution
-    // For this prototype, any non-empty solution string that isn't explicitly 'wrong' is considered correct
-    // Real implementation would cross-check against the BUG_CATALOG or configuration
-    if (!solution || solution === 'wrong') {
+    const bug = await prisma.bug.findUnique({ where: { id: bugId } });
+    if (!bug) return res.status(404).json({ error: 'Bug not found.' });
+    if (bug.claimedByUserId !== user?.id) return res.status(403).json({ error: 'You do not own this claim.' });
+    
+    // Idempotent: already resolved
+    if (bug.status === 'RESOLVED') {
+      return res.json({ message: 'BUG ALREADY RESOLVED', pointsAwarded: 0 });
+    }
+
+    const config = JSON.parse(bug.configuration);
+    if (!solution || solution !== config.correctAnswer) {
       return res.status(400).json({ error: 'Incorrect remediation concept.' });
     }
 
@@ -270,21 +292,27 @@ router.post('/bugs/:id/solve', authenticate, async (req: any, res) => {
 
     if (updatedBug.count === 0) {
       const existingBug = await prisma.bug.findUnique({ where: { id: bugId } });
-      if (!existingBug) return res.status(404).json({ error: 'Bug not found.' });
-      if (existingBug.claimedByUserId !== user?.id) return res.status(403).json({ error: 'You do not own this claim.' });
-      if (existingBug.status === 'RESOLVED') return res.status(400).json({ error: 'Already resolved.' });
+      if (existingBug?.status === 'RESOLVED') return res.json({ message: 'BUG ALREADY RESOLVED', pointsAwarded: 0 });
       return res.status(400).json({ error: 'Solve failed.' });
     }
 
-    // Award 50 points
+    // Award points (from config.fragmentValue or fallback to 50)
+    const points = config.fragmentValue || 50;
     await prisma.user.update({
       where: { id: user?.id },
-      data: { huntScore: { increment: 50 } }
+      data: { huntScore: { increment: points } }
     });
+
+    if (user?.teamId) {
+      await prisma.team.update({
+        where: { id: user.teamId },
+        data: { huntScore: { increment: points } }
+      });
+    }
 
     gameEventBus.emit('ANY_EVENT', { type: 'BUG_RESOLVED', teamId: user?.teamId, bugId, payload: { userId: user?.id } });
 
-    res.json({ message: 'BUG RESOLVED', pointsAwarded: 50 });
+    res.json({ message: 'BUG RESOLVED', pointsAwarded: points });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }

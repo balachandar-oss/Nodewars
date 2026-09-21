@@ -41,7 +41,7 @@ app.use(express.json());
 app.use('/castle', castleRoutes);
 
 describe('Castle Scan API', () => {
-  const token = jwt.sign({ id: 'user-1', role: 'PLAYER' }, process.env.JWT_SECRET || 'super-secret-node-wars-key-change-in-prod');
+  const token = jwt.sign({ id: 'user-1', role: 'PLAYER' }, process.env.JWT_SECRET || 'test-secret');
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -60,7 +60,7 @@ describe('Castle Scan API', () => {
 
   it('rejects unknown physicalCode', async () => {
     (GameService.getPhase as jest.Mock).mockResolvedValue('HUNT');
-    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1', teamId: 'team-omega' });
+    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1', teamId: 'team-princes' });
     (prismaMock.castleComponent.findUnique as jest.Mock).mockResolvedValue(null);
 
     const res = await request(app).post('/castle/scan').set('Authorization', `Bearer ${token}`).send({ physicalCode: 'invalid' });
@@ -69,12 +69,12 @@ describe('Castle Scan API', () => {
 
   it('rejects scanning own team component', async () => {
     (GameService.getPhase as jest.Mock).mockResolvedValue('HUNT');
-    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1', teamId: 'team-omega' });
+    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1', teamId: 'team-princes' });
     (prismaMock.castleComponent.findUnique as jest.Mock).mockResolvedValue({
       id: 'comp-1',
-      teamId: 'team-omega',
+      teamId: 'team-princes',
       systemId: 'SERVER',
-      team: { name: 'TEAM OMEGA' }
+      team: { name: 'PRINCES' }
     });
 
     const res = await request(app).post('/castle/scan').set('Authorization', `Bearer ${token}`).send({ physicalCode: 'valid' });
@@ -84,19 +84,19 @@ describe('Castle Scan API', () => {
 
   it('successfully scans opposing team component', async () => {
     (GameService.getPhase as jest.Mock).mockResolvedValue('HUNT');
-    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1', teamId: 'team-omega' });
+    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1', teamId: 'team-princes' });
     (prismaMock.castleComponent.findUnique as jest.Mock).mockResolvedValue({
       id: 'comp-1',
-      teamId: 'team-beta',
+      teamId: 'team-princesses',
       systemId: 'SECURITY_GATE',
       displayName: 'Security Gate',
-      team: { name: 'TEAM BETA' }
+      team: { name: 'PRINCESSES' }
     });
 
     const res = await request(app).post('/castle/scan').set('Authorization', `Bearer ${token}`).send({ physicalCode: 'valid' });
     expect(res.status).toBe(200);
     expect(res.body.component.systemId).toBe('SECURITY_GATE');
-    expect(res.body.team).toBe('TEAM BETA');
+    expect(res.body.team).toBe('PRINCESSES');
     expect(res.body.state).toBe('UNKNOWN');
     expect(res.body.bugId).toBeUndefined(); // Ensure no leak
   });

@@ -10,6 +10,9 @@ datasource db {
 model User {
   id                String            @id @default(uuid())
   username          String            @unique
+  name              String?
+  classification    String?           // PRINCE, PRINCESS
+  rollNumber        Int?              @unique
   passwordHash      String
   role              String            @default("PLAYER") // PLAYER, ADMIN
   teamId            String?
@@ -52,9 +55,11 @@ model CastleComponent {
 }
 
 model GameState {
-  id        String   @id @default("singleton")
-  phase     String   @default("ENGINEERING") // ENGINEERING, BUG_PLACEMENT, HUNT, COMPLETE
-  updatedAt DateTime @updatedAt
+  id             String   @id @default("singleton")
+  phase          String   @default("ENGINEERING") // ENGINEERING, BUG_PLACEMENT, HUNT, COMPLETE
+  scoresRevealed Boolean  @default(false)
+  placementEndsAt DateTime?
+  updatedAt      DateTime @updatedAt
 }
 
 model Mission {
@@ -149,8 +154,8 @@ model AttemptQuestion {
 
 model Bug {
   id                String   @id @default(uuid())
-  architectUserId   String
-  architect         User     @relation("BugArchitect", fields: [architectUserId], references: [id])
+  architectUserId   String?
+  architect         User?    @relation("BugArchitect", fields: [architectUserId], references: [id])
   architectTeamId   String
   architectTeam     Team     @relation("ArchitectTeam", fields: [architectTeamId], references: [id])
   targetTeamId      String
@@ -159,6 +164,10 @@ model Bug {
   targetSystem      String
   configuration     String   // JSON string containing metadata
   status            String   @default("PLANTED") // DRAFT, PLANTED, DISCOVERED, CLAIMED, RESOLVED
+  isSeminarPool     Boolean  @default(false)
+  difficulty        String?
+  structureType     String?
+  location          String?
   claimedByUserId   String?
   claimedByUser     User?    @relation("BugClaimer", fields: [claimedByUserId], references: [id])
   claimedByTeamId   String?

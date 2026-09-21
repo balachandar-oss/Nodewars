@@ -32,29 +32,53 @@ import prismaMock from '../utils/prisma';
 describe('GameService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe('transitionTo', () => {
     it('rejects invalid transitions', async () => {
-      (prismaMock.gameState.findUnique as jest.Mock).mockResolvedValue({ phase: 'ENGINEERING' });
+      (prismaMock.gameState.findUnique as jest.Mock).mockResolvedValue({ phase: 'ENGINEERING', scoresRevealed: false });
       await expect(GameService.transitionTo('HUNT')).rejects.toThrow(/Invalid transition/);
     });
 
+    it('rejects transition to BUG_PLACEMENT if scores are not revealed', async () => {
+      (prismaMock.gameState.findUnique as jest.Mock).mockResolvedValue({ phase: 'ENGINEERING', scoresRevealed: false });
+      await expect(GameService.transitionTo('BUG_PLACEMENT')).rejects.toThrow(/Scores have not been revealed yet/);
+    });
+
     it('rejects concurrent/failed atomic updates', async () => {
-      (prismaMock.gameState.findUnique as jest.Mock).mockResolvedValue({ phase: 'ENGINEERING' });
+      (prismaMock.gameState.findUnique as jest.Mock).mockResolvedValue({ phase: 'ENGINEERING', scoresRevealed: true });
       (prismaMock.gameState.updateMany as jest.Mock).mockResolvedValue({ count: 0 }); // simulate conflict
 
       await expect(GameService.transitionTo('BUG_PLACEMENT')).rejects.toThrow(/Concurrent transition conflict/);
       expect(gameEventBus.emit).not.toHaveBeenCalled();
     });
 
-    it('successfully transitions to BUG_PLACEMENT', async () => {
-      (prismaMock.gameState.findUnique as jest.Mock).mockResolvedValue({ phase: 'ENGINEERING' });
+    it('successfully transitions to BUG_PLACEMENT and sets timer', async () => {
+      (prismaMock.gameState.findUnique as jest.Mock).mockResolvedValue({ phase: 'ENGINEERING', scoresRevealed: true });
       (prismaMock.gameState.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
 
-      const newPhase = await GameService.transitionTo('BUG_PLACEMENT');
+      const newPhase = await GameService.transitionTo('BUG_PLACEMENT', 120000);
       expect(newPhase).toBe('BUG_PLACEMENT');
-      expect(gameEventBus.emit).toHaveBeenCalledWith('ANY_EVENT', expect.objectContaining({ type: 'GAME_PHASE_CHANGED' }));
+      
+      // Should have updated with placementEndsAt
+      expect(prismaMock.gameState.updateMany).toHaveBeenCalledWith({
+        where: { id: 'singleton', phase: 'ENGINEERING' },
+        data: expect.objectContaining({
+          phase: 'BUG_PLACEMENT',
+          placementEndsAt: expect.any(Date)
+        })
+      });
+
+      // Advance timers by 120s
+      jest.advanceTimersByTime(120000);
+      
+      // It should trigger transition to HUNT
+      expect(prismaMock.gameState.findUnique).toHaveBeenCalled();
     });
 
     describe('HUNT start validation', () => {

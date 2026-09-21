@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@tailwindcss/vite": "^4.3.3",
     "@yudiel/react-qr-scanner": "^2.6.0",
     "lucide-react": "^1.45.0",

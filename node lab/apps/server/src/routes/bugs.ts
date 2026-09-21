@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth';
 import { LeaderboardService } from '../services/LeaderboardService';
+import { GameService } from '../services/GameService';
 import prisma from '../utils/prisma';
 
 const router = express.Router();
@@ -73,7 +74,7 @@ router.post('/', authenticate, async (req: any, res) => {
 
     // 1. Verify Bug Architect eligibility
     const isArchitect = await LeaderboardService.isBugArchitect(req.user.id);
-    if (!isArchitect && req.user?.role !== 'DEMO') {
+    if (!isArchitect) {
       return res.status(403).json({ error: 'Bug Architect privileges required.' });
     }
 
@@ -101,7 +102,7 @@ router.post('/', authenticate, async (req: any, res) => {
 
     const architectTeamId = architectUser.teamId;
 
-    // Retrieve opposing team (e.g., if OMEGA, find BETA. If BETA, find OMEGA).
+    // Retrieve opposing team (e.g., if PRINCES, find PRINCESSES. If PRINCESSES, find PRINCES).
     const opposingTeam = await prisma.team.findFirst({
       where: { id: { not: architectTeamId } }
     });
@@ -145,6 +146,117 @@ router.post('/', authenticate, async (req: any, res) => {
       createdAt: newBug.createdAt
     });
 
+  } catch (error) {
+    console.error('Failed to plant bug', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================
+// GET /api/bugs/my-assignment
+// Returns the ONE dedicated seminar bug assigned to this Bug Architect.
+// Restricted strictly to BUG_ARCHITECT role.
+// ============================================
+router.get('/my-assignment', authenticate, async (req: any, res) => {
+  try {
+    if (req.user.role !== 'BUG_ARCHITECT') {
+      return res.status(403).json({ error: 'Bug Architect privileges required.' });
+    }
+
+    const bug = await prisma.bug.findFirst({
+      where: {
+        architectUserId: req.user.id,
+        isSeminarPool: true
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    if (!bug) {
+      return res.status(404).json({ error: 'No bug assignment found for this architect.' });
+    }
+
+    let config: any = {};
+    try {
+      config = bug.configuration ? JSON.parse(bug.configuration) : {};
+    } catch {
+      config = {};
+    }
+
+    res.json({
+      id: bug.id,
+      vulnerabilityType: bug.vulnerabilityType,
+      targetSystem: bug.targetSystem,
+      difficulty: bug.difficulty || config.difficulty || 'UNKNOWN',
+      question: config.question,
+      options: config.options,
+      status: bug.status,
+      location: bug.location,
+      structureType: bug.structureType
+    });
+  } catch (error) {
+    console.error('Failed to fetch bug assignment', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================
+// POST /api/bugs/:bugId/plant
+// Plants the assigned bug at a chosen location.
+// Restricted strictly to BUG_ARCHITECT role.
+// Must be owned by caller and currently unplanted.
+// Client cannot alter architectUserId, targetTeamId, or vulnerabilityType.
+// ============================================
+router.post('/:bugId/plant', authenticate, async (req: any, res) => {
+  try {
+    if (req.user.role !== 'BUG_ARCHITECT') {
+      return res.status(403).json({ error: 'Bug Architect privileges required.' });
+    }
+
+    const currentPhase = await GameService.getPhase();
+    if (currentPhase !== 'BUG_PLACEMENT') {
+      return res.status(403).json({ error: 'Bug planting is only allowed during the BUG_PLACEMENT phase.' });
+    }
+
+    const { bugId } = req.params;
+    const { location, structureType } = req.body;
+
+    if (!location || typeof location !== 'string' || !location.trim()) {
+      return res.status(400).json({ error: 'location is required.' });
+    }
+    if (!structureType || typeof structureType !== 'string' || !structureType.trim()) {
+      return res.status(400).json({ error: 'structureType is required.' });
+    }
+
+    const bug = await prisma.bug.findUnique({ where: { id: bugId } });
+    if (!bug) {
+      return res.status(404).json({ error: 'Bug not found.' });
+    }
+
+    if (bug.architectUserId !== req.user.id) {
+      return res.status(403).json({ error: 'This bug is not assigned to you.' });
+    }
+
+    if (bug.status === 'PLANTED') {
+      return res.status(400).json({ error: 'Bug is already planted.' });
+    }
+
+    // Only update location, structureType, and status.
+    // Client-supplied ownership, teams, vulnerability, or scoring are completely ignored.
+    const updatedBug = await prisma.bug.update({
+      where: { id: bugId },
+      data: {
+        status: 'PLANTED',
+        location: location.trim(),
+        structureType: structureType.trim()
+      }
+    });
+
+    res.json({
+      id: updatedBug.id,
+      status: updatedBug.status,
+      location: updatedBug.location,
+      structureType: updatedBug.structureType
+    });
   } catch (error) {
     console.error('Failed to plant bug', error);
     res.status(500).json({ error: 'Server error' });

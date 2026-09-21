@@ -53,7 +53,7 @@ describe('Socket.IO Integration', () => {
     // 1. Setup mock user in DB
     prisma.user.findUnique = jest.fn().mockResolvedValue({
       id: 'user_1',
-      teamId: 'TEAM_OMEGA',
+      teamId: 'PRINCES',
       role: 'PLAYER'
     });
 
@@ -69,7 +69,7 @@ describe('Socket.IO Integration', () => {
         // 3. Emit an event on the bus specifically for this team
         gameEventBus.emit('ANY_EVENT', {
           type: 'TEST_EVENT',
-          teamId: 'TEAM_OMEGA',
+          teamId: 'PRINCES',
           timestamp: new Date().toISOString()
         });
       }, 100);
@@ -77,7 +77,7 @@ describe('Socket.IO Integration', () => {
 
     clientSocket.on('game_event', (event) => {
       expect(event.type).toBe('TEST_EVENT');
-      expect(event.teamId).toBe('TEAM_OMEGA');
+      expect(event.teamId).toBe('PRINCES');
       done();
     });
   });
@@ -85,7 +85,7 @@ describe('Socket.IO Integration', () => {
   test('should not receive events for other teams', (done) => {
     prisma.user.findUnique = jest.fn().mockResolvedValue({
       id: 'user_2',
-      teamId: 'TEAM_BETA', // Different team
+      teamId: 'PRINCESSES', // Different team
       role: 'PLAYER'
     });
 
@@ -97,10 +97,10 @@ describe('Socket.IO Integration', () => {
 
     clientSocket.on('connect', () => {
       setTimeout(() => {
-        // Emit event for TEAM_OMEGA
+        // Emit event for PRINCES
         gameEventBus.emit('ANY_EVENT', {
           type: 'TEST_EVENT',
-          teamId: 'TEAM_OMEGA',
+          teamId: 'PRINCES',
           timestamp: new Date().toISOString()
         });
 

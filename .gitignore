@@ -1,14 +1,11 @@
-node_modules
+node_modules/
 dist/
 *.db
 *.db-journal
 scratch/
-*.csv
-*.eml
-*.pdf
+seminar-credentials.csv
+student-logins.pdf
 .env
 .env.*
 !.env.example
 credentials.json
-
-
