@@ -14,10 +14,11 @@ const AdminDashboard = () => {
   const [isStarting, setIsStarting] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
+  const [isAdvancingPhase, setIsAdvancingPhase] = useState(false);
 
   // Simulate countdown timer
   useEffect(() => {
-    if (gameState?.phase === 'WAITING' && gameState?.countdownSeconds) {
+    if (gameState?.phase === 'ENGINEERING' && gameState?.countdownSeconds) {
       setGameCountdown(gameState.countdownSeconds);
       const timer = setInterval(() => {
         setGameCountdown(prev => prev && prev > 0 ? prev - 1 : null);
@@ -50,6 +51,52 @@ const AdminDashboard = () => {
       addEvent('ERROR', 'Network error when starting game');
     } finally {
       setIsStarting(false);
+    }
+  };
+
+  const handleStartPlacement = async () => {
+    setIsAdvancingPhase(true);
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch('http://localhost:3001/api/admin/game/start-placement', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        addEvent('PHASE_CHANGE', 'Bug placement phase started - architects may now plant bugs');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        addEvent('ERROR', data.error || 'Failed to start bug placement');
+      }
+    } catch (err) {
+      addEvent('ERROR', 'Network error when starting bug placement');
+    } finally {
+      setIsAdvancingPhase(false);
+    }
+  };
+
+  const handleStartHunt = async () => {
+    setIsAdvancingPhase(true);
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch('http://localhost:3001/api/admin/game/start-hunt', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        addEvent('PHASE_CHANGE', 'Hunt phase started - players may now hunt for bugs');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        addEvent('ERROR', data.error || 'Failed to start hunt');
+      }
+    } catch (err) {
+      addEvent('ERROR', 'Network error when starting hunt');
+    } finally {
+      setIsAdvancingPhase(false);
     }
   };
 
@@ -118,8 +165,10 @@ const AdminDashboard = () => {
 
   const getPhaseLabel = (phase?: string): string => {
     switch (phase) {
-      case 'WAITING': return 'WAITING FOR START';
-      case 'ACTIVE': return 'GAME ACTIVE';
+      case 'ENGINEERING': return 'LAB IN PROGRESS';
+      case 'BUG_PLACEMENT': return 'BUG PLACEMENT';
+      case 'HUNT': return 'HUNT ACTIVE';
+      case 'COMPLETE': return 'GAME COMPLETE';
       case 'ENDED': return 'GAME ENDED';
       default: return 'UNKNOWN';
     }
@@ -127,8 +176,10 @@ const AdminDashboard = () => {
 
   const getPhaseColor = (phase?: string): string => {
     switch (phase) {
-      case 'WAITING': return 'var(--accent-amber)';
-      case 'ACTIVE': return 'var(--accent-green)';
+      case 'ENGINEERING': return 'var(--accent-amber)';
+      case 'BUG_PLACEMENT': return 'var(--accent-purple)';
+      case 'HUNT': return 'var(--accent-green)';
+      case 'COMPLETE': return 'var(--accent-red)';
       case 'ENDED': return 'var(--accent-red)';
       default: return 'var(--text-secondary)';
     }
@@ -185,7 +236,7 @@ const AdminDashboard = () => {
           </div>
 
           <div className="flex gap-3">
-            {gameState?.phase === 'WAITING' && (
+            {(!gameState?.phase || gameState?.phase === 'ENGINEERING') && (
               <button
                 onClick={handleStartGame}
                 disabled={isStarting}
@@ -193,10 +244,32 @@ const AdminDashboard = () => {
                 style={{ borderColor: 'var(--accent-green)', color: 'var(--accent-green)' }}
               >
                 <Play size={14} />
-                START GAME
+                {gameState?.countdownSeconds ? 'RESTART TIMER' : 'START GAME'}
               </button>
             )}
-            {(gameState?.phase === 'ACTIVE' || gameState?.phase === 'WAITING') && (
+            {gameState?.phase === 'ENGINEERING' && (
+              <button
+                onClick={handleStartPlacement}
+                disabled={isAdvancingPhase}
+                className="cyber-button px-4 py-2 text-xs flex items-center gap-2"
+                style={{ borderColor: 'var(--accent-purple)', color: 'var(--accent-purple)' }}
+              >
+                <Play size={14} />
+                START BUG PLACEMENT
+              </button>
+            )}
+            {gameState?.phase === 'BUG_PLACEMENT' && (
+              <button
+                onClick={handleStartHunt}
+                disabled={isAdvancingPhase}
+                className="cyber-button px-4 py-2 text-xs flex items-center gap-2"
+                style={{ borderColor: 'var(--accent-green)', color: 'var(--accent-green)' }}
+              >
+                <Play size={14} />
+                START HUNT
+              </button>
+            )}
+            {(gameState?.phase === 'ENGINEERING' || gameState?.phase === 'BUG_PLACEMENT' || gameState?.phase === 'HUNT') && (
               <button
                 onClick={handleEndGame}
                 disabled={isEnding}
@@ -398,7 +471,7 @@ const AdminDashboard = () => {
                 style={{
                   left: `${(player.position?.x || Math.random()) * 100}%`,
                   top: `${(player.position?.y || Math.random()) * 100}%`,
-                  backgroundColor: player.teamName === 'TEAM OMEGA' ? 'var(--accent-blue)' : 'var(--accent-purple)',
+                  backgroundColor: player.teamName === 'PRINCE' ? 'var(--accent-blue)' : 'var(--accent-purple)',
                 }}
                 title={`${player.username} (${player.teamName})`}
               >

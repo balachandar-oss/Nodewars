@@ -48,8 +48,8 @@ router.post('/seed-castle', authenticate, async (req: any, res) => {
       'ASYNC_CORE', 'SECURITY_MONITOR', 'ADMIN_VAULT'
     ];
 
-    const omega = await prisma.team.findUnique({ where: { name: 'TEAM OMEGA' } });
-    const beta = await prisma.team.findUnique({ where: { name: 'TEAM BETA' } });
+    const omega = await prisma.team.findUnique({ where: { name: 'PRINCE' } });
+    const beta = await prisma.team.findUnique({ where: { name: 'PRINCESS' } });
 
     if (!omega || !beta) {
       return res.status(400).json({ error: 'Teams not found. Seed teams first.' });
@@ -58,8 +58,8 @@ router.post('/seed-castle', authenticate, async (req: any, res) => {
     const createComponents = async (teamId: string, teamName: string) => {
       const components = [];
       for (const sys of SYSTEM_IDS) {
-        // e.g. NW:T:OMEGA:S:SECURITY_GATE
-        const shortTeam = teamName === 'TEAM OMEGA' ? 'OMEGA' : 'BETA';
+        // e.g. NW:T:PRINCE:S:SECURITY_GATE
+        const shortTeam = teamName === 'PRINCE' ? 'PRINCE' : 'PRINCESS';
         const code = `NW:T:${shortTeam}:S:${sys}`;
         const displayName = sys.replace(/_/g, ' ').replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
         
@@ -345,7 +345,7 @@ router.get('/game/state', authenticate, async (req: any, res) => {
 
     const gameState = {
       gameId: 'singleton',
-      phase: phase || 'WAITING',
+      phase: phase || 'ENGINEERING',
       players: playerList,
       teams: teamList,
       bugStats: {
@@ -375,17 +375,19 @@ router.post('/game/start', authenticate, async (req: any, res) => {
 
     const { countdownSeconds = 180 } = req.body;
 
-    // Create or update game state with countdown
+    // Create or update game state with countdown.
+    // Phase is set to ENGINEERING (not an arbitrary 'WAITING' string) so it lines up
+    // with GameService's state machine: ENGINEERING -> BUG_PLACEMENT -> HUNT -> COMPLETE.
     const gameState = await prisma.gameState.upsert({
       where: { id: 'singleton' },
       update: {
-        phase: 'WAITING',
+        phase: 'ENGINEERING',
         startTime: new Date(),
         countdownSeconds: countdownSeconds
       },
       create: {
         id: 'singleton',
-        phase: 'WAITING',
+        phase: 'ENGINEERING',
         startTime: new Date(),
         countdownSeconds: countdownSeconds
       }
@@ -448,8 +450,8 @@ router.post('/game/reveal-scores', authenticate, async (req: any, res) => {
     const rankings = await LeaderboardService.getRankings();
 
     // Get teams
-    const omega = await prisma.team.findUnique({ where: { name: 'TEAM OMEGA' } });
-    const beta = await prisma.team.findUnique({ where: { name: 'TEAM BETA' } });
+    const omega = await prisma.team.findUnique({ where: { name: 'PRINCE' } });
+    const beta = await prisma.team.findUnique({ where: { name: 'PRINCESS' } });
 
     if (!omega || !beta) {
       return res.status(400).json({ error: 'Teams not configured' });

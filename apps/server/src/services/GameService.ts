@@ -36,8 +36,8 @@ export class GameService {
 
     if (newPhase === 'HUNT') {
       // Validate both teams have at least one bug planted
-      const omega = await prisma.team.findUnique({ where: { name: 'TEAM OMEGA' } });
-      const beta = await prisma.team.findUnique({ where: { name: 'TEAM BETA' } });
+      const omega = await prisma.team.findUnique({ where: { name: 'PRINCE' } });
+      const beta = await prisma.team.findUnique({ where: { name: 'PRINCESS' } });
 
       if (!omega || !beta) throw new Error('Teams not configured properly.');
 

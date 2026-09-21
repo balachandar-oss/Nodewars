@@ -32,12 +32,12 @@ router.get('/state', authenticate, async (req: any, res) => {
     }
 
     // Generate score summary
-    const omega = await prisma.team.findUnique({ where: { name: 'TEAM OMEGA' } });
-    const beta = await prisma.team.findUnique({ where: { name: 'TEAM BETA' } });
+    const omega = await prisma.team.findUnique({ where: { name: 'PRINCE' } });
+    const beta = await prisma.team.findUnique({ where: { name: 'PRINCESS' } });
 
     const scoreSummary = {
-      'TEAM OMEGA': omega?.huntScore || 0,
-      'TEAM BETA': beta?.huntScore || 0,
+      'PRINCE': omega?.huntScore || 0,
+      'PRINCESS': beta?.huntScore || 0,
     };
 
     res.json({

@@ -7,22 +7,22 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
-  // Create demo team (TEAM OMEGA)
+  // Create demo team (PRINCE)
   const team = await prisma.team.upsert({
-    where: { name: 'TEAM_OMEGA' },
+    where: { name: 'PRINCE' },
     update: {},
     create: {
-      name: 'TEAM_OMEGA',
+      name: 'PRINCE',
       huntScore: 0
     },
   });
 
-  // Create second team (TEAM BETA) for competitive gameplay
+  // Create second team (PRINCESS) for competitive gameplay
   const betaTeam = await prisma.team.upsert({
-    where: { name: 'TEAM_BETA' },
+    where: { name: 'PRINCESS' },
     update: {},
     create: {
-      name: 'TEAM_BETA',
+      name: 'PRINCESS',
       huntScore: 0
     },
   });
@@ -919,7 +919,7 @@ async function main() {
     }
   }
 
-  console.log(`Game bugs seeded: ${bugsCreated} bugs planted on TEAM_BETA, ${betaBugsCreated} bugs planted on TEAM_OMEGA`);
+  console.log(`Game bugs seeded: ${bugsCreated} bugs planted on PRINCESS, ${betaBugsCreated} bugs planted on PRINCE`);
   console.log('Total bugs seeded: ' + (bugsCreated + betaBugsCreated));
 }
 

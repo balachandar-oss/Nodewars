@@ -4,6 +4,7 @@ import { ShieldAlert, Cpu, Sun, Moon, Lock } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 
 const AdminLogin = () => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,15 +17,19 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:3001/api/auth/admin-login', {
+      const res = await fetch('http://localhost:3001/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ username, password })
       });
 
       const data = await res.json();
 
       if (res.ok) {
+        if (data.user.role !== 'ADMIN') {
+          setError('This account does not have admin privileges');
+          return;
+        }
         localStorage.setItem('token', data.token);
         navigate('/admin/dashboard');
       } else {
@@ -114,7 +119,37 @@ const AdminLogin = () => {
             <form onSubmit={handleAdminLogin} className="space-y-6">
               <div>
                 <label className="block text-[10px] font-mono mb-2 tracking-widest uppercase" style={{ color: 'var(--text-secondary)' }}>
-                  MASTER PASSWORD
+                  ADMIN USERNAME
+                </label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs" style={{ color: `var(--accent-red)${theme === 'dark' ? '80' : '80'}` }}>{'>'}</div>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full border-b pl-10 pr-3 py-4 font-mono text-sm focus:outline-none transition-all"
+                    style={{
+                      backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)',
+                      borderBottomColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(200,200,210,0.2)',
+                      color: 'var(--text-primary)',
+                    }}
+                    placeholder="ENTER ADMIN USERNAME"
+                    disabled={loading}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderBottomColor = 'var(--accent-red)';
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(255,0,0,0.05)' : 'rgba(204,0,0,0.05)';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderBottomColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(200,200,210,0.2)';
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-mono mb-2 tracking-widest uppercase" style={{ color: 'var(--text-secondary)' }}>
+                  PASSWORD
                 </label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs" style={{ color: `var(--accent-red)${theme === 'dark' ? '80' : '80'}` }}>{'>'}</div>

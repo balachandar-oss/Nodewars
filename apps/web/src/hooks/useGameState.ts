@@ -1,6 +1,27 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import io, { Socket } from 'socket.io-client';
-import { PlayerState, TeamPositionState, RoomId, PlayerPosition } from '../utils/gameConstants';
+
+// Temporarily inlined types to debug import issue
+export type RoomId = 'command_hall' | 'security_gate' | 'tower' | 'armory' | 'vault' | 'library' | 'laboratory' | 'forge' | 'throne_room' | 'garden' | 'dungeon' | 'observatory' | 'crypt' | 'kitchen' | 'great_hall' | 'treasury';
+
+export interface PlayerPosition {
+  x: number;
+  y: number;
+  roomId: RoomId;
+}
+
+export interface PlayerState {
+  id: string;
+  playerId: string;
+  position: PlayerPosition;
+  direction?: 'up' | 'down' | 'left' | 'right' | 'idle';
+  isMoving: boolean;
+  timestamp: number;
+}
+
+export interface TeamPositionState {
+  [playerId: string]: PlayerState;
+}
 
 interface GameState {
   phase: string;

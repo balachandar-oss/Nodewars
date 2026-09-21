@@ -246,13 +246,13 @@ const Hunt = () => {
         
         <div className="flex gap-8 bg-black/60 p-4 border border-white/5">
           <div className="text-right">
-            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1">TEAM OMEGA</div>
-            <div className="text-2xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['TEAM OMEGA'] || 0}</div>
+            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1">PRINCE</div>
+            <div className="text-2xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['PRINCE'] || 0}</div>
           </div>
           <div className="w-px bg-white/10"></div>
           <div className="text-left">
-            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1">TEAM BETA</div>
-            <div className="text-2xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['TEAM BETA'] || 0}</div>
+            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1">PRINCESS</div>
+            <div className="text-2xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['PRINCESS'] || 0}</div>
           </div>
         </div>
       </div>

@@ -1,6 +1,10 @@
 node_modules
- 
+
 dist/
 *.db
 *.db-journal
 scratch/
+.env
+
+# Real participant/admin credentials - never commit to public repo
+apps/server/src/utils/credentials.json

@@ -16,6 +16,7 @@
     "db:seed": "ts-node apps/server/src/utils/seed.ts"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@prisma/client": "^5.22.0",
     "prisma": "^5.22.0"
   }
