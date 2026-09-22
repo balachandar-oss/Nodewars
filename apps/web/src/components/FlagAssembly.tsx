@@ -22,8 +22,8 @@ const FlagAssembly: React.FC<FlagAssemblyProps> = ({ randomizeOrder = false, onS
 
   // All fragments are collected (this would be fetched from server in full game)
   // In a real scenario, this would come from the game state
-  const collectedCount = 4;
-  const totalFragments = 4;
+  const collectedCount: number = 4;
+  const totalFragments: number = 4;
   const isReady = collectedCount === totalFragments;
 
   // The complete assembled flag

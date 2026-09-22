@@ -397,7 +397,7 @@ router.get('/:gameId/leaderboard', authenticate, async (req: any, res) => {
   try {
     const { gameId } = req.params;
 
-    const teams = await prisma.team.findMany({
+    const teams: any[] = await (prisma as any).team.findMany({
       include: {
         users: {
           select: {
@@ -406,8 +406,6 @@ router.get('/:gameId/leaderboard', authenticate, async (req: any, res) => {
             level: true,
             huntScore: true,
             xp: true,
-            royalRoomCompleted: true,
-            bugsSolved: true,
             role: true
           },
           orderBy: { huntScore: 'desc' }
@@ -429,49 +427,49 @@ router.get('/:gameId/leaderboard', authenticate, async (req: any, res) => {
     }
 
     // Build team stats
-    const teamStats = teams.map(team => ({
+    const teamStats = teams.map((team: any) => ({
       name: team.name,
       score: team.huntScore,
       bugsSolved: bugsPerTeam[team.id] || 0,
-      royalRoomCompleted: team.users.some(u => u.royalRoomCompleted),
-      playerCount: team.users.length
+      royalRoomCompleted: team.users?.some((u: any) => u.royalRoomCompleted) || false,
+      playerCount: team.users?.length || 0
     }));
 
     // Build player leaderboard (top 10)
     const allPlayers = teams
-      .flatMap(team =>
-        team.users.map(user => ({
+      .flatMap((team: any) =>
+        (team.users || []).map((user: any) => ({
           rank: 0,
           username: user.username,
           teamName: team.name,
           teamScore: user.huntScore,
           bugsSolved: user.bugsSolved || 0,
-          royalRoomCompleted: user.royalRoomCompleted,
+          royalRoomCompleted: user.royalRoomCompleted || false,
           isBugArchitect: user.role === 'ADMIN' || user.level >= 20
         }))
       )
-      .sort((a, b) => b.teamScore - a.teamScore)
+      .sort((a: any, b: any) => b.teamScore - a.teamScore)
       .slice(0, 10)
-      .map((player, idx) => ({ ...player, rank: idx + 1 }));
+      .map((player: any, idx: number) => ({ ...player, rank: idx + 1 }));
 
     // Build top bug architects (top 5)
     const architects = teams
-      .flatMap(team =>
-        team.users
-          .filter(u => u.role === 'ADMIN' || u.level >= 20)
-          .map(user => ({
+      .flatMap((team: any) =>
+        (team.users || [])
+          .filter((u: any) => u.role === 'ADMIN' || u.level >= 20)
+          .map((user: any) => ({
             rank: 0,
             username: user.username,
             teamName: team.name,
             teamScore: user.huntScore,
             bugsSolved: user.bugsSolved || 0,
-            royalRoomCompleted: user.royalRoomCompleted,
+            royalRoomCompleted: user.royalRoomCompleted || false,
             isBugArchitect: true
           }))
       )
-      .sort((a, b) => b.teamScore - a.teamScore)
+      .sort((a: any, b: any) => b.teamScore - a.teamScore)
       .slice(0, 5)
-      .map((architect, idx) => ({ ...architect, rank: idx + 1 }));
+      .map((architect: any, idx: number) => ({ ...architect, rank: idx + 1 }));
 
     res.json({
       teams: teamStats,

@@ -21,14 +21,57 @@ import scoresRoutes from './routes/scores';
 import bountyRoutes from './routes/bounty';
 import flagsRoutes from './routes/flags';
 
-// ===== EXPRESS SETUP =====
+// ===== EXPRESS & SERVER SETUP =====
 const app = express();
 const httpServer = createServer(app);
+
+// ===== CORS CONFIGURATION =====
+export const getAllowedOrigins = (): string[] => {
+  const isProd = process.env.NODE_ENV === 'production';
+  const rawOrigins: string[] = [];
+
+  if (process.env.FRONTEND_URL) rawOrigins.push(process.env.FRONTEND_URL);
+  if (process.env.CORS_ORIGIN) rawOrigins.push(process.env.CORS_ORIGIN);
+  if (process.env.SOCKET_CORS_ORIGIN) rawOrigins.push(process.env.SOCKET_CORS_ORIGIN);
+
+  const cleanOrigins = new Set<string>();
+  for (const raw of rawOrigins) {
+    for (const part of raw.split(',')) {
+      const trimmed = part.trim().replace(/\/+$/, '');
+      if (trimmed) cleanOrigins.add(trimmed);
+    }
+  }
+
+  if (!isProd) {
+    cleanOrigins.add('http://localhost:5173');
+    cleanOrigins.add('http://localhost:3000');
+    cleanOrigins.add('http://localhost:3001');
+    cleanOrigins.add('http://127.0.0.1:5173');
+    cleanOrigins.add('http://127.0.0.1:3000');
+    cleanOrigins.add('http://127.0.0.1:3001');
+  }
+
+  return Array.from(cleanOrigins);
+};
+
+const corsOriginDelegate = (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+  if (!origin) return callback(null, true);
+
+  const normalized = origin.trim().replace(/\/+$/, '');
+  const allowed = getAllowedOrigins();
+
+  if (process.env.NODE_ENV !== 'production' && allowed.length === 0) {
+    return callback(null, true);
+  }
+
+  const isAllowed = allowed.includes(normalized);
+  return callback(null, isAllowed);
+};
 
 // ===== SOCKET.IO SETUP =====
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.SOCKET_CORS_ORIGIN || '*', // TODO: restrict in production
+    origin: corsOriginDelegate,
     methods: ['GET', 'POST'],
     credentials: true
   },
@@ -39,7 +82,10 @@ const io = new Server(httpServer, {
 });
 
 // ===== MIDDLEWARE =====
-app.use(cors());
+app.use(cors({
+  origin: corsOriginDelegate,
+  credentials: true
+}));
 app.use(express.json());
 
 // Make io instance available to routes via req.app.get('io')
@@ -69,6 +115,10 @@ app.use('/api', bountyRoutes);
 
 // ===== TEST ENDPOINTS (Development) =====
 app.post('/api/test/create-game', async (req: Request, res: Response) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).json({ error: 'Not Found' });
+  }
+
   try {
     const prisma = (await import('./utils/prisma')).default;
     const { gameSeeds } = await import('./seeds/gameSeeds');
@@ -201,15 +251,18 @@ app.post('/api/test/create-game', async (req: Request, res: Response) => {
   }
 });
 
-// Health check endpoint (includes Socket.IO stats)
-app.get('/api/health', (req: Request, res: Response) => {
+// Health check endpoints (includes Socket.IO stats)
+const handleHealth = (_req: Request, res: Response) => {
   res.json({
     status: 'ONLINE',
     service: 'Node Lab Engine',
     socketConnections: io.engine.clientsCount,
     timestamp: new Date().toISOString()
   });
-});
+};
+
+app.get('/health', handleHealth);
+app.get('/api/health', handleHealth);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -235,12 +288,12 @@ try {
 }
 
 // ===== SERVER STARTUP =====
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
-httpServer.listen(PORT, () => {
-  console.log(`[SERVER] Node Lab Engine running on port ${PORT}`);
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`[SERVER] Node Lab Engine running on port ${PORT} (bound to 0.0.0.0)`);
   console.log(`[SERVER] Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`[SERVER] Socket.IO CORS origin: ${process.env.SOCKET_CORS_ORIGIN || '*'}`);
+  console.log(`[SERVER] Allowed CORS origins:`, getAllowedOrigins());
 });
 
 // ===== ERROR HANDLING =====

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Play, Square, RotateCcw, Eye, EyeOff, Users, Bug, Lock, MapPin, Activity, AlertCircle } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useAdminGameState } from '../hooks/useAdminGameState';
+import { API_URL } from '../utils/api';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const AdminDashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch('http://localhost:3001/api/admin/game/start', {
+      const res = await fetch(`${API_URL}/api/admin/game/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +61,7 @@ const AdminDashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch('http://localhost:3001/api/admin/game/start-placement', {
+      const res = await fetch(`${API_URL}/api/admin/game/start-placement`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -83,7 +84,7 @@ const AdminDashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch('http://localhost:3001/api/admin/game/start-hunt', {
+      const res = await fetch(`${API_URL}/api/admin/game/start-hunt`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -108,7 +109,7 @@ const AdminDashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch('http://localhost:3001/api/admin/game/end', {
+      const res = await fetch(`${API_URL}/api/admin/game/end`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,7 +136,7 @@ const AdminDashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch('http://localhost:3001/api/admin/game/restart', {
+      const res = await fetch(`${API_URL}/api/admin/game/restart`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -160,7 +161,7 @@ const AdminDashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch('http://localhost:3001/api/admin/game/reveal-scores', {
+      const res = await fetch(`${API_URL}/api/admin/game/reveal-scores`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

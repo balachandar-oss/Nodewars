@@ -116,7 +116,7 @@ router.post('/:id/enter', authenticate, async (req: AuthRequest, res) => {
       where: { userId_missionId: { userId, missionId: id } }
     });
 
-    if (req.user?.role === 'DEMO' || req.user?.role === 'ADMIN' || (progress && progress.status !== 'LOCKED')) {
+    if (req.user?.role === 'DEMO' || req.user?.role === 'ADMIN' || req.user?.role === 'INSTRUCTOR' || (progress && progress.status !== 'LOCKED')) {
       // Emit the event to the bus
       gameEventBus.emitEvent({
         type: 'PLAYER_ENTERED',
@@ -158,7 +158,7 @@ router.post('/:id/run', authenticate, async (req: AuthRequest, res) => {
     });
 
     if (!progress || progress.status === 'LOCKED') {
-      if (req.user?.role !== 'DEMO' && req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'DEMO' && req.user?.role !== 'ADMIN' && req.user?.role !== 'INSTRUCTOR') {
         return res.status(403).json({ error: 'Mission is locked' });
       }
     }

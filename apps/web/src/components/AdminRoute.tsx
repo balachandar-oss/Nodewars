@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import { API_URL } from '../utils/api';
 
 const AdminRoute = () => {
   const token = localStorage.getItem('token');
@@ -13,7 +14,7 @@ const AdminRoute = () => {
       }
 
       try {
-        const res = await fetch('http://localhost:3001/api/user/me', {
+        const res = await fetch(`${API_URL}/api/user/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

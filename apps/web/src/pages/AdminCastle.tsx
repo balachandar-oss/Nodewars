@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { API_URL } from '../utils/api';
 
 interface CastleComponent {
   id: string;
@@ -23,7 +24,7 @@ const AdminCastle = () => {
       if (!token) return;
 
       try {
-        const res = await fetch('http://localhost:3001/api/admin/castle-components', {
+        const res = await fetch(`${API_URL}/api/admin/castle-components`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) {

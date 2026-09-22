@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MapPin, CheckCircle, AlertCircle, Loader, Target } from 'lucide-react';
 import { ROOMS } from '../utils/gameConstants';
 import { structureRegistry, type StructureType } from '../utils/structureData';
+import { API_URL } from '../utils/api';
 
 export interface BugAssignment {
   id: string;
@@ -47,7 +48,7 @@ const BugArchitectPanel: React.FC<BugArchitectPanelProps> = ({ bug, onPlanted })
     setError('');
 
     try {
-      const res = await fetch(`http://localhost:3001/api/bugs/${bug.id}/plant`, {
+      const res = await fetch(`${API_URL}/api/bugs/${bug.id}/plant`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

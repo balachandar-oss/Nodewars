@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trophy, ShieldAlert, Cpu } from 'lucide-react';
+import { API_URL } from '../utils/api';
 
 interface LeaderboardEntry {
   rank: number;
@@ -18,7 +19,7 @@ const Leaderboard = () => {
     const fetchLeaderboard = async () => {
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch('http://localhost:3001/api/leaderboard', {
+        const res = await fetch(`${API_URL}/api/leaderboard`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined
         });
         if (res.ok) {

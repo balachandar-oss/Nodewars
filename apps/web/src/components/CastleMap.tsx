@@ -66,11 +66,11 @@ function generateTileset(game: Phaser.Game): void {
 
   const texture = game.textures.addCanvas('tileset', canvas);
   if (texture) {
-    texture.add('floor', 0, 0, 48, 48);
-    texture.add('wall', 48, 0, 48, 48);
-    texture.add('door', 96, 0, 48, 48);
-    texture.add('treasure', 144, 0, 48, 48);
-    texture.add('water', 192, 0, 48, 48);
+    texture.add('floor', 0, 0, 0, 48, 48);
+    texture.add('wall', 0, 48, 0, 48, 48);
+    texture.add('door', 0, 96, 0, 48, 48);
+    texture.add('treasure', 0, 144, 0, 48, 48);
+    texture.add('water', 0, 192, 0, 48, 48);
   }
 }
 
@@ -357,7 +357,7 @@ const CastleMap: React.FC<CastleMapProps> = ({
           }
 
           // Update game state hook
-          updatePlayerPosition(x, y, roomId, 'idle', false);
+          updatePlayerPosition(x, y, roomId as any, 'idle', false);
         };
 
         setIsInitialized(true);
@@ -367,7 +367,7 @@ const CastleMap: React.FC<CastleMapProps> = ({
     // Wait for scene to be ready
     const checkScene = setInterval(() => {
       const scene = game.scene.getScene('CastleScene');
-      if (scene && scene.isActive()) {
+      if (scene && (game.scene.isActive('CastleScene') || (scene as any).scene?.isActive())) {
         onGameReady();
         clearInterval(checkScene);
       }

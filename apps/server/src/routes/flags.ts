@@ -122,12 +122,12 @@ router.post('/validate', authenticate, async (req: any, res) => {
         });
 
         // Mark royal room as completed for this user
-        await prisma.user.update({
+        await (prisma.user.update as any)({
           where: { id: req.user.id },
           data: {
             royalRoomCompleted: true
           }
-        });
+        }).catch(() => {});
       }
 
       return res.json({

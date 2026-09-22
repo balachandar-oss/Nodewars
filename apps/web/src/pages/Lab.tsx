@@ -14,8 +14,7 @@ import NarrativeBriefing from '../components/NarrativeBriefing';
 import { teachingRegistry } from '@node-wars/shared';
 import { getMissionIdentity } from '../utils/missionIdentity';
 import { getSystemVisualState } from '../utils/systemState';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { API_URL } from '../utils/api';
 
 // Mission 07 ships with an intentionally buggy starter (missing authorization check)
 // so students can find and fix it. Instructors get the fixed version pre-loaded
@@ -91,8 +90,8 @@ const Lab = () => {
   const [showNarrativeBriefing, setShowNarrativeBriefing] = useState(false);
 
   const { user } = useOutletContext<{ user: any }>();
-  const isDemoRole = user?.role === 'DEMO' || user?.role === 'ADMIN';
-  const isInstructorRole = user?.role === 'ADMIN';
+  const isDemoRole = user?.role === 'DEMO' || user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
+  const isInstructorRole = user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
   const showMonitor = mission && mission.order >= 6 && progress && (progress.status !== 'LOCKED' || isDemoRole);
   const { isConnected, events } = useGameSocket(!!showMonitor);
 
@@ -107,8 +106,8 @@ const Lab = () => {
 
       try {
         const [missionRes, progressRes] = await Promise.all([
-          fetch(`http://localhost:3001/api/missions/${missionId}`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`http://localhost:3001/api/missions/${missionId}/progress`, { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${API_URL}/api/missions/${missionId}`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_URL}/api/missions/${missionId}/progress`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         if (missionRes.ok && progressRes.ok) {
@@ -182,7 +181,7 @@ const Lab = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/missions/${missionId}/run`, {
+      const res = await fetch(`${API_URL}/api/missions/${missionId}/run`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

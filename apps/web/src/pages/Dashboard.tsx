@@ -4,6 +4,7 @@ import { Shield, Target, Server as ServerIcon, DoorOpen, HardDrive, Zap, Bug, Ac
 import { teachingRegistry } from '@node-wars/shared';
 import { getSystemVisualState, getPathVisualState, type SystemVisualState } from '../utils/systemState';
 import { getMissionIdentity } from '../utils/missionIdentity';
+import { API_URL } from '../utils/api';
 
 interface UserData {
   username: string;
@@ -51,8 +52,8 @@ const Dashboard = () => {
 
       try {
         const [missionsRes, stateRes] = await Promise.all([
-          fetch('http://localhost:3001/api/missions', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:3001/api/game/state', { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${API_URL}/api/missions`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_URL}/api/game/state`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
         
         if (stateRes.ok) {
@@ -93,7 +94,7 @@ const Dashboard = () => {
   const getMissionVisualState = (order: number): SystemVisualState => {
     const m = missions.find(m => m.order === order);
     if (!m) return 'LOCKED';
-    const isAccessible = !('LOCKED' === m.status) || user.role === 'DEMO' || user.role === 'ADMIN';
+    const isAccessible = !('LOCKED' === m.status) || user.role === 'DEMO' || user.role === 'ADMIN' || user.role === 'INSTRUCTOR';
     return getSystemVisualState(m.status, isAccessible);
   };
   
@@ -276,7 +277,7 @@ const Dashboard = () => {
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+')] pointer-events-none opacity-40"></div>
 
               {/* SVG Blueprint Layer */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 1000" preserveAspectRatio="none">
                 <defs>
                   <style>
                     {`

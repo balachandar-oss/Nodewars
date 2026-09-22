@@ -53,7 +53,7 @@ const InstructorMode = () => {
   }, [timerActive, timerSeconds]);
 
   // Authorization Check
-  if (!user || user.role !== 'ADMIN') {
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#0a0510]">
         <div className="text-red-500 font-mono tracking-widest bg-black p-8 border border-red-500/50">

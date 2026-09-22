@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { API_URL } from '../utils/api';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const SOCKET_URL = API_URL;
 
 export interface GameEvent {
   type: string;

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Trophy, Crown, CheckCircle, Lock, Cpu } from 'lucide-react';
+import { API_URL } from '../utils/api';
 
 interface LeaderboardEntry {
   rank: number;
@@ -33,7 +34,7 @@ const RoyalRoomLeaderboard: React.FC<RoyalRoomLeaderboardProps> = ({ onClose }) 
     const fetchLeaderboardData = async () => {
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch('http://localhost:3001/api/games/leaderboard', {
+        const res = await fetch(`${API_URL}/api/games/leaderboard`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined
         });
         if (res.ok) {
