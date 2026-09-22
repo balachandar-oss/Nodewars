@@ -3,13 +3,12 @@ import { MissionEvaluator, EvaluationResult, CheckResult } from './MissionEvalua
 export class Mission01Evaluator implements MissionEvaluator {
   async evaluate(code: string): Promise<EvaluationResult> {
     const checks: CheckResult[] = [];
-    const terminalOutput: string[] = ['> node server.js', '[Node Lab Simulator]', 'Checking server configuration...'];
+    const terminalOutput: string[] = ['> node server.js', '[Node Lab Simulator]', 'Checking module + server setup...'];
     const feedback: string[] = [];
-    
-    // Normalize code for easier static analysis
+
     const strippedCode = code.replace(/\/\/.*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
-    
-    // Check 1: HTTP module imported
+
+    // Check 1: http module required
     const hasHttpImport = /(const|let|var)\s+\w+\s*=\s*require\s*\(\s*['"]http['"]\s*\)/.test(strippedCode);
     checks.push({
       id: 'import_http',
@@ -18,8 +17,27 @@ export class Mission01Evaluator implements MissionEvaluator {
       message: hasHttpImport ? 'Successfully imported HTTP module.' : 'Missing require("http").'
     });
 
-    // Check 2: createServer called
-    const hasCreateServer = /\.createServer\s*\(/ .test(strippedCode);
+    // Check 2: module.exports used
+    const hasModuleExports = /module\.exports\s*=/.test(strippedCode);
+    checks.push({
+      id: 'module_exports',
+      label: 'module.exports used',
+      passed: hasModuleExports,
+      message: hasModuleExports ? 'Module correctly exports a value.' : 'Missing module.exports = ... (this is how a file shares code with others).'
+    });
+
+    // Check 3: greet() returns non-empty string
+    const greetMatch = strippedCode.match(/greet\s*\(\s*\)\s*\{\s*return\s+(["'`])([\s\S]*?)\1/);
+    const hasGreetReturn = !!greetMatch && greetMatch[2].trim().length > 0;
+    checks.push({
+      id: 'greet_returns_value',
+      label: 'greet() returns a value',
+      passed: hasGreetReturn,
+      message: hasGreetReturn ? 'greet() returns a non-empty string.' : 'greet() must return a non-empty string.'
+    });
+
+    // Check 4: createServer called
+    const hasCreateServer = /\.createServer\s*\(/.test(strippedCode);
     checks.push({
       id: 'create_server',
       label: 'HTTP server created',
@@ -27,31 +45,16 @@ export class Mission01Evaluator implements MissionEvaluator {
       message: hasCreateServer ? 'Server creation logic detected.' : 'Missing http.createServer().'
     });
 
-    // Check 3: Request/Response callback exists
-    const hasReqRes = /\.createServer\s*\(\s*(function\s*\([^,]+,\s*[^)]+\)|\([^,]+,\s*[^)]+\)\s*=>|[^,]+,\s*[^)]+\s*=>)/.test(strippedCode);
+    // Check 5: response uses greet()
+    const usesGreetInResponse = /res\.end\s*\(\s*greeter\.greet\s*\(\s*\)\s*\)/.test(strippedCode) || /res\.end\s*\(\s*greet\s*\(\s*\)\s*\)/.test(strippedCode);
     checks.push({
-      id: 'req_res_callback',
-      label: 'Request/response handler detected',
-      passed: hasReqRes || hasCreateServer, // If they created it, give partial pass or strict regex
-      message: hasReqRes ? 'Valid request/response handler found.' : 'Make sure your createServer callback accepts (req, res).'
-    });
-    // Relaxed check 3 for prototype: if they just have function(req,res) or (req,res)=>
-    const relaxedReqRes = /function\s*\(\s*\w+\s*,\s*\w+\s*\)/.test(strippedCode) || /\(\s*\w+\s*,\s*\w+\s*\)\s*=>/.test(strippedCode);
-    if (!hasReqRes && relaxedReqRes) {
-      checks[2].passed = true;
-      checks[2].message = 'Valid request/response handler found.';
-    }
-
-    // Check 4: Port 3000 used
-    const usesPort3000 = /3000/.test(strippedCode);
-    checks.push({
-      id: 'port_3000',
-      label: 'Port 3000 detected',
-      passed: usesPort3000,
-      message: usesPort3000 ? 'Port 3000 configured.' : 'Server must use port 3000.'
+      id: 'response_uses_module',
+      label: 'Response uses the module',
+      passed: usesGreetInResponse,
+      message: usesGreetInResponse ? 'Server response is wired to the module you exported.' : 'The response should use greeter.greet() as its body.'
     });
 
-    // Check 5: server.listen
+    // Check 6: server.listen
     const hasListen = /\.listen\s*\(\s*[^)]+\s*\)/.test(strippedCode);
     checks.push({
       id: 'server_listen',
@@ -65,24 +68,14 @@ export class Mission01Evaluator implements MissionEvaluator {
     const success = passedChecks === checks.length;
 
     if (hasHttpImport) terminalOutput.push('HTTP module detected.');
-    if (usesPort3000) terminalOutput.push('Port: 3000');
+    if (hasModuleExports) terminalOutput.push('module.exports: OK');
+    if (hasGreetReturn) terminalOutput.push('greet() returns: OK');
     if (hasListen) terminalOutput.push('Server startup: OK');
 
-    if (success) {
-      terminalOutput.push('Waiting for requests...');
-    } else {
-      terminalOutput.push('Simulation failed. Review your architecture.');
-    }
+    terminalOutput.push(success ? 'Waiting for requests...' : 'Simulation failed. Review your module + server wiring.');
 
     checks.filter(c => !c.passed).forEach(c => feedback.push(c.message));
 
-    return {
-      success,
-      score,
-      checks,
-      terminalOutput,
-      feedback,
-      errors: []
-    };
+    return { success, score, checks, terminalOutput, feedback, errors: [] };
   }
 }

@@ -108,13 +108,14 @@ const Dashboard = () => {
   };
 
   const positions = {
-    1: { left: '50%', top: '50%' }, // CORE
-    2: { left: '50%', top: '15%' }, // SMART DOOR
-    3: { left: '25%', top: '32.5%' }, // SECURITY GATE
-    4: { left: '75%', top: '32.5%' }, // RESOURCE VAULT
-    5: { left: '25%', top: '67.5%' }, // ASYNC CORE
-    6: { left: '75%', top: '67.5%' }, // SECURITY MONITOR
-    7: { left: '50%', top: '85%' }, // ADMIN VAULT
+    1: { left: '50%', top: '50%' }, // FIRST SERVER (core)
+    2: { left: '50%', top: '15%' }, // SMART DOOR (core)
+    3: { left: '75%', top: '32.5%' }, // LIVE SECURITY MONITOR / Events (core)
+    4: { left: '25%', top: '32.5%' }, // SIGNAL TOWER / Deployment (core)
+    5: { left: '20%', top: '67.5%' }, // SECURITY GATE (bonus)
+    6: { left: '50%', top: '78%' }, // RESOURCE VAULT (bonus)
+    7: { left: '80%', top: '67.5%' }, // ASYNC OPERATIONS (bonus)
+    8: { left: '50%', top: '92%' }, // BREAK IT / ADMIN VAULT (bonus)
   };
 
   return (
@@ -350,7 +351,7 @@ const Dashboard = () => {
                 const isCurrent = visualState === 'CURRENT';
                 const isAccessible = visualState !== 'LOCKED';
                 const isCore = mission.order === 1;
-                const isMission7 = mission.order === 7;
+                const isMission7 = mission.order === 8;
                 
                 let stateColor = 'text-cyber-light/30';
                 let borderColor = 'border-white/10';

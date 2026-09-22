@@ -73,6 +73,28 @@ app.get("/health", (req, res) => {
 });
 
 app.listen(3004, () => console.log("Server running on port 3004"));
+`,
+  // Mission 08 ships with two TODOs (hardcoded PORT, and a "start" script that
+  // just says "TODO") for students to fill in. Instructors get the completed
+  // version pre-loaded so they can demo a deployment-ready app.
+  'mission-08': `const http = require("http");
+
+// Read the port from the environment, falling back to 3000 for local testing
+const PORT = process.env.PORT || 3000;
+
+const server = http.createServer((req, res) => {
+  res.end("Castle server is live 24/7");
+});
+
+server.listen(PORT, () => console.log(\`Listening on \${PORT}\`));
+
+// ---- package.json (this is what the hosting platform runs) ----
+// {
+//   "name": "castle-server",
+//   "scripts": {
+//     "start": "node server.js"
+//   }
+// }
 `
 };
 
@@ -89,10 +111,15 @@ const Lab = () => {
   const [showLesson, setShowLesson] = useState(false);
   const [showNarrativeBriefing, setShowNarrativeBriefing] = useState(false);
 
+  const [allMissions, setAllMissions] = useState<Array<{ id: string; order: number }>>([]);
+
   const { user } = useOutletContext<{ user: any }>();
   const isDemoRole = user?.role === 'DEMO' || user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
   const isInstructorRole = user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
-  const showMonitor = mission && mission.order >= 6 && progress && (progress.status !== 'LOCKED' || isDemoRole);
+  // The Events mission is the one wired to the live Socket.IO monitor -
+  // matched by id, not by an order number, since order no longer maps
+  // 1:1 to a fixed mission-06/07 style numbering.
+  const showMonitor = mission?.id === 'mission-06' && progress && (progress.status !== 'LOCKED' || isDemoRole);
   const { isConnected, events } = useGameSocket(!!showMonitor);
 
   useEffect(() => {
@@ -105,10 +132,16 @@ const Lab = () => {
       }
 
       try {
-        const [missionRes, progressRes] = await Promise.all([
+        const [missionRes, progressRes, listRes] = await Promise.all([
           fetch(`${API_URL}/api/missions/${missionId}`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_URL}/api/missions/${missionId}/progress`, { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${API_URL}/api/missions/${missionId}/progress`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_URL}/api/missions`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
+
+        if (listRes.ok) {
+          const list = await listRes.json();
+          setAllMissions(list.sort((a: any, b: any) => a.order - b.order));
+        }
 
         if (missionRes.ok && progressRes.ok) {
           const missionData = await missionRes.json();
@@ -142,7 +175,7 @@ const Lab = () => {
             setShowLesson(false);
           }
           
-          if ((progressData.status !== 'LOCKED' || isDemoRole) && missionData.order >= 6) {
+          if ((progressData.status !== 'LOCKED' || isDemoRole) && missionData.id === 'mission-06') {
              fetch(`${API_URL}/api/missions/${missionId}/enter`, {
                method: 'POST',
                headers: { 'Authorization': `Bearer ${token}` }
@@ -235,10 +268,16 @@ const Lab = () => {
   };
 
   const handleContinue = () => {
-    if (mission && mission.order < 7) {
-      navigate(`/lab/mission-0${mission.order + 1}`);
-    } else {
+    if (!mission || allMissions.length === 0) {
       navigate('/dashboard');
+      return;
+    }
+    const next = allMissions.find(m => m.order === mission.order + 1);
+    if (next) {
+      navigate(`/lab/${next.id}`);
+    } else {
+      // Last mission complete - show the recap before the quiz.
+      navigate('/showcase');
     }
   };
 
@@ -256,17 +295,18 @@ const Lab = () => {
     if (visualState === 'COMPLETED') return `${identity.systemName} ONLINE`;
     switch (identity.missionId) {
       case 'mission-01': return 'BOOT SEQUENCE';
-      case 'mission-02': return 'ROUTING LAYER';
-      case 'mission-03': return 'ACCESS CONTROL LAYER';
-      case 'mission-04': return 'RESOURCE STORAGE';
-      case 'mission-05': return 'ASYNC PROCESSING';
+      case 'mission-02': return 'NPM PACKAGE LAYER';
       case 'mission-06': return 'EVENT MONITORING';
-      case 'mission-07': return 'CONTROLLED BREACH TEST';
+      case 'mission-08': return 'DEPLOYMENT CHECK';
+      case 'mission-03': return 'ACCESS CONTROL LAYER (BONUS)';
+      case 'mission-04': return 'RESOURCE STORAGE (BONUS)';
+      case 'mission-05': return 'ASYNC PROCESSING (BONUS)';
+      case 'mission-07': return 'CONTROLLED BREACH TEST (BONUS)';
       default: return 'ACTIVE';
     }
   };
 
-  const isMission7 = mission.order === 7;
+  const isMission7 = mission.id === 'mission-08'; // finale styling now on the Deployment mission
   const accentColor = isMission7 ? 'text-neon-amber' : 'text-neon-blue';
   const borderColor = isMission7 ? 'border-neon-amber/30' : 'border-neon-blue/30';
   const bgColor = isMission7 ? 'bg-neon-amber/5' : 'bg-neon-blue/5';
@@ -347,8 +387,8 @@ const Lab = () => {
                 content={content} 
                 onReviewLesson={() => setShowLesson(true)} 
                 onContinue={handleContinue}
-                isFinalMission={mission.order >= 7}
-                nextMissionId={`mission-0${mission.order + 1}`}
+                isFinalMission={allMissions.length > 0 && mission.order >= allMissions[allMissions.length - 1].order}
+                nextMissionId={allMissions.find(m => m.order === mission.order + 1)?.id || ''}
               />
             ) : (
               <div className="p-4 flex flex-col gap-6 h-full">

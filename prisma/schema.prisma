@@ -83,6 +83,7 @@ model Mission {
   hints           String // JSON string array
   prerequisites   String // JSON string array of mission IDs
   unlockComponent String
+  isBonus         Boolean           @default(false)
   progress        MissionProgress[]
   submissions     Submission[]
   createdAt       DateTime          @default(now())
@@ -132,6 +133,13 @@ model QuizAttempt {
   id             String            @id @default(uuid())
   user           User              @relation(fields: [userId], references: [id])
   userId         String
+  // Optional per-mission tag. NULL means "the pooled/legacy single attempt"
+  // (matches current quiz.ts behavior: one 20-question attempt drawn from
+  // the whole question bank). Once quiz.ts is updated to offer one
+  // mini-quiz per mission, new attempts can populate this with the
+  // mission's id. LeaderboardService sums scores per userId across however
+  // many QuizAttempt rows exist, so it works correctly in both cases.
+  missionId      String?
   isCompleted    Boolean           @default(false)
   score          Int               @default(0)
   percentage     Float             @default(0)
@@ -142,6 +150,13 @@ model QuizAttempt {
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
+  // NOTE: left as a single-column unique (one attempt per userId) rather
+  // than switching to @@unique([userId, missionId]) because quiz.ts's
+  // prisma.quizAttempt.findUnique({ where: { userId } }) calls depend on
+  // userId alone being unique. Relaxing this to allow 4 per-mission
+  // attempts per user requires updating quiz.ts's attempt-creation flow,
+  // which is out of scope here (see task notes) to avoid conflicting with
+  // parallel mission-content work.
   @@unique([userId]) // One official attempt per player
 }
 

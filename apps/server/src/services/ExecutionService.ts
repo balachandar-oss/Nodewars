@@ -6,6 +6,7 @@ import { Mission04Evaluator } from './evaluators/Mission04Evaluator';
 import { Mission05Evaluator } from './evaluators/Mission05Evaluator';
 import { Mission06Evaluator } from './evaluators/Mission06Evaluator';
 import { Mission07Evaluator } from './evaluators/Mission07Evaluator';
+import { Mission08Evaluator } from './evaluators/Mission08Evaluator';
 
 export class ExecutionService {
   private evaluators: Map<string, MissionEvaluator>;
@@ -20,6 +21,7 @@ export class ExecutionService {
     this.evaluators.set('mission-05', new Mission05Evaluator());
     this.evaluators.set('mission-06', new Mission06Evaluator());
     this.evaluators.set('mission-07', new Mission07Evaluator());
+    this.evaluators.set('mission-08', new Mission08Evaluator());
     // Future missions will be registered here
   }
 

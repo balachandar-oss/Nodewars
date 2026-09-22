@@ -5,6 +5,43 @@ import { gameEventBus } from '../services/GameEventBus';
 
 const router = Router();
 
+// Get the calling student's own passed submissions for the recap/showcase
+// screen at the end of the lab - shows THEIR actual code, not a generic recap.
+router.get('/showcase', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const missions = await prisma.mission.findMany({
+      where: { isBonus: false },
+      orderBy: { order: 'asc' },
+      select: { id: true, title: true, unlockComponent: true, order: true }
+    });
+
+    const items = await Promise.all(
+      missions.map(async (m) => {
+        const submission = await prisma.submission.findFirst({
+          where: { userId, missionId: m.id, status: 'PASSED' },
+          orderBy: { createdAt: 'desc' }
+        });
+        return {
+          missionId: m.id,
+          title: m.title,
+          unlockComponent: m.unlockComponent,
+          order: m.order,
+          completed: !!submission,
+          code: submission?.code || null
+        };
+      })
+    );
+
+    res.json(items);
+  } catch (error) {
+    console.error('Fetch showcase error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get all missions (basic info)
 router.get('/', authenticate, async (req: AuthRequest, res) => {
   try {
@@ -18,6 +55,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
         difficulty: true,
         xpReward: true,
         unlockComponent: true,
+        isBonus: true,
       }
     });
 
@@ -175,6 +213,12 @@ router.post('/:id/run', authenticate, async (req: AuthRequest, res) => {
           where: { userId_missionId: { userId, missionId: id } },
           update: { status: 'COMPLETE', completedAt: new Date() },
           create: { userId, missionId: id, status: 'COMPLETE', completedAt: new Date() }
+        });
+
+        // Save the winning code so the end-of-lab showcase can show students
+        // their own actual solution, not a generic recap.
+        await tx.submission.create({
+          data: { userId, missionId: id, code, status: 'PASSED' }
         });
 
         // Award XP and update user stats

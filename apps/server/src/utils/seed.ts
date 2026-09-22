@@ -121,122 +121,67 @@ async function main() {
     {
       id: 'mission-01',
       title: 'FIRST SERVER',
-      description: 'The castle has no communication system. Build the first server. Learn the Node.js runtime, the module system (require/exports), and how to configure servers with environment variables. Understand production vs development thinking from the start.',
+      description: 'The castle has no communication system. Build the first server by hand. Learn how Node.js modules work (require/module.exports) and how the built-in http module answers a request.',
       order: 1,
       difficulty: 'EASY',
       xpReward: 100,
-      concepts: JSON.stringify(['Node runtime', 'HTTP', 'Server', 'Request', 'Response', 'Port', 'Modules (require)', 'Environment variables', 'Error handling']),
-      objectives: JSON.stringify(['Understand Node.js module system (require)', 'Import the http module', 'Create a server with a request handler', 'Listen on a configurable port using environment variables', 'Add basic error handling for server startup', 'Understand production vs development mindset']),
-      instructions: 'Use the `http` module to create a server that listens on a port specified in an environment variable (default to 3000). Add error handling for startup failures.',
-      starterCode: 'const http = require("http");\n\n// 1. Configure port from environment or use default\nconst PORT = process.env.PORT || 3000;\nconst NODE_ENV = process.env.NODE_ENV || "development";\n\n// 2. Create a server using http.createServer\nconst server = http.createServer((req, res) => {\n  // TODO: Send a response\n  res.writeHead(200, { "Content-Type": "text/plain" });\n  res.end("Server is running");\n});\n\n// 3. Handle server errors\nserver.on("error", (err) => {\n  if (NODE_ENV === "production") {\n    console.error("Server error:", err.message);\n  } else {\n    console.error("Development error:", err);\n  }\n});\n\n// 4. Make the server listen on PORT\nserver.listen(PORT, () => {\n  console.log(`Server listening on port ${PORT} in ${NODE_ENV} mode`);\n});\n',
-      hints: JSON.stringify(['Use `const server = http.createServer((req, res) => { ... })` - this follows the module pattern', 'Read the port from `process.env.PORT` to make it configurable for production', 'Always add error handlers with `server.on("error", handler)` to prevent crashes', 'In development, log full errors; in production, log only safe messages']),
+      concepts: JSON.stringify(['Node runtime', 'Modules (require/module.exports)', 'HTTP', 'Server', 'Port']),
+      objectives: JSON.stringify(['Export a value from a module with module.exports', 'Require a built-in Node module (http)', 'Create a server with http.createServer', 'Listen on a port']),
+      instructions: 'This file has two small parts: a tiny module that exports a greeting, and a server that uses the built-in `http` module to respond to every request. Fill in the two TODOs.',
+      starterCode: 'const http = require("http");\n\n// A "module" is just a file. module.exports decides what other\n// files see when they require() this one.\nconst greeter = {\n  // TODO 1: make this return "Hello from the castle gate"\n  greet() {\n    return "";\n  }\n};\nmodule.exports = greeter;\n\nconst PORT = process.env.PORT || 3000;\n\n// TODO 2: use greeter.greet() as the response body\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { "Content-Type": "text/plain" });\n  res.end(greeter.greet());\n});\n\nserver.listen(PORT, () => {\n  console.log(`Server listening on port ${PORT}`);\n});\n',
+      hints: JSON.stringify(['module.exports = greeter makes this object available to any file that calls require() on this file', 'require("http") loads a module that ships with Node itself - no install needed', 'http.createServer takes a function that receives (req, res) for every request', 'res.end(text) sends the response body and closes it']),
       prerequisites: JSON.stringify([]),
-      unlockComponent: 'TERMINAL'
+      unlockComponent: 'TERMINAL',
+      isBonus: false
     },
     {
       id: 'mission-02',
       title: 'SMART DOOR',
-      description: 'The castle needs an intelligent door. Learn Express routing, HTTP status codes, and how to properly handle errors in routes. Use NPM dependencies and return appropriate status codes for success and failure cases.',
+      description: 'NPM lets you use code you did not write yourself. Install Express (already in this project) and stand up one route with it, instead of writing raw HTTP parsing by hand.',
       order: 2,
       difficulty: 'EASY',
-      xpReward: 150,
-      concepts: JSON.stringify(['Express', 'Routing', 'HTTP methods', 'JSON', 'Request/response', 'HTTP status codes', 'Error handling', 'NPM dependencies']),
-      objectives: JSON.stringify(['Understand package.json and NPM dependencies', 'Implement GET /door/status with correct status code', 'Implement GET /door/open with status codes (200 or 400)', 'Implement POST /door/access with input validation', 'Return appropriate HTTP status codes (200, 400, 500)', 'Add error handling to route handlers']),
-      instructions: 'Create an Express app and define the required routes to operate the smart door. Return appropriate HTTP status codes. Add validation and error handling to all routes.',
-      starterCode: 'const express = require("express");\nconst app = express();\n\napp.use(express.json());\n\n// 1. GET /door/status (returns 200 OK)\napp.get("/door/status", (req, res) => {\n  try {\n    // Return JSON with 200 status\n    res.status(200).json({ status: "locked", secure: true });\n  } catch (err) {\n    res.status(500).json({ error: "Failed to get door status" });\n  }\n});\n\n// 2. GET /door/open (returns 200 or 400 if invalid password)\napp.get("/door/open", (req, res) => {\n  try {\n    const password = req.query.password;\n    if (password === "castle123") {\n      res.status(200).json({ status: "unlocked" });\n    } else {\n      // Return 400 Bad Request for invalid input\n      res.status(400).json({ error: "Invalid password" });\n    }\n  } catch (err) {\n    res.status(500).json({ error: "Server error" });\n  }\n});\n\n// 3. POST /door/access (validate request body)\napp.post("/door/access", (req, res) => {\n  try {\n    const { username, action } = req.body;\n    if (!username || !action) {\n      // Return 400 Bad Request if required fields missing\n      return res.status(400).json({ error: "Missing username or action" });\n    }\n    res.status(200).json({ message: `Access granted for ${username}` });\n  } catch (err) {\n    res.status(500).json({ error: "Server error" });\n  }\n});\n\napp.listen(3001, () => console.log("Smart Door running"));\n',
-      hints: JSON.stringify(['Use `res.status(200)` to set HTTP status codes explicitly', 'Return 400 Bad Request for invalid client input, 500 for server errors', 'Always wrap route handlers in try/catch to handle unexpected errors', 'In package.json, express is listed as a dependency - this is why `require("express")` works']),
+      xpReward: 120,
+      concepts: JSON.stringify(['NPM', 'package.json', 'node_modules', 'Express', 'Routes']),
+      objectives: JSON.stringify(['Understand that npm install downloads code into node_modules based on package.json', 'require() a package instead of a built-in module', 'Define one GET route with Express', 'Send a JSON response']),
+      instructions: 'Express is an NPM package - someone else wrote it, published it, and `npm install express` pulled it into node_modules. Use it to answer one route: GET /door/status.',
+      starterCode: 'const express = require("express"); // this comes from NPM, not from Node itself\nconst app = express();\n\n// TODO: respond to GET /door/status with res.json({ status: "locked" })\napp.get("/door/status", (req, res) => {\n\n});\n\napp.listen(3001, () => console.log("Smart Door running"));\n',
+      hints: JSON.stringify(['Express was installed with `npm install express` and is listed in package.json under dependencies', 'require("express") loads that installed package from node_modules', 'app.get(path, handler) registers a route for GET requests', 'res.json({ ... }) sends a JSON response with the right headers automatically']),
       prerequisites: JSON.stringify(['mission-01']),
-      unlockComponent: 'SMART DOOR'
-    },
-    {
-      id: 'mission-03',
-      title: 'SECURITY GATE',
-      description: 'Protect the castle with middleware. Learn to implement authentication and authorization middleware with proper error handling. Use environment variables for secrets. Understand HTTP status codes in security contexts.',
-      order: 3,
-      difficulty: 'MEDIUM',
-      xpReward: 200,
-      concepts: JSON.stringify(['Middleware', 'Authentication', 'Authorization', 'Protected routes', 'Error handling', 'Environment variables', 'HTTP status codes', 'Request pipeline']),
-      objectives: JSON.stringify(['Understand the request pipeline and middleware order', 'Implement an authentication check (401)', 'Implement an authorization check (403)', 'Use error handling in middleware', 'Call next() to pass control to next middleware', 'Use environment variables for configuration', 'Return appropriate HTTP status codes']),
-      instructions: 'Build a Security Gate middleware that stops unauthenticated users and unauthorized roles (only ADMIN allowed). Add proper error handling and use environment variables for sensitive configuration.',
-      starterCode: 'const express = require("express");\nconst app = express();\n\n// Configuration from environment\nconst NODE_ENV = process.env.NODE_ENV || "development";\nconst ADMIN_SECRET = process.env.ADMIN_SECRET || "default-secret";\n\n// Simulated user attached to the request (Authentication happens before this usually)\napp.use((req, res, next) => {\n  try {\n    req.user = { username: "node_hacker", role: "PLAYER" }; // Change role to ADMIN to test\n    next();\n  } catch (err) {\n    res.status(500).json({ error: "Authentication middleware error" });\n  }\n});\n\n// SECURITY GATE MIDDLEWARE\nconst securityGate = (req, res, next) => {\n  try {\n    // 1. AUTHENTICATION: "Who are you?"\n    // Check if req.user exists. If not, return 401 Unauthorized.\n    if (!req.user) {\n      return res.status(401).json({ error: "Authentication required" });\n    }\n\n    // 2. AUTHORIZATION: "Are you allowed?"\n    // Check if req.user.role is "ADMIN". If not, return 403 Forbidden.\n    if (req.user.role !== "ADMIN") {\n      return res.status(403).json({ error: "Insufficient permissions (ADMIN required)" });\n    }\n\n    // 3. ALLOW ACCESS\n    // Call next() to proceed to the route.\n    next();\n  } catch (err) {\n    if (NODE_ENV === "production") {\n      res.status(500).json({ error: "Server error" });\n    } else {\n      res.status(500).json({ error: err.message });\n    }\n  }\n};\n\n// PROTECTED ROUTE\napp.get("/vault", securityGate, (req, res) => {\n  try {\n    res.status(200).json({ message: "Welcome to the Resource Vault, Admin." });\n  } catch (err) {\n    res.status(500).json({ error: "Failed to access vault" });\n  }\n});\n\napp.listen(3002);\n',
-      hints: JSON.stringify(['Authentication (401) means checking identity - does req.user exist?', 'Authorization (403) means checking permissions - does this user have the right role?', 'Always return early with res.status() to prevent accidental next() calls', 'Wrap middleware in try/catch to prevent unhandled errors from crashing the server', 'Use process.env for secrets and configuration - never hardcode sensitive values']),
-      prerequisites: JSON.stringify(['mission-02']),
-      unlockComponent: 'SECURITY GATE'
-    },
-    {
-      id: 'mission-04',
-      title: 'RESOURCE VAULT',
-      description: 'Store and manage castle resources. Master CRUD operations with async/await, proper error handling, and error propagation. Learn production-ready patterns for database access and error logging.',
-      order: 4,
-      difficulty: 'MEDIUM',
-      xpReward: 250,
-      concepts: JSON.stringify(['Database', 'Models', 'CRUD', 'Async database operations', 'Error handling', 'Error propagation', 'Try/catch blocks', 'Status codes']),
-      objectives: JSON.stringify(['Setup a database connection concept', 'Implement a data model', 'Create a resource with error handling', 'Read resources with error handling', 'Update a resource with validation', 'Delete a resource with error handling', 'Use async/await and try/catch', 'Propagate errors appropriately', 'Return correct HTTP status codes']),
-      instructions: 'Build a Resource Vault API that performs asynchronous CRUD operations on a database. Use async/await and handle errors with try/catch. Add validation and return appropriate status codes.',
-      starterCode: 'const express = require("express");\nconst app = express();\napp.use(express.json());\n\nconst NODE_ENV = process.env.NODE_ENV || "development";\n\n// 1. Simulated Database Connection with error simulation\nconst db = {\n  gold: [],\n  async create(item) {\n    if (!item.name) throw new Error("Item must have a name");\n    this.gold.push(item);\n    return item;\n  },\n  async find() {\n    return this.gold;\n  },\n  async update(id, data) {\n    if (!id) throw new Error("ID is required");\n    return { id, ...data };\n  },\n  async delete(id) {\n    if (!id) throw new Error("ID is required");\n    return true;\n  }\n};\n\n// 2. CREATE Resource\napp.post("/vault/gold", async (req, res) => {\n  try {\n    const { name, amount } = req.body;\n    if (!name || !amount) {\n      return res.status(400).json({ error: "Name and amount are required" });\n    }\n    const result = await db.create({ name, amount });\n    res.status(201).json(result);\n  } catch (err) {\n    console.error("Create error:", err.message);\n    res.status(500).json({ error: "Failed to create resource" });\n  }\n});\n\n// 3. READ Resources\napp.get("/vault/gold", async (req, res) => {\n  try {\n    const items = await db.find();\n    res.status(200).json(items);\n  } catch (err) {\n    console.error("Read error:", err.message);\n    res.status(500).json({ error: "Failed to fetch resources" });\n  }\n});\n\n// 4. UPDATE Resource\napp.put("/vault/gold/:id", async (req, res) => {\n  try {\n    const { id } = req.params;\n    const data = req.body;\n    if (!data || Object.keys(data).length === 0) {\n      return res.status(400).json({ error: "Update data is required" });\n    }\n    const result = await db.update(id, data);\n    res.status(200).json(result);\n  } catch (err) {\n    console.error("Update error:", err.message);\n    res.status(500).json({ error: "Failed to update resource" });\n  }\n});\n\n// 5. DELETE Resource\napp.delete("/vault/gold/:id", async (req, res) => {\n  try {\n    const { id } = req.params;\n    await db.delete(id);\n    res.status(204).send();\n  } catch (err) {\n    console.error("Delete error:", err.message);\n    res.status(500).json({ error: "Failed to delete resource" });\n  }\n});\n\napp.listen(3003);\n',
-      hints: JSON.stringify(['Always `await` async database calls to wait for completion', 'Wrap route handlers in try/catch to catch async errors', 'Use 400 status for bad client input, 201 for created, 204 for deleted, 500 for server errors', 'Log errors with console.error() in development to debug issues', 'Validate input before calling database to fail fast with 400 status']),
-      prerequisites: JSON.stringify(['mission-03']),
-      unlockComponent: 'RESOURCE VAULT'
-    },
-    {
-      id: 'mission-05',
-      title: 'ASYNC OPERATIONS',
-      description: 'Master non-blocking behavior. Learn Promises, async/await, error handling with try/catch, and how to manage async errors properly. Understand error propagation and rejection handling.',
-      order: 5,
-      difficulty: 'MEDIUM',
-      xpReward: 200,
-      concepts: JSON.stringify(['Promises', 'async', 'await', 'Non-blocking operations', 'Error handling', 'Promise.reject', 'Unhandled rejections', 'Error propagation']),
-      objectives: JSON.stringify(['Understand Promises and their states (pending, resolved, rejected)', 'Use async/await to wait for promises', 'Run multiple async operations in sequence', 'Handle async errors with try/catch', 'Understand error propagation in async chains', 'Handle Promise rejections gracefully']),
-      instructions: 'Start the castle power grid by calling the simulated asynchronous systems in order. They return Promises. Implement proper error handling to catch any failures.',
-      starterCode: '// Simulated Asynchronous Systems (Returns Promises)\nfunction authenticatePower() {\n  return new Promise((resolve, reject) => {\n    setTimeout(() => {\n      // Simulate occasional failures in production\n      if (Math.random() > 0.8) {\n        reject(new Error("Authentication failed"));\n      } else {\n        resolve("AUTH_OK");\n      }\n    }, 300);\n  });\n}\n\nfunction loadResources() {\n  return new Promise((resolve, reject) => {\n    setTimeout(() => {\n      resolve("RES_OK");\n    }, 300);\n  });\n}\n\nfunction activateSystems() {\n  return new Promise((resolve, reject) => {\n    setTimeout(() => {\n      resolve("SYS_OK");\n    }, 300);\n  });\n}\n\n// TODO: Create an async function to start the grid\nasync function startGrid() {\n  try {\n    console.log("Starting power grid...");\n    \n    // 1. Await authenticatePower()\n    const auth = await authenticatePower();\n    console.log("Auth result:", auth);\n    \n    // 2. Await loadResources()\n    const resources = await loadResources();\n    console.log("Resources result:", resources);\n    \n    // 3. Await activateSystems()\n    const systems = await activateSystems();\n    console.log("Systems result:", systems);\n    \n    console.log("Power Grid Online!");\n    return { status: "success" };\n  } catch (error) {\n    // Error handling catches rejections from any await statement\n    console.error("Startup failed:", error.message);\n    // Propagate or handle the error\n    return { status: "failed", reason: error.message };\n  }\n}\n\n// Execute and handle the promise this function returns\nstartGrid()\n  .then(result => console.log("Final result:", result))\n  .catch(err => console.error("Unhandled error:", err));\n',
-      hints: JSON.stringify(['Use `await` before each async call to wait for it to finish, which also enables try/catch error handling', 'A Promise can be in three states: pending, resolved (fulfilled), or rejected - await waits for resolution or rejection', 'If any `await` throws or rejects, the catch block catches it and stops further awaits from running', 'Always handle Promise rejection with try/catch or .catch() to prevent unhandled rejection errors']),
-      prerequisites: JSON.stringify(['mission-04']),
-      unlockComponent: 'ASYNC OPERATIONS'
+      unlockComponent: 'SMART DOOR',
+      isBonus: false
     },
     {
       id: 'mission-06',
       title: 'LIVE SECURITY MONITOR',
-      description: 'Real-time event tracking using EventEmitter and Socket.IO. Learn event-driven architecture, error handling in event listeners, and how to broadcast events safely with proper error propagation.',
-      order: 6,
-      difficulty: 'HARD',
-      xpReward: 300,
-      concepts: JSON.stringify(['EventEmitter', 'Events', 'Socket.IO', 'Broadcasting', 'Error handling', 'Event listeners', 'Error events', 'Event-driven architecture']),
-      objectives: JSON.stringify(['Instantiate an EventEmitter', 'Register an event listener with error handling', 'Emit an event with structured data', 'Handle EventEmitter errors gracefully', 'Initialize Socket.IO', 'Join a room', 'Broadcast a structured event payload', 'Handle connection errors']),
-      instructions: 'Set up an event-driven architecture using Node.js EventEmitter and integrate Socket.IO to broadcast events in real-time to connected clients. Add error handling for event listeners and Socket.IO connections.',
-      starterCode: 'const EventEmitter = require("events");\nconst { Server } = require("socket.io");\n\nconst NODE_ENV = process.env.NODE_ENV || "development";\n\n// 1. Initialize Event Bus\nconst gameEventBus = new EventEmitter();\n\n// Handle EventEmitter errors\ngameEventBus.on("error", (err) => {\n  console.error("EventBus error:", err.message);\n});\n\n// 2. Listen for PLAYER_ENTERED events with error handling\ngameEventBus.on("PLAYER_ENTERED", (eventData) => {\n  try {\n    console.log("Player entered:", eventData);\n    // Validate event data\n    if (!eventData.playerId || !eventData.teamId) {\n      throw new Error("Missing required event fields");\n    }\n    \n    // TODO: Broadcast the event using Socket.IO\n    // Hint: io.to(room).emit("game_event", eventData)\n  } catch (err) {\n    console.error("Error handling PLAYER_ENTERED:", err.message);\n  }\n});\n\n// 3. Initialize Socket.IO connection handling\nfunction setupSocket(io) {\n  io.on("connection", (socket) => {\n    try {\n      // Simulated authenticated user data\n      const teamId = "TEAM_OMEGA";\n      \n      // TODO: Join the authorized team room\n      socket.join("team:" + teamId);\n      console.log("Socket joined team room:", teamId);\n      \n      // Handle socket errors\n      socket.on("error", (err) => {\n        console.error("Socket error:", err.message);\n      });\n      \n      // Handle disconnection\n      socket.on("disconnect", () => {\n        console.log("Socket disconnected from team:", teamId);\n      });\n    } catch (err) {\n      console.error("Socket setup error:", err.message);\n    }\n  });\n}\n\n// 4. Emit a sample event\ntry {\n  gameEventBus.emit("PLAYER_ENTERED", {\n    type: "PLAYER_ENTERED",\n    playerId: "demo_player",\n    teamId: "TEAM_OMEGA",\n    timestamp: new Date().toISOString()\n  });\n} catch (err) {\n  console.error("Failed to emit event:", err.message);\n}\n',
-      hints: JSON.stringify(['Register an "error" listener on EventEmitter to catch and handle errors gracefully', 'Validate event data in listeners before processing to fail fast', 'Use `socket.join("team:" + teamId)` to restrict broadcasts to specific rooms', 'Always wrap event handler logic in try/catch to prevent unhandled exceptions', 'Handle Socket.IO connection errors and disconnections to prevent memory leaks']),
-      prerequisites: JSON.stringify(['mission-05']),
-      unlockComponent: 'LIVE SECURITY MONITOR'
+      description: 'The castle reacts to things happening inside it - a door opening, a guard arriving - without anyone polling and asking "did anything happen yet?". That is what Node\'s EventEmitter does. Register one listener, fire one event. This exact mechanism (just wired to real sockets) is what powers the live multiplayer castle game you will see demoed right after this mission.',
+      order: 3,
+      difficulty: 'EASY',
+      xpReward: 150,
+      concepts: JSON.stringify(['Events', 'EventEmitter', '.on()', '.emit()']),
+      objectives: JSON.stringify(['Create an EventEmitter', 'Register a listener with .on()', 'Fire an event with .emit()']),
+      instructions: 'Create an EventEmitter, listen for a "door_opened" event, and emit it once with a small payload. This is the same publish/subscribe idea the real Node Wars game engine uses to broadcast live events to every player.',
+      starterCode: 'const EventEmitter = require("events");\n\nconst castle = new EventEmitter();\n\n// TODO 1: listen for "door_opened" and console.log the payload\n\n\n// TODO 2: emit "door_opened" with { guard: "sentinel" }\n',
+      hints: JSON.stringify(['new EventEmitter() creates an object that can broadcast named events', 'castle.on("door_opened", (data) => { ... }) registers a listener', 'castle.emit("door_opened", { guard: "sentinel" }) fires the event and calls every listener', 'Listeners must be registered with .on() before .emit() is called, or they miss it']),
+      prerequisites: JSON.stringify(['mission-02']),
+      unlockComponent: 'LIVE SECURITY MONITOR',
+      isBonus: false
     },
     {
-      id: 'mission-07',
-      title: 'BREAK IT',
-      description: 'Find and fix the authorization bypass vulnerability. Understand error handling implications of missing security checks, how to trace request flows, and the importance of validating assumptions in middleware.',
-      order: 7,
-      difficulty: 'CRITICAL',
-      xpReward: 400,
-      concepts: JSON.stringify(['Debugging', 'Security vulnerabilities', 'Authorization', 'Error handling', 'Request tracing', 'Broken Access Control']),
-      objectives: JSON.stringify([
-        'Locate the access control middleware',
-        'Trace the request flow through middleware',
-        'Identify the authorization flaw (missing role check)',
-        'Understand why error handling alone is insufficient',
-        'Patch the securityGate with proper authorization',
-        'Verify PLAYER is denied (403)',
-        'Verify ADMIN is allowed (200)',
-        'Test error handling for unauthenticated users (401)'
-      ]),
-      instructions: 'SECURITY BREACH DETECTED.\n\nThe castle\'s administrator vault is accessible to unauthorized players.\n\nYour task:\n1. Inspect the access-control code\n2. Identify the vulnerability (missing authorization check)\n3. Trace why PLAYER can reach the protected resource\n4. Fix the vulnerability with proper error handling\n5. Verify ADMIN still has access and PLAYER is denied\n6. Test edge cases (no user, wrong role, correct role)',
-      starterCode: 'const express = require("express");\nconst app = express();\n\nconst NODE_ENV = process.env.NODE_ENV || "development";\n\n// Simulated user (in reality, parsed from a JWT)\napp.use((req, res, next) => {\n  try {\n    req.user = { username: "node_hacker", role: "PLAYER" }; \n    next();\n  } catch (err) {\n    res.status(500).json({ error: "Auth setup error" });\n  }\n});\n\nconst securityGate = (req, res, next) => {\n  try {\n    // 1. Authentication check\n    if (!req.user) {\n      return res.status(401).json({ error: "Unauthorized" });\n    }\n    \n    // BUG: The authorization check is missing!\n    // A user is authenticated, but are they an ADMIN?\n    // TODO: Add role verification here\n    // if (req.user.role !== "ADMIN") {\n    //   return res.status(403).json({ error: "Insufficient permissions" });\n    // }\n    \n    next();\n  } catch (err) {\n    if (NODE_ENV === "production") {\n      res.status(500).json({ error: "Server error" });\n    } else {\n      res.status(500).json({ error: err.message });\n    }\n  }\n};\n\n// PROTECTED ROUTE - should only allow ADMIN\napp.get("/admin", securityGate, (req, res) => {\n  try {\n    res.status(200).json({ secret: "FLAG", user: req.user });\n  } catch (err) {\n    res.status(500).json({ error: "Failed to access admin resource" });\n  }\n});\n\n// Health check endpoint\napp.get("/health", (req, res) => {\n  res.status(200).json({ status: "ok" });\n});\n\napp.listen(3004, () => console.log("Server running on port 3004"));\n',
-      hints: JSON.stringify([
-        'Authentication checks identity (401), Authorization checks permissions (403) - this middleware is missing the second check',
-        'Add `if (req.user.role !== "ADMIN") { return res.status(403)... }` after the authentication check',
-        'A user is always authenticated in this middleware because it never calls next() without some form of response or early exit',
-        'Error handling in middleware cannot compensate for missing security logic - fix the logic itself, not just error cases',
-        'Test with both PLAYER and ADMIN roles to verify the fix works correctly'
-      ]),
+      id: 'mission-08',
+      title: 'SIGNAL TOWER',
+      description: 'Deployment means getting your code off your laptop and onto a computer somewhere else that stays on 24/7, so anyone can reach it - not just you. Hosting platforms (Render, Railway, Vercel, etc.) run that computer for you. They start your app with your package.json "start" script and hand it a PORT to listen on - your code must use that PORT, not a hardcoded one.',
+      order: 4,
+      difficulty: 'EASY',
+      xpReward: 120,
+      concepts: JSON.stringify(['Deployment', 'Hosting', 'process.env.PORT', 'package.json start script']),
+      objectives: JSON.stringify(['Understand what "deploying" actually means', 'Read the port from process.env.PORT with a local fallback', 'Write a valid "start" script for package.json'])
+      ,
+      instructions: 'A hosting platform will run `npm start`, which runs whatever is in package.json\'s "start" script, and it will assign your server a random PORT via an environment variable. Finish the server so it listens on process.env.PORT, and fix the "start" script below so the platform knows how to launch it.',
+      starterCode: 'const http = require("http");\n\n// TODO 1: read the port from the environment, falling back to 3000 for local testing\nconst PORT = 3000;\n\nconst server = http.createServer((req, res) => {\n  res.end("Castle server is live 24/7");\n});\n\nserver.listen(PORT, () => console.log(`Listening on ${PORT}`));\n\n// ---- package.json (this is what the hosting platform runs) ----\n// {\n//   "name": "castle-server",\n//   "scripts": {\n//     "start": "TODO"\n//   }\n// }\n',
+      hints: JSON.stringify(['Hosting platforms set process.env.PORT to whatever port they gave your app - you rarely control the number', 'Use `const PORT = process.env.PORT || 3000;` so it works both locally and when deployed', 'The "start" script should run `node server.js` (or whatever your entry file is named)', 'If your app ignores process.env.PORT and hardcodes 3000, the host cannot route traffic to it and deployment fails']),
       prerequisites: JSON.stringify(['mission-06']),
-      unlockComponent: 'SECURITY PATCH'
+      unlockComponent: 'SIGNAL TOWER',
+      isBonus: false
     }
   ];
 
@@ -266,7 +211,7 @@ async function main() {
     });
   }
 
-  console.log('Database seeded successfully with 7 missions.');
+  console.log(`Database seeded successfully with ${missions.length} missions (4 core, ${missions.filter(m => m.isBonus).length} bonus).`);
 
   // ==========================================
   // QUIZ SEEDING
@@ -779,27 +724,76 @@ async function main() {
     },
     {
       missionId: 'mission-06',
-      question: 'In Socket.IO, what is a "room"?',
+      question: 'If you call emitter.emit("door_opened") BEFORE calling emitter.on("door_opened", ...), what happens?',
       options: JSON.stringify([
-        'A physical server partition.',
-        'An arbitrary channel that sockets can join and leave to receive broadcasted events.',
-        'A namespace for isolating authentication credentials.',
-        'A persistent database table for chat messages.'
+        'Node.js queues the event and delivers it once a listener is registered.',
+        'The listener registered afterward never receives that emission - it already happened.',
+        'It throws a "no listener" error.',
+        'The event fires twice.'
       ]),
-      correctAnswer: 'An arbitrary channel that sockets can join and leave to receive broadcasted events.',
-      explanation: 'Rooms allow you to broadcast events to a subset of connected clients.'
+      correctAnswer: 'The listener registered afterward never receives that emission - it already happened.',
+      explanation: 'emit() is synchronous and only calls listeners that are already registered at the moment it runs - order matters.'
     },
     {
       missionId: 'mission-06',
-      question: 'How does Socket.IO differ from standard REST APIs?',
+      question: 'Why does the real Node Wars game use the same EventEmitter pattern you just practiced?',
       options: JSON.stringify([
-        'Socket.IO uses JSON, while REST uses XML.',
-        'Socket.IO enables bidirectional, persistent, real-time communication, whereas REST is stateless and request-driven.',
-        'Socket.IO is much slower due to connection overhead.',
-        'Socket.IO cannot handle authentication.'
+        'Because it is the only way to write JavaScript.',
+        'Because reacting to named events (a door opening, a player joining) as they happen is exactly what a live multiplayer game needs.',
+        'Because EventEmitter automatically creates a database.',
+        'It does not - the game uses a completely different mechanism.'
       ]),
-      correctAnswer: 'Socket.IO enables bidirectional, persistent, real-time communication, whereas REST is stateless and request-driven.',
-      explanation: 'WebSockets (used by Socket.IO) keep a persistent connection open for real-time duplex data flow.'
+      correctAnswer: 'Because reacting to named events (a door opening, a player joining) as they happen is exactly what a live multiplayer game needs.',
+      explanation: 'The real game engine (GameEventBus) wires the same .on()/.emit() pattern to Socket.IO so those events reach every connected browser in real time.'
+    },
+    // Mission 08 (Deployment & Hosting)
+    {
+      missionId: 'mission-08',
+      question: 'What does "deploying" an application actually mean?',
+      options: JSON.stringify([
+        'Compressing your code into a zip file',
+        'Getting your code running on a computer that stays on 24/7, reachable by others - not just your own laptop',
+        'Writing unit tests for your code',
+        'Deleting unused npm packages'
+      ]),
+      correctAnswer: 'Getting your code running on a computer that stays on 24/7, reachable by others - not just your own laptop',
+      explanation: 'Deployment moves your code from a machine only you can reach to one that is always on and reachable by everyone else.'
+    },
+    {
+      missionId: 'mission-08',
+      question: 'Why should a server read its port from process.env.PORT instead of hardcoding 3000?',
+      options: JSON.stringify([
+        'Hardcoded ports run faster',
+        'Hosting platforms assign their own port at runtime, and your app must listen on whatever they give it',
+        'process.env.PORT is required by JavaScript syntax',
+        'It has no real effect either way'
+      ]),
+      correctAnswer: 'Hosting platforms assign their own port at runtime, and your app must listen on whatever they give it',
+      explanation: 'If your app ignores the assigned PORT and only listens on 3000, the host cannot route traffic to it and the deployment fails.'
+    },
+    {
+      missionId: 'mission-08',
+      question: 'What does the "start" script in package.json do?',
+      options: JSON.stringify([
+        'It lists your project\'s dependencies',
+        'It tells hosting platforms (and `npm start`) the exact command to launch your app',
+        'It starts your code editor',
+        'It runs your test suite'
+      ]),
+      correctAnswer: 'It tells hosting platforms (and `npm start`) the exact command to launch your app',
+      explanation: 'Most hosting platforms run `npm start` automatically, which runs whatever command is defined under scripts.start.'
+    },
+    {
+      missionId: 'mission-08',
+      question: 'You wrote `const PORT = process.env.PORT || 3000;`. What does the `|| 3000` do?',
+      options: JSON.stringify([
+        'It multiplies the port by 3000',
+        'It provides a fallback so the app still works locally, where PORT usually is not set',
+        'It forces the app to always use port 3000',
+        'It causes a syntax error'
+      ]),
+      correctAnswer: 'It provides a fallback so the app still works locally, where PORT usually is not set',
+      explanation: 'process.env.PORT is undefined on your own machine unless you set it, so the fallback keeps local development working.'
     },
     // Mission 07
     {
@@ -852,6 +846,9 @@ async function main() {
     }
   ];
 
+  // Clear dependent attempt rows first (FK constraints) before wiping questions
+  await prisma.attemptQuestion.deleteMany();
+  await prisma.quizAttempt.deleteMany();
   await prisma.quizQuestion.deleteMany(); // Clear existing
   for (const q of quizQuestions) {
     await prisma.quizQuestion.create({ data: q });

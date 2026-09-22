@@ -159,20 +159,22 @@ async function main() {
   // ============================================
   console.log('\nSeeding DRAFT bugs (5 PRINCE->PRINCESS, 5 PRINCESS->PRINCE)...');
 
-  // Pick 5 varied-difficulty seeds per direction out of the 20 available.
+  // Pick 5 varied-difficulty seeds per direction out of the 20 available,
+  // re-themed to mirror the syllabus: Node.js+Modules, NPM, Events,
+  // Deployment/Hosting, plus 1 wildcard from the generic pool for variety.
   const princeToPrincessSeedIds = [
-    'seed-bug-easy-01',
-    'seed-bug-medium-01',
-    'seed-bug-medium-05',
-    'seed-bug-hard-01',
-    'seed-bug-critical-01'
+    'seed-bug-easy-01',   // Modules: forgot module.exports
+    'seed-bug-medium-03', // NPM: wrong import subpath for installed package
+    'seed-bug-medium-05', // Events: emit() with no registered listener
+    'seed-bug-hard-05',   // Deployment: hardcoded config instead of process.env
+    'seed-bug-hard-01'    // Wildcard: race condition (generic, difficulty variety)
   ];
   const princessToPrinceSeedIds = [
-    'seed-bug-easy-02',
-    'seed-bug-medium-02',
-    'seed-bug-medium-06',
-    'seed-bug-hard-02',
-    'seed-bug-critical-02'
+    'seed-bug-medium-01', // Modules: circular require
+    'seed-bug-easy-02',   // NPM: missing dependency
+    'seed-bug-medium-06', // Events: listener attached to wrong emitter instance
+    'seed-bug-medium-02', // Deployment: hardcoded port ignoring process.env.PORT
+    'seed-bug-critical-02' // Wildcard: prototype pollution (generic, difficulty variety)
   ];
 
   const findSeed = (id: string) => {

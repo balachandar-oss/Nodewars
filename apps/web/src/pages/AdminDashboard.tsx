@@ -334,15 +334,31 @@ const AdminDashboard = () => {
               <span className="text-xs font-mono tracking-widest" style={{ color: 'var(--text-secondary)' }}>TEAM OVERVIEW</span>
             </div>
             <div className="space-y-3">
-              {gameState?.teams.map(team => (
-                <div key={team.id} className="flex justify-between items-center text-xs">
-                  <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{team.name}</span>
-                  <div className="flex gap-2">
-                    <span style={{ color: 'var(--accent-amber)' }}>[{team.totalPlayers} PLAYERS]</span>
-                    <span style={{ color: 'var(--accent-green)' }}>SCORE: {team.huntScore}</span>
-                  </div>
-                </div>
-              ))}
+              {(() => {
+                const teams = gameState?.teams || [];
+                const maxScore = teams.length ? Math.max(...teams.map(t => t.huntScore)) : -1;
+                const isTie = teams.length > 1 && teams.filter(t => t.huntScore === maxScore).length === teams.length;
+                return teams.map(team => {
+                  const isLeader = gameState?.phase === 'HUNT' || gameState?.phase === 'ENDED' || gameState?.phase === 'COMPLETE'
+                    ? team.huntScore === maxScore && maxScore > 0 && !isTie
+                    : false;
+                  return (
+                    <div
+                      key={team.id}
+                      className="flex justify-between items-center text-xs p-2 rounded"
+                      style={isLeader ? { backgroundColor: `var(--accent-amber)${theme === 'dark' ? '1a' : '15'}`, border: '1px solid var(--accent-amber)' } : undefined}
+                    >
+                      <span className="font-mono flex items-center gap-2" style={{ color: isLeader ? 'var(--accent-amber)' : 'var(--text-primary)' }}>
+                        {isLeader && '👑'} {team.name}
+                      </span>
+                      <div className="flex gap-2">
+                        <span style={{ color: 'var(--accent-amber)' }}>[{team.totalPlayers} PLAYERS]</span>
+                        <span style={{ color: 'var(--accent-green)' }}>SCORE: {team.huntScore}</span>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
 

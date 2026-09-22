@@ -81,9 +81,18 @@ router.post('/start', authenticate, async (req: any, res) => {
     }
 
     // 3. Create new attempt
-    // Fetch all available questions
-    const allQuestions = await prisma.quizQuestion.findMany();
-    
+    // Only quiz on core (non-bonus) missions - bonus mission content isn't
+    // taught in the live session, so it shouldn't be tested.
+    const coreMissions = await prisma.mission.findMany({
+      where: { isBonus: false },
+      select: { id: true }
+    });
+    const coreMissionIds = coreMissions.map(m => m.id);
+
+    const allQuestions = await prisma.quizQuestion.findMany({
+      where: { missionId: { in: coreMissionIds } }
+    });
+
     // Shuffle and pick 20
     const shuffled = allQuestions.sort(() => 0.5 - Math.random());
     const selectedQuestions = shuffled.slice(0, 20);

@@ -18,50 +18,51 @@ export interface GameBugSeed {
 
 export const gameSeeds: GameBugSeed[] = [
   // ========== EASY (5 bugs - 5 points each) ==========
-  // EASY 1: Basic Authentication
+  // EASY 1 (Modules theme): module.exports mistake
   {
     id: 'seed-bug-easy-01',
-    vulnerabilityType: 'MISSING_AUTHENTICATION',
+    vulnerabilityType: 'MODULE_EXPORT_MISTAKE',
     targetSystem: 'SMART_DOOR',
     difficulty: 'EASY',
     question:
-      'A resource endpoint does not check if a user is authenticated. Which HTTP status code should the server return when no auth token is provided?',
+      'A file has `function openDoor() { ... }` but the file never assigns anything to `module.exports`. Another file does `const { openDoor } = require("./door")` and gets `openDoor is not a function`. What is wrong?',
     options: [
-      '200 OK - The server always responds successfully',
-      '400 Bad Request - The client sent invalid input',
-      '401 Unauthorized - Authentication is required',
-      '404 Not Found - The resource does not exist'
+      'require() only works with npm packages, never local files',
+      'The function was declared but never attached to module.exports, so requiring the file exports an empty object',
+      'JavaScript functions cannot be shared between files',
+      'The file needs to use import instead of require'
     ],
-    correctAnswer: '401 Unauthorized - Authentication is required',
+    correctAnswer:
+      'The function was declared but never attached to module.exports, so requiring the file exports an empty object',
     fragmentValue: 5,
     configuration: {
-      concept: 'Missing authentication check',
-      location: 'GET /api/door/open',
-      hint: 'The endpoint does not verify req.user exists'
+      concept: 'Forgot to attach a function to module.exports',
+      location: 'utils/door.js',
+      hint: 'Add: module.exports = { openDoor };'
     }
   },
 
-  // EASY 2: Input Validation
+  // EASY 2 (NPM theme): missing dependency
   {
     id: 'seed-bug-easy-02',
-    vulnerabilityType: 'MISSING_VALIDATION',
+    vulnerabilityType: 'MISSING_NPM_DEPENDENCY',
     targetSystem: 'SERVER',
     difficulty: 'EASY',
     question:
-      'A POST endpoint accepts a request body but does not validate required fields. What is the correct HTTP status for rejecting invalid input?',
+      'A route handler does `const dayjs = require("dayjs")`, but "dayjs" was never added to package.json and never installed. What happens when the server starts?',
     options: [
-      '201 Created - The request was created successfully',
-      '204 No Content - The request succeeded with no response',
-      '400 Bad Request - The client input was invalid or missing required fields',
-      '500 Internal Server Error - The server encountered an error'
+      'Node.js silently skips the require() call',
+      'The server crashes with "Cannot find module \'dayjs\'" because the package is not installed',
+      'npm automatically installs missing packages on server start',
+      'The require() call returns undefined without error'
     ],
     correctAnswer:
-      '400 Bad Request - The client input was invalid or missing required fields',
+      'The server crashes with "Cannot find module \'dayjs\'" because the package is not installed',
     fragmentValue: 5,
     configuration: {
-      concept: 'Missing input validation',
-      location: 'POST /api/resource',
-      hint: 'Check if req.body contains required fields before processing'
+      concept: 'Code requires a package that is missing from package.json/node_modules',
+      location: 'routes/resource.ts',
+      hint: 'Run npm install dayjs and add it to package.json dependencies'
     }
   },
 
@@ -136,72 +137,75 @@ export const gameSeeds: GameBugSeed[] = [
   },
 
   // ========== MEDIUM (8 bugs - 10 points each) ==========
-  // MEDIUM 1: Authorization vs Authentication
+  // MEDIUM 1 (Modules theme): circular require
   {
     id: 'seed-bug-medium-01',
-    vulnerabilityType: 'ROLE_CHECK_FLAW',
+    vulnerabilityType: 'CIRCULAR_REQUIRE',
     targetSystem: 'ADMIN_VAULT',
     difficulty: 'MEDIUM',
     question:
-      'A middleware checks if req.user exists (authentication) but never checks req.user.role. What is this missing check called?',
+      '`vault.js` does `const guard = require("./guard")` at the top, and `guard.js` does `const vault = require("./vault")` at the top. When vault.js loads first, guard.js\'s require of vault.js returns an incomplete, partially-populated object. What is this called?',
     options: [
-      'Authentication - verifying user identity',
-      'Authorization - verifying user permissions',
-      'Validation - checking input format',
-      'Encryption - protecting data in transit'
+      'A memory leak',
+      'A circular require - the two modules require each other, so one of them gets an unfinished module.exports',
+      'A stack overflow error',
+      'A missing npm dependency'
     ],
-    correctAnswer: 'Authorization - verifying user permissions',
+    correctAnswer:
+      'A circular require - the two modules require each other, so one of them gets an unfinished module.exports',
     fragmentValue: 10,
     configuration: {
-      concept: 'Missing authorization check after authentication',
-      location: 'middleware/securityGate',
-      hint: 'Add: if (req.user.role !== "ADMIN") return res.status(403)...'
+      concept: 'Circular require between two local modules causes an incomplete export',
+      location: 'services/vault.js + services/guard.js',
+      hint: 'Break the cycle: extract the shared piece into a third module both files require'
     }
   },
 
-  // MEDIUM 2: Middleware Order
+  // MEDIUM 2 (Deployment theme): hardcoded port ignoring env config
   {
     id: 'seed-bug-medium-02',
-    vulnerabilityType: 'MIDDLEWARE_ORDER_FLAW',
+    vulnerabilityType: 'HARDCODED_PORT',
     targetSystem: 'SECURITY_MONITOR',
     difficulty: 'MEDIUM',
     question:
-      'A security middleware is defined AFTER a vulnerable route handler in Express. What happens when a request comes in?',
+      'The server does `app.listen(3000)` instead of `app.listen(process.env.PORT || 3000)`. On a hosting platform that assigns its own port via the PORT environment variable, what happens?',
     options: [
-      'The middleware runs first and protects the route',
-      'The route handler executes immediately without middleware protection',
-      'Express automatically reorders middleware',
-      'The middleware runs on the response, not the request'
+      'The app automatically listens on whatever port the host assigns',
+      'The deployment fails or the app is unreachable, because it ignores the PORT the host gave it and binds to 3000 instead',
+      'Nothing - port numbers are ignored by hosting platforms',
+      'The app listens on both 3000 and the host-assigned port'
     ],
-    correctAnswer: 'The route handler executes immediately without middleware protection',
+    correctAnswer:
+      'The deployment fails or the app is unreachable, because it ignores the PORT the host gave it and binds to 3000 instead',
     fragmentValue: 10,
     configuration: {
-      concept: 'Security middleware positioned after the route it should protect',
-      location: 'routes/sensitive.ts',
-      hint: 'Define middleware before the route it protects'
+      concept: 'Hardcoded port instead of reading process.env.PORT for deployment',
+      location: 'server.ts',
+      hint: 'Use: app.listen(process.env.PORT || 3000)'
     }
   },
 
-  // MEDIUM 3: Async Error Handling
+  // MEDIUM 3 (NPM theme): wrong import path for an installed package
   {
     id: 'seed-bug-medium-03',
-    vulnerabilityType: 'MISSING_AWAIT',
+    vulnerabilityType: 'WRONG_PACKAGE_IMPORT_PATH',
     targetSystem: 'RESOURCE_VAULT',
     difficulty: 'MEDIUM',
     question:
-      'An async database call is not awaited in an async function. The function returns before the database operation completes. What is the result?',
+      '"jsonwebtoken" is correctly listed in package.json and installed, but the code does `const jwt = require("jsonwebtoken/sign")` instead of `require("jsonwebtoken")`. What is the result?',
     options: [
-      'The database call waits automatically',
-      'The function returns a pending Promise instead of the data',
-      'The server crashes immediately',
-      'The request times out'
+      'It works exactly the same either way',
+      '"Cannot find module \'jsonwebtoken/sign\'" - the package is installed, but that specific subpath does not exist inside it',
+      'npm automatically corrects the import path at runtime',
+      'The package gets reinstalled automatically'
     ],
-    correctAnswer: 'The function returns a pending Promise instead of the data',
+    correctAnswer:
+      '"Cannot find module \'jsonwebtoken/sign\'" - the package is installed, but that specific subpath does not exist inside it',
     fragmentValue: 10,
     configuration: {
-      concept: 'Missing await on async database operation',
+      concept: 'Importing a package via a wrong/invalid subpath even though the package itself is installed',
       location: 'services/DataService.ts',
-      hint: 'Add await before: const result = db.query(...)'
+      hint: 'Import the package by its documented entry point: require("jsonwebtoken")'
     }
   },
 
@@ -229,52 +233,53 @@ export const gameSeeds: GameBugSeed[] = [
     }
   },
 
-  // MEDIUM 5: Event Emitter Errors
+  // MEDIUM 5 (Events theme): missing listener silently breaks a live feature
   {
     id: 'seed-bug-medium-05',
-    vulnerabilityType: 'MISSING_ERROR_LISTENER',
+    vulnerabilityType: 'MISSING_EVENT_LISTENER',
     targetSystem: 'SECURITY_MONITOR',
     difficulty: 'MEDIUM',
     question:
-      'An EventEmitter listener throws an error, but the emitter has no "error" event listener. How should errors in listeners be handled?',
+      'The castle\'s live event system (GameEventBus, which relays over Socket.IO) does `gameEventBus.emit("bug:planted", payload)` when a bug is planted, so the dashboard updates in real time. A teammate\'s dashboard never updates. They forgot to register `gameEventBus.on("bug:planted", handler)` anywhere. Why does nothing break loudly - no crash, no error?',
     options: [
-      'Errors are always automatically caught',
-      'With try/catch inside the listener or an "error" event handler on the emitter',
-      'Errors cannot occur in event listeners',
-      'By disabling the emitter'
+      'Node.js throws a fatal error whenever emit() has no matching listener',
+      'EventEmitter.emit() with no matching listener for that event name is a silent no-op - the event just goes nowhere, so the code keeps running with no crash and no update',
+      'The Socket.IO connection automatically disconnects',
+      'The event gets queued and fires the next time the server restarts'
     ],
     correctAnswer:
-      'With try/catch inside the listener or an "error" event handler on the emitter',
+      'EventEmitter.emit() with no matching listener for that event name is a silent no-op - the event just goes nowhere, so the code keeps running with no crash and no update',
     fragmentValue: 10,
     configuration: {
-      concept: 'Missing error handling in EventEmitter listener',
+      concept: 'emit() fired with no corresponding .on() listener registered, so a real-time update silently never fires',
       location: 'services/GameEventBus.ts',
       hint:
-        'Add: emitter.on("error", (err) => { console.error(err); })'
+        'Add: gameEventBus.on("bug:planted", (payload) => { io.to(...).emit("bug:planted", payload); })'
     }
   },
 
-  // MEDIUM 6: Socket.IO Room Access Control
+  // MEDIUM 6 (Events theme): listener attached to the wrong emitter instance
   {
     id: 'seed-bug-medium-06',
-    vulnerabilityType: 'MISSING_ROOM_VALIDATION',
+    vulnerabilityType: 'LISTENER_ATTACHED_WRONG_INSTANCE',
     targetSystem: 'LIVE_SECURITY_MONITOR',
     difficulty: 'MEDIUM',
     question:
-      'A Socket.IO endpoint broadcasts a message to all connected users without checking which room they joined. What is the vulnerability?',
+      'A module does `const bus = new EventEmitter()` and exports it, but a different file accidentally does `const bus = new EventEmitter()` again (a second, separate instance) and attaches its `.on("hunt:score")` listener there instead of importing the shared bus. The real GameEventBus emits "hunt:score" but the Socket.IO broadcast never fires. What is the root cause?',
     options: [
-      'The server crashes',
-      'Users see messages meant for other teams or unauthorized users',
-      'The broadcast is encrypted automatically',
-      'Socket.IO prevents this automatically'
+      'Socket.IO does not support custom event names',
+      'Two separate EventEmitter instances exist - listeners on one instance never hear emits from a different instance, even with the same event name',
+      'EventEmitter can only have one listener total across the whole app',
+      'The event name is case-sensitive and was probably misspelled'
     ],
-    correctAnswer: 'Users see messages meant for other teams or unauthorized users',
+    correctAnswer:
+      'Two separate EventEmitter instances exist - listeners on one instance never hear emits from a different instance, even with the same event name',
     fragmentValue: 10,
     configuration: {
-      concept: 'Missing room-based access control in Socket.IO',
+      concept: 'Listener attached to a duplicate EventEmitter instance instead of the shared/imported one',
       location: 'socket/index.ts',
       hint:
-        'Use: io.to("team:" + teamId).emit() instead of io.emit()'
+        'Import and reuse the single shared instance: const { gameEventBus } = require("../services/GameEventBus")'
     }
   },
 
@@ -420,27 +425,27 @@ export const gameSeeds: GameBugSeed[] = [
     }
   },
 
-  // HARD 5: Missing HTTPS Enforcement
+  // HARD 5 (Deployment theme): hardcoded config instead of env var
   {
     id: 'seed-bug-hard-05',
-    vulnerabilityType: 'MISSING_HTTPS',
+    vulnerabilityType: 'HARDCODED_ENV_CONFIG',
     targetSystem: 'SERVER',
     difficulty: 'HARD',
     question:
-      'The API accepts both HTTP and HTTPS requests in production, including authentication requests with JWT tokens. What is the vulnerability?',
+      'In server.ts, the database connection string is hardcoded as `const DATABASE_URL = "file:./dev.db"` instead of reading `process.env.DATABASE_URL`. The app works fine locally but fails to find the production database after deployment. Why?',
     options: [
-      'The server becomes slower',
-      'Man-in-the-Middle attack - tokens and credentials can be intercepted over unencrypted HTTP',
-      'The database is deleted',
-      'Users are locked out'
+      'SQLite databases cannot be deployed at all',
+      'The hardcoded local path is baked into the code and deployed as-is, ignoring whatever DATABASE_URL the hosting platform actually provides for production',
+      'Deployment platforms delete all environment variables automatically',
+      'The server always prefers hardcoded values over environment variables at runtime'
     ],
     correctAnswer:
-      'Man-in-the-Middle attack - tokens and credentials can be intercepted over unencrypted HTTP',
+      'The hardcoded local path is baked into the code and deployed as-is, ignoring whatever DATABASE_URL the hosting platform actually provides for production',
     fragmentValue: 20,
     configuration: {
-      concept: 'Missing HTTP to HTTPS redirect in production',
+      concept: 'Hardcoded config value instead of reading it from process.env at deploy time',
       location: 'server.ts',
-      hint: 'Use HSTS header and force HTTPS redirect in production'
+      hint: 'Read config from environment: const DATABASE_URL = process.env.DATABASE_URL;'
     }
   },
 
