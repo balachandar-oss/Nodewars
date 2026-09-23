@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import type { MissionTeachingContent } from '@node-wars/shared';
-import { ShieldAlert, LogIn } from 'lucide-react';
+import { ShieldAlert, LogIn, X } from 'lucide-react';
 
 interface NarrativeBriefingProps {
   missionNumber: number;
@@ -20,6 +20,16 @@ const NarrativeBriefing: React.FC<NarrativeBriefingProps> = ({ missionNumber, co
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4 animate-fade-in" data-testid="narrative-briefing">
       <div className="w-full max-w-2xl clay-panel relative overflow-hidden flex flex-col">
+
+        <button
+          onClick={onEnterMission}
+          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center clay-inset transition-transform hover:scale-110"
+          style={{ color: 'var(--text-muted)' }}
+          title="Skip briefing"
+          aria-label="Skip briefing"
+        >
+          <X size={16} />
+        </button>
 
         {/* Header */}
         <div className="flex items-center gap-4 p-5 shrink-0" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(124, 111, 224, 0.05)' }}>

@@ -354,7 +354,7 @@ const Lab = () => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 min-h-0 glass-panel overflow-hidden">
 
         {/* LEFT COLUMN: MISSION CONTROL */}
-        <div className="lg:col-span-3 flex flex-col relative overflow-hidden" style={{ borderRight: '1px solid var(--border-color)' }}>
+        <div className="lg:col-span-3 flex flex-col relative overflow-hidden min-h-0" style={{ borderRight: '1px solid var(--border-color)' }}>
           <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isMission7 ? 'rgba(232, 184, 75, 0.06)' : 'rgba(124, 111, 224, 0.06)' }}>
             <div className="flex items-center gap-2 mb-2">
               <identity.icon size={16} style={{ color: accentColor }} />
@@ -393,7 +393,7 @@ const Lab = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar scroll-fade-bottom flex flex-col">
+          <div className="flex-1 overflow-y-auto custom-scrollbar scroll-fade-bottom flex flex-col min-h-0">
             {evaluation?.success && content ? (
               <PostMissionDebrief
                 content={content}
@@ -469,7 +469,7 @@ const Lab = () => {
         </div>
 
         {/* CENTER COLUMN: CODE WORKBENCH */}
-        <div className="lg:col-span-6 flex flex-col relative" style={{ borderRight: '1px solid var(--border-color)' }}>
+        <div className="lg:col-span-6 flex flex-col relative min-h-0" style={{ borderRight: '1px solid var(--border-color)' }}>
 
           <div className="flex items-center justify-between p-3" style={{ borderBottom: '1px solid var(--border-color)' }}>
             <div className="flex items-center gap-3">
@@ -492,7 +492,7 @@ const Lab = () => {
             </div>
           </div>
 
-          <div className="flex-1 relative p-2" style={{ backgroundColor: '#1e1c2e' }}>
+          <div className="flex-1 relative p-2 min-h-0" style={{ backgroundColor: '#1e1c2e' }}>
             <Editor
               height="100%"
               defaultLanguage="javascript"
@@ -552,7 +552,7 @@ const Lab = () => {
         </div>
 
         {/* RIGHT COLUMN: CASTLE DIAGNOSTICS */}
-        <div className="lg:col-span-3 flex flex-col relative">
+        <div className="lg:col-span-3 flex flex-col relative min-h-0">
 
           {/* Castle Console */}
           <div className="flex-[1.2] min-h-0 shrink-0 p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>

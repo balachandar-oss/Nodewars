@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { MissionTeachingContent } from '@node-wars/shared';
-import { ChevronRight, ChevronLeft, Target, BookOpen, Brain, Code, ArrowRight, Lightbulb } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Target, BookOpen, Brain, Code, ArrowRight, Lightbulb, X } from 'lucide-react';
 import { getMissionIdentity } from '../utils/missionIdentity';
 
 interface TeachingLayerProps {
@@ -35,6 +35,16 @@ const TeachingLayer: React.FC<TeachingLayerProps> = ({ missionNumber, content, o
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4 animate-fade-in" data-testid="teaching-overlay">
       <div className="w-full max-w-4xl clay-panel relative overflow-hidden flex flex-col max-h-[90vh]">
+
+        <button
+          onClick={onBeginChallenge}
+          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center clay-inset transition-transform hover:scale-110"
+          style={{ color: 'var(--text-muted)' }}
+          title="Skip lesson"
+          aria-label="Skip lesson"
+        >
+          <X size={16} />
+        </button>
 
         {/* Header */}
         <div className="flex items-center gap-4 p-5 shrink-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
