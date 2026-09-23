@@ -1,0 +1,32 @@
+databases:
+  - name: node-wars-db
+    plan: free
+    databaseName: node_wars
+    user: node_wars
+
+services:
+  - type: web
+    name: node-wars-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run db:generate:prod && npm run build --workspace=apps/server
+    startCommand: npm run start --workspace=apps/server
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: node-wars-db
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ORGANIZER_BALA_PASSWORD
+        sync: false
+      - key: ORGANIZER_VAISHNAV_PASSWORD
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
