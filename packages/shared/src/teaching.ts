@@ -225,17 +225,13 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
       }
     ],
     guidedTask: {
-      task: 'Build a basic Node.js HTTP server AND conceptually plan its deployment.',
+      task: 'Build an HTTP server using a Node.js module.',
       requirements: [
-        'Use a Node.js built-in module to create an HTTP server (Evaluated automatically).',
-        'Listen on the required port 3000 (Evaluated automatically).',
-        'Identify what belongs to development vs production (Conceptual).',
-        'Identify which values should be configurable (Conceptual).',
-        'Identify what must exist in the hosting environment (Conceptual).',
-        'Identify whether a build step is required (Conceptual).',
-        'NOTE: This is a conceptual/hypothetical deployment-planning exercise. You are NOT required to actually deploy the application or create a cloud account.'
+        'Import the built-in http module with require().',
+        'Export a value from your module with module.exports.',
+        'Create and start a server that listens on port 3000.'
       ],
-      successCondition: 'The evaluation engine receives a 200 OK response with "System Online" from port 3000, and you understand the conceptual steps required to eventually deploy it.'
+      successCondition: 'Your server responds on port 3000 using the value you exported from your module.'
     },
     progressiveHints: [
       { label: 'CONCEPT', text: 'Node provides built-in modules to run servers. Also, remember that localhost only represents the local development environment.' },
@@ -914,15 +910,13 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
       }
     ],
     guidedTask: {
-      task: 'Construct an event-driven security monitor for the castle.',
+      task: 'Build an event-driven alert system with EventEmitter.',
       requirements: [
-        'Define an event-driven security mechanism.',
-        'Create/register a listener for security events.',
-        'Trigger the appropriate event when a security situation occurs.',
-        'Allow the relevant security component to react.',
-        'Connect the internal event-driven mechanism to the real-time Socket.IO monitoring behavior.'
+        'Create an EventEmitter instance.',
+        'Register a listener with .on().',
+        'Trigger the event with .emit().'
       ],
-      successCondition: 'The internal event emitter successfully captures events and forwards them to the real-time Socket.IO broadcast system.'
+      successCondition: 'Your listener runs when the event is emitted.'
     },
     progressiveHints: [
       { label: 'CONCEPT', text: 'What programming pattern lets one part of the application announce that something happened while other parts react to it independently?' },
