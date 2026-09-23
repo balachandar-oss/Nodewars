@@ -36,18 +36,29 @@ router.get('/results', authenticate, async (req: any, res) => {
 // POST /api/quiz/start
 router.post('/start', authenticate, async (req: any, res) => {
   try {
-    // 1. Check Mission 07 completion
-    const mission7Progress = await prisma.missionProgress.findUnique({
-      where: {
-        userId_missionId: {
-          userId: req.user.id,
-          missionId: 'mission-07'
-        }
-      }
+    // 1. Check the last core mission is completed (was hardcoded to 'mission-07',
+    // which no longer exists after the lab was cut down to 4 core missions -
+    // look up the real last core mission by order instead of a hardcoded id).
+    const lastCoreMission = await prisma.mission.findFirst({
+      where: { isBonus: false },
+      orderBy: { order: 'desc' }
     });
 
-    if ((!mission7Progress || mission7Progress.status !== 'COMPLETE') && req.user?.role !== 'DEMO') {
-      return res.status(403).json({ error: 'Quiz Locked. Complete Mission 07 first.' });
+    const lastCoreProgress = lastCoreMission
+      ? await prisma.missionProgress.findUnique({
+          where: {
+            userId_missionId: {
+              userId: req.user.id,
+              missionId: lastCoreMission.id
+            }
+          }
+        })
+      : null;
+
+    const isUnlocked = !lastCoreMission || (lastCoreProgress && lastCoreProgress.status === 'COMPLETE');
+
+    if (!isUnlocked && req.user?.role !== 'DEMO' && req.user?.role !== 'ADMIN' && req.user?.role !== 'INSTRUCTOR') {
+      return res.status(403).json({ error: `Quiz Locked. Complete all missions first.` });
     }
 
     // 2. Check for existing attempt
