@@ -171,58 +171,6 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
         ],
         keyTakeaway: 'The HTTP module is the foundation of web servers in Node.'
       },
-      {
-        id: 'm1-c4',
-        title: 'LOCALHOST VS PUBLIC ACCESS',
-        explanation: 'When your Node server runs on `localhost:3000`, it is running locally on your developer machine. `localhost` (or the IP `127.0.0.1`) conceptually means "this machine". Another computer cannot simply use your localhost address to connect to your application because their computer will look for the server on their own machine, not yours.',
-        keyTakeaway: 'Localhost is for local development on your own machine. It is not publicly accessible.'
-      },
-      {
-        id: 'm1-c5',
-        title: 'WHAT IS HOSTING?',
-        explanation: 'For someone else to access your application, it needs to be hosted. Hosting provides an environment/machine where an application can run and, depending on its configuration, be made accessible to its intended users.\n\nA hosted Node application generally needs:\n- A machine/runtime support (Node.js installed)\n- Application files and dependencies\n- Configuration\n- A running server process\n- Network access',
-        visualFlow: ['Developer Laptop', 'Node App (localhost:3000)', 'Deployment', 'Hosted Environment', 'Public Application', 'Users'],
-        keyTakeaway: 'Hosting provides the environment and resources necessary to run an application so intended users can reach it.'
-      },
-      {
-        id: 'm1-c6',
-        title: 'IP ADDRESS, PORT AND DOMAIN',
-        explanation: 'To reach a hosted application over the network, requests rely on three core concepts:\n\n1. **Domain**: Provides a human-friendly name (e.g., https://example.com) that points to a destination.\n2. **IP Address**: Identifies the specific network destination (machine) on the internet.\n3. **Port**: Identifies a specific network service endpoint/process on that machine (e.g., port 3000 for your Node app).',
-        visualFlow: ['DOMAIN', 'NETWORK DESTINATION', 'HOSTING ENVIRONMENT', 'NODE PROCESS', 'APPLICATION', 'HTTP RESPONSE'],
-        keyTakeaway: 'A Domain resolves to an IP address (the machine), and a Port routes the traffic to the specific running application.'
-      },
-      {
-        id: 'm1-c7',
-        title: 'DEVELOPMENT VS PRODUCTION',
-        explanation: 'A **Development environment** is your local machine. It focuses on debugging, frequent code changes, uses localhost, and uses development configuration.\n\nA **Production environment** is the deployed application intended for real users. It prioritizes reliability, security, and uses production configuration.\n\nProduction does not simply mean "a bigger computer"; the configuration and operational requirements differ significantly.',
-        keyTakeaway: 'Development is for building; Production is for serving real users reliably.'
-      },
-      {
-        id: 'm1-c8',
-        title: 'ENVIRONMENT VARIABLES',
-        explanation: 'Configuration values that change between environments (like ports or database passwords) should NOT be hardcoded in your source code. Instead, we use Environment Variables.\n\nFor example, setting `PORT=3000` outside your app, and accessing it via `process.env.PORT`.\n\n**WARNING**: `.env` files containing secrets or passwords should never be committed to source control!',
-        exampleCode: 'const port = process.env.PORT || 3000;\nserver.listen(port);',
-        keyTakeaway: 'Keep configuration and secrets separate from your source code using environment variables.'
-      },
-      {
-        id: 'm1-c9',
-        title: 'BUILD, START AND SERVE',
-        explanation: 'The basic deployment lifecycle usually follows a sequence:\n\n1. Write Code\n2. Install Dependencies\n3. Configure Environment\n4. Build (If Required)\n5. Start Application\n6. Serve Requests\n\nNote that "build" and "start" are different concepts. Not every Node.js application requires a build step. Plain JavaScript Node apps may run immediately without a separate build step.',
-        visualFlow: ['CODE', 'DEPENDENCIES', 'CONFIGURATION', 'BUILD (IF REQUIRED)', 'START', 'SERVE REQUESTS'],
-        keyTakeaway: 'Deployment is a sequence of steps to prepare and launch an application in a new environment.'
-      },
-      {
-        id: 'm1-c10',
-        title: 'HOW DEPLOYMENT WORKS',
-        explanation: 'A generic deployment workflow moves your application from your repository to a hosting environment. The exact steps differ between platforms, but generally include:\n\n- Pulling application source code to the host\n- Installing dependencies\n- Configuring environment variables\n- Starting the Node application process',
-        keyTakeaway: 'Deployment is the process of moving and configuring an application into an environment where it can operate.'
-      },
-      {
-        id: 'm1-c11',
-        title: 'DEPLOYMENT TECHNIQUES',
-        explanation: 'There are many ways to host and deploy applications. No single technique is universally better; they represent different approaches:\n\n1. **Traditional Server / VM**: You manage a virtual computer entirely.\n2. **Platform-as-a-Service (PaaS)**: The platform manages the infrastructure; you just provide the code.\n3. **Containers**: You package your app and its exact runtime environment together.\n4. **Managed Hosting**: A third party handles server maintenance.\n5. **Separate Deployments**: Hosting frontend code (static files) on a CDN and the Node backend elsewhere.',
-        keyTakeaway: 'Deployment encompasses various techniques tailored to different application and operational needs.'
-      }
     ],
     guidedTask: {
       task: 'Build an HTTP server using a Node.js module.',
@@ -234,27 +182,27 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
       successCondition: 'Your server responds on port 3000 using the value you exported from your module.'
     },
     progressiveHints: [
-      { label: 'CONCEPT', text: 'Node provides built-in modules to run servers. Also, remember that localhost only represents the local development environment.' },
-      { label: 'DIRECTION', text: 'You need the built-in HTTP module to create a server. Ask yourself: What changes when the application needs to run somewhere other than the developer\'s laptop?' },
-      { label: 'PARTIAL SOLUTION', text: 'Use http.createServer(). When planning for production, think about configuration + dependencies + runtime + network access.' },
-      { label: 'STRONG GUIDANCE', text: 'Ensure the server listens on port 3000. For deployment, remember the generic sequence: configure -> install -> build if required -> start -> serve.' }
+      { label: 'CONCEPT', text: 'Node gives you built-in modules so you don\'t have to write everything from scratch.' },
+      { label: 'DIRECTION', text: 'You need the built-in http module to create a server, and module.exports to share your own code.' },
+      { label: 'PARTIAL SOLUTION', text: 'Use http.createServer() to build the server, and module.exports = {...} to export your value.' },
+      { label: 'STRONG GUIDANCE', text: 'Make sure greet() returns text, the response uses greeter.greet(), and the server listens on port 3000.' }
     ],
     failureGuidance: {
-      whyItMatters: 'A server needs to be actively listening on the correct port to accept connections. Furthermore, an application that works locally still needs a suitable runtime, configuration, and environment before other users can access it.',
-      thinkAbout: 'Did you bind the server to port 3000? For deployment concepts, ask whether the application is still running only on the developer\'s machine or whether it has been placed into an environment designed to serve users.'
+      whyItMatters: 'A server needs to be listening on the right port, and it needs to actually use the value you exported from your module.',
+      thinkAbout: 'Does greet() return something? Is the server listening on port 3000?'
     },
     successGuidance: {
-      whatYouDid: 'You initialized a basic Node.js HTTP server and learned the conceptual steps to deploy it.',
-      whyItWorks: 'The HTTP module handles local network requests. By distinguishing local development from production and understanding deployment workflows, you can eventually share applications securely with real users.'
+      whatYouDid: 'You built a Node.js HTTP server using your own module.',
+      whyItWorks: 'require() and module.exports let files share code with each other, and the http module turns that code into a real server.'
     },
     reflection: {
       whatYouLearned: [
-        'Node.js uses core modules for networking.',
-        'Localhost is strictly local; Hosting makes apps accessible.',
-        'Environment variables separate configuration from code.'
+        'Node.js uses modules to organize code.',
+        'module.exports shares code; require() imports it.',
+        'http.createServer() turns your code into a running server.'
       ],
-      whyItMatters: 'Everything built on top of Node.js fundamentally relies on this exact request-response cycle and module system. Deployment is the essential next step to make that code useful to the world.',
-      prompt: 'Why does localhost work for you but not normally for another person on the internet?\nWhat does a hosting environment actually provide to a Node application?\nWhy should configuration such as ports and secrets be separated from source code?\nDoes every Node.js application require a build step? Why or why not?\nWhat is the difference between deploying an application and hosting an application?\nWhich deployment approach would you want to learn more about and why?'
+      whyItMatters: 'Every Node.js app you build starts with this same module + server pattern.',
+      prompt: 'What does module.exports actually do?\nWhat\'s the difference between a built-in module and one you write yourself?'
     },
     conceptCheck: [
       {
@@ -856,13 +804,6 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
         keyTakeaway: 'An event represents something that happened; listeners define what should happen in response.'
       },
       {
-        id: 'm6-c2',
-        title: 'EVENT-DRIVEN PROGRAMMING',
-        explanation: 'Event-driven programming changes how parts of your application communicate.\n\nIn DIRECT FLOW, Component A explicitly calls Component B. This creates tight coupling (A must know about B).\n\nIn EVENT-DRIVEN FLOW, Component A emits an event. Components B, C, and D can listen and react independently without A needing to know they exist.',
-        visualFlow: ['DIRECT FLOW: A -> B', 'EVENT FLOW: A -> EVENT -> B & C'],
-        keyTakeaway: 'Event-driven architecture reduces tight coupling by separating the event producer from the event consumers.'
-      },
-      {
         id: 'm6-c3',
         title: 'EVENTEMITTER',
         explanation: '`events` is a Node.js CORE MODULE. It provides the `EventEmitter` class, which is the foundational mechanism for creating and handling events inside a Node process. You do not need to `npm install` it.',
@@ -885,28 +826,6 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
           { codeFragment: 'emitter.emit("alarm")', explanation: 'Triggers the event, causing the registered handler to run.' }
         ],
         keyTakeaway: 'emit() announces that an event happened; on() registers a function to react to it.'
-      },
-      {
-        id: 'm6-c5',
-        title: 'once()',
-        explanation: '`on()` registers a listener that will react every time the event is emitted.\n`once()` registers a listener that reacts only the first time, and is then immediately removed.',
-        exampleCode: 'emitter.once("ready", () => {\n  console.log("System initialized once!");\n});\n\nemitter.emit("ready"); // Triggers handler\nemitter.emit("ready"); // Ignored, listener was removed',
-        visualFlow: ['on() -> reacts repeatedly', 'once() -> reacts once -> removes listener'],
-        keyTakeaway: 'Use once() when you only care about an event happening for the very first time.'
-      },
-      {
-        id: 'm6-c6',
-        title: 'EVENTS IN NODE ARCHITECTURE',
-        explanation: 'A major advantage of events is that multiple distinct systems can listen to the exact same event without modifying the code that emits it.\n\nWhen a security breach occurs, you might want to log it, trigger an alarm, and notify an audit system all at once.',
-        visualFlow: ['ONE EVENT', 'LOGGER', 'SECURITY MONITOR', 'AUDIT SYSTEM'],
-        keyTakeaway: 'Events allow you to easily add new reactions (listeners) without changing the core application logic.'
-      },
-      {
-        id: 'm6-c7',
-        title: 'EVENTEMITTER VS SOCKET.IO',
-        explanation: 'This distinction is critical.\n\nEventEmitter is a Node.js process-local mechanism. It allows communication between parts of the same running application/process.\n\nSocket.IO is for networked real-time communication. It connects servers and clients (browsers) across the internet.\n\nSocket.IO is event-driven, but it is NOT the same thing as Node.js EventEmitter.',
-        visualFlow: ['EventEmitter: Node component -> Node component', 'Socket.IO: Server <-> Network <-> Client'],
-        keyTakeaway: 'Use EventEmitter for internal app communication. Use Socket.IO for client-server communication.'
       }
     ],
     guidedTask: {
@@ -926,7 +845,7 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
     ],
     failureGuidance: {
       whyItMatters: 'Event-driven systems require precise coordination between the emitter and the listener.',
-      thinkAbout: 'Check whether the event being emitted is the exact same event string that your listener is registered to receive. Also, think about which component emits the event and which component should react to it. Are you confusing EventEmitter (in-process) with Socket.IO (network)?'
+      thinkAbout: 'Is the event name in .emit() spelled exactly the same as the one in .on()?'
     },
     successGuidance: {
       whatYouDid: 'You built an event-driven architecture that bridges internal Node.js events with real-time websocket broadcasts.',

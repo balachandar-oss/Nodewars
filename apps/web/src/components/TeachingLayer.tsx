@@ -57,7 +57,7 @@ const TeachingLayer: React.FC<TeachingLayerProps> = ({ missionNumber, content, o
                 const Icon = identity.icon;
                 return <Icon size={12} />;
               })()}
-              {identity.systemName} &middot; {missionNumber}/7
+              {identity.systemName} &middot; {missionNumber}/4
               <span className="opacity-50 mx-1">|</span>
               {isBriefing ? 'Mission briefing' : `Concept ${step} of ${totalConcepts}`}
             </div>

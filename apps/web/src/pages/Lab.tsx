@@ -206,11 +206,7 @@ const Lab = () => {
     if (isEvaluating || !code.trim()) return;
 
     setIsEvaluating(true);
-    setLogs(prev => [
-      ...prev,
-      { type: 'info', message: '> node index.js' },
-      { type: 'info', message: 'Starting up...' }
-    ]);
+    setLogs(prev => [...prev, { type: 'info', message: 'Checking your code...' }]);
 
     try {
       const token = localStorage.getItem('token');
