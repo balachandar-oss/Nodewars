@@ -1,41 +1,40 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cyber-void: #0a0518;
-  --color-cyber-deep: #120b2e;
-  --color-cyber-surface: #1a1140;
+  --color-terminal-void: #050a08;
+  --color-terminal-deep: #0a1510;
+  --color-terminal-surface: #0f1f18;
+  --color-neon-green: #39ff9d;
+  --color-neon-mint: #5cffb8;
   --color-neon-violet: #9d5cff;
-  --color-neon-cyan: #3ff0ff;
   --color-neon-gold: #ffc857;
   --color-neon-magenta: #ff4fd8;
-  --color-neon-mint: #4bf0a6;
 
   --font-display: 'Rajdhani', sans-serif;
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
 }
 
 /* ============================================
-   Extreme cyber-gaming theme: dark premium
-   backdrop, neon accents, extreme claymorphism
-   (deep puffy 3D depth), glassmorphism (frosted
-   translucency), and a subtle sand/grain texture
-   for tactile premium-game surfaces.
-   Single theme, no light/dark toggle.
+   Terminalmorphism: green-on-black hacker-terminal
+   base with a violet blend, extreme claymorphism
+   depth, glassmorphism translucency, and a subtle
+   sand/grain texture. Single theme, no toggle.
    ============================================ */
 :root {
-  --bg-primary: #0a0518;
-  --bg-secondary: #150d33;
-  --bg-tertiary: #1e1448;
-  --text-primary: #f1edff;
-  --text-secondary: #b6acdd;
-  --text-muted: #8377ad;
-  --border-color: rgba(157, 92, 255, 0.25);
+  --bg-primary: #050a08;
+  --bg-secondary: #0a1510;
+  --bg-tertiary: #0f1f18;
+  --text-primary: #e8fff2;
+  --text-secondary: #9fd9bd;
+  --text-muted: #5f8a76;
+  --border-color: rgba(57, 255, 157, 0.2);
 
   --accent-purple: #9d5cff;
   --accent-gold: #ffc857;
   --accent-rose: #ff4fd8;
-  --accent-sky: #3ff0ff;
-  --accent-mint: #4bf0a6;
+  --accent-sky: #39ff9d;
+  --accent-mint: #5cffb8;
   --accent-coral: #ff7a59;
 }
 
@@ -49,22 +48,20 @@ body {
   position: relative;
   scroll-behavior: smooth;
   background-image:
-    radial-gradient(circle at 12% 8%, rgba(157, 92, 255, 0.22) 0%, transparent 42%),
-    radial-gradient(circle at 88% 92%, rgba(63, 240, 255, 0.14) 0%, transparent 42%),
-    radial-gradient(circle at 90% 10%, rgba(255, 200, 87, 0.10) 0%, transparent 38%),
-    linear-gradient(180deg, #0a0518 0%, #120b2e 55%, #0a0518 100%);
+    radial-gradient(circle at 10% 8%, rgba(57, 255, 157, 0.14) 0%, transparent 40%),
+    radial-gradient(circle at 90% 15%, rgba(157, 92, 255, 0.16) 0%, transparent 42%),
+    radial-gradient(circle at 85% 90%, rgba(57, 255, 157, 0.10) 0%, transparent 40%),
+    linear-gradient(180deg, #050a08 0%, #0a1510 55%, #050a08 100%);
   background-attachment: fixed;
 }
 
-/* Sand/grain texture overlay - subtle noise for a tactile, premium surface
-   rather than flat digital gradients. Applied once, fixed, non-interactive. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.05;
+  opacity: 0.045;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   mix-blend-mode: overlay;
 }
@@ -75,94 +72,92 @@ html {
 
 @layer utilities {
   .font-display { font-family: var(--font-display); }
+  .font-mono { font-family: var(--font-mono); }
 
   /* ============================================
-     Glassmorphism - frosted neon-tinted glass
+     Glassmorphism - frosted green-tinted glass
      ============================================ */
   .glass-panel {
-    background-color: rgba(26, 17, 64, 0.55);
+    background-color: rgba(15, 31, 24, 0.55);
     backdrop-filter: blur(22px) saturate(140%);
     -webkit-backdrop-filter: blur(22px) saturate(140%);
-    border: 1px solid rgba(157, 92, 255, 0.28);
+    border: 1px solid rgba(57, 255, 157, 0.22);
     border-radius: 24px;
     box-shadow:
-      0 8px 40px rgba(0, 0, 0, 0.45),
-      0 0 0 1px rgba(157, 92, 255, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      0 8px 40px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(57, 255, 157, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
     position: relative;
   }
 
   .panel {
-    background-color: rgba(21, 13, 51, 0.75);
+    background-color: rgba(10, 21, 16, 0.78);
     backdrop-filter: blur(18px) saturate(130%);
     -webkit-backdrop-filter: blur(18px) saturate(130%);
-    border: 1px solid rgba(157, 92, 255, 0.2);
+    border: 1px solid rgba(57, 255, 157, 0.16);
     border-radius: 20px;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
   }
 
   /* ============================================
-     Extreme claymorphism - deep, puffy 3D surfaces
-     with strong dual-tone shadow for real depth
+     Extreme claymorphism - deep puffy 3D surfaces
      ============================================ */
   .clay-panel {
-    background: linear-gradient(150deg, #211750, #150d33 65%);
+    background: linear-gradient(150deg, #132a1f, #0a1510 65%);
     border-radius: 32px;
     box-shadow:
-      12px 12px 32px rgba(0, 0, 0, 0.55),
-      -10px -10px 28px rgba(157, 92, 255, 0.10),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(157, 92, 255, 0.18);
+      12px 12px 32px rgba(0, 0, 0, 0.6),
+      -10px -10px 28px rgba(57, 255, 157, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(57, 255, 157, 0.14);
   }
 
   .clay-button {
-    background: linear-gradient(150deg, #b57bff, #8a3ff0 60%, #6d2ee0);
-    color: #ffffff;
+    background: linear-gradient(150deg, #4dffab, #22c97a 55%, #178f57);
+    color: #04140c;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     font-family: var(--font-sans);
     font-weight: 700;
     letter-spacing: 0.01em;
     box-shadow:
-      0 8px 24px rgba(141, 63, 240, 0.5),
-      0 0 24px rgba(157, 92, 255, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25),
-      inset 0 -6px 12px rgba(0, 0, 0, 0.2);
+      0 8px 24px rgba(34, 201, 122, 0.45),
+      0 0 24px rgba(57, 255, 157, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      inset 0 -6px 12px rgba(0, 0, 0, 0.15);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
   .clay-button:hover:not(:disabled) {
     transform: translateY(-3px);
     box-shadow:
-      0 12px 30px rgba(141, 63, 240, 0.6),
-      0 0 32px rgba(157, 92, 255, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      inset 0 -6px 12px rgba(0, 0, 0, 0.2);
+      0 12px 30px rgba(34, 201, 122, 0.55),
+      0 0 32px rgba(57, 255, 157, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -6px 12px rgba(0, 0, 0, 0.15);
   }
 
   .clay-button:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow:
-      0 4px 14px rgba(141, 63, 240, 0.45),
-      inset 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 14px rgba(34, 201, 122, 0.4), inset 0 2px 8px rgba(0, 0, 0, 0.25);
   }
 
   .clay-button:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
   }
 
   .clay-button-secondary {
-    background: linear-gradient(150deg, #241a54, #180f3d);
+    background: linear-gradient(150deg, #1a3327, #0d1c15);
     color: var(--text-primary);
     border-radius: 20px;
     border: 1px solid rgba(157, 92, 255, 0.35);
     font-family: var(--font-sans);
     font-weight: 600;
     box-shadow:
-      6px 6px 18px rgba(0, 0, 0, 0.4),
-      -4px -4px 14px rgba(157, 92, 255, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      6px 6px 18px rgba(0, 0, 0, 0.45),
+      -4px -4px 14px rgba(157, 92, 255, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   }
 
@@ -172,15 +167,57 @@ html {
   }
 
   .clay-inset {
-    background: #100a29;
+    background: #071009;
     border-radius: 18px;
     box-shadow:
-      inset 6px 6px 14px rgba(0, 0, 0, 0.5),
-      inset -4px -4px 12px rgba(157, 92, 255, 0.08);
-    border: 1px solid rgba(157, 92, 255, 0.12);
+      inset 6px 6px 14px rgba(0, 0, 0, 0.55),
+      inset -4px -4px 12px rgba(57, 255, 157, 0.05);
+    border: 1px solid rgba(57, 255, 157, 0.1);
   }
 
-  /* Neon glow utilities - used sparingly for gaming feel on key elements */
+  /* ============================================
+     Terminalmorphism - a real terminal window
+     chrome (traffic-light dots, mono type) wrapped
+     in the same clay/glass depth, for code/output
+     surfaces specifically.
+     ============================================ */
+  .terminal-window {
+    background: #04100a;
+    border-radius: 20px;
+    border: 1px solid rgba(57, 255, 157, 0.22);
+    box-shadow:
+      10px 10px 26px rgba(0, 0, 0, 0.55),
+      -6px -6px 20px rgba(57, 255, 157, 0.05),
+      inset 0 0 30px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .terminal-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    background: linear-gradient(180deg, rgba(57, 255, 157, 0.08), transparent);
+    border-bottom: 1px solid rgba(57, 255, 157, 0.15);
+  }
+
+  .terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    box-shadow: 0 0 6px currentColor;
+  }
+
+  .terminal-body {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--accent-mint);
+    padding: 1rem;
+  }
+
+  /* Neon glow utilities */
   .neon-text {
     text-shadow: 0 0 12px currentColor, 0 0 28px currentColor;
   }
@@ -189,7 +226,7 @@ html {
     box-shadow: 0 0 0 1px currentColor, 0 0 18px currentColor, 0 0 36px color-mix(in srgb, currentColor 40%, transparent);
   }
 
-  /* Soft colored badge/chip - neon-tinted */
+  /* Chips */
   .chip {
     border-radius: 999px;
     padding: 0.3rem 0.85rem;
@@ -204,15 +241,14 @@ html {
   .chip-purple { background: rgba(157, 92, 255, 0.16); color: #c9a8ff; border-color: rgba(157, 92, 255, 0.4); }
   .chip-gold { background: rgba(255, 200, 87, 0.14); color: #ffd98a; border-color: rgba(255, 200, 87, 0.4); }
   .chip-rose { background: rgba(255, 79, 216, 0.14); color: #ff9ee9; border-color: rgba(255, 79, 216, 0.4); }
-  .chip-sky { background: rgba(63, 240, 255, 0.14); color: #9ef5ff; border-color: rgba(63, 240, 255, 0.4); }
-  .chip-mint { background: rgba(75, 240, 166, 0.14); color: #a2f7cf; border-color: rgba(75, 240, 166, 0.4); }
+  .chip-sky { background: rgba(57, 255, 157, 0.14); color: #9dffce; border-color: rgba(57, 255, 157, 0.4); }
+  .chip-mint { background: rgba(92, 255, 184, 0.14); color: #b0ffdd; border-color: rgba(92, 255, 184, 0.4); }
 
-  /* Skeleton loading shimmer - used while pages fetch data, so nothing
-     ever renders as a blank/broken layout mid-fetch. */
+  /* Skeleton loading shimmer */
   .skeleton {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(90deg, #1a1140 0%, #241a54 50%, #1a1140 100%);
+    background: linear-gradient(90deg, #0a1510 0%, #132a1f 50%, #0a1510 100%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.4s ease-in-out infinite;
     border-radius: 16px;
@@ -223,18 +259,37 @@ html {
     100% { background-position: -200% 0; }
   }
 
-  /* Custom Scrollbar - ultra smooth feel */
+  /* Scrollbars - always visible, thin, never hidden so overflow is obvious */
   .custom-scrollbar {
     scroll-behavior: smooth;
+    overflow-y: auto;
   }
-  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(157, 92, 255, 0.35);
+    background: rgba(57, 255, 157, 0.4);
     border-radius: 10px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(157, 92, 255, 0.55);
+    background: rgba(57, 255, 157, 0.6);
+  }
+
+  /* Fade hint at the bottom of a scrollable panel, so it's always obvious
+     there's more content below rather than looking like a dead end. */
+  .scroll-fade-bottom {
+    position: relative;
+  }
+  .scroll-fade-bottom::after {
+    content: "";
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: block;
+    height: 28px;
+    margin-top: -28px;
+    background: linear-gradient(180deg, transparent, rgba(10, 21, 16, 0.9));
+    pointer-events: none;
   }
 
   .animate-pulse-fast {
@@ -267,5 +322,5 @@ html {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(157, 92, 255, 0.35) transparent;
+  scrollbar-color: rgba(57, 255, 157, 0.4) transparent;
 }

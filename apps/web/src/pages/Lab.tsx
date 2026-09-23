@@ -393,7 +393,7 @@ const Lab = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+          <div className="flex-1 overflow-y-auto custom-scrollbar scroll-fade-bottom flex flex-col">
             {evaluation?.success && content ? (
               <PostMissionDebrief
                 content={content}
