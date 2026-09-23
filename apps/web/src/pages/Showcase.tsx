@@ -46,8 +46,16 @@ const Showcase = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen text-sm animate-pulse" style={{ color: 'var(--accent-purple)' }}>
-        Putting together your recap...
+      <div className="max-w-4xl mx-auto p-6 md:p-10 animate-fade-in">
+        <div className="skeleton h-20 w-20 rounded-full mx-auto mb-4"></div>
+        <div className="skeleton h-10 w-2/3 mx-auto mb-2"></div>
+        <div className="skeleton h-4 w-1/2 mx-auto mb-10"></div>
+        <div className="space-y-4">
+          <div className="skeleton h-16"></div>
+          <div className="skeleton h-16"></div>
+          <div className="skeleton h-16"></div>
+          <div className="skeleton h-16"></div>
+        </div>
       </div>
     );
   }

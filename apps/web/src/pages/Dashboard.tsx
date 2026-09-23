@@ -86,6 +86,24 @@ const Dashboard = () => {
 
   if (!user) return null;
 
+  if (missions.length === 0) {
+    return (
+      <div className="w-full h-full flex flex-col relative z-10 animate-fade-in">
+        <div className="skeleton h-16 mb-4"></div>
+        <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
+          <div className="w-full lg:w-1/5 lg:min-w-[280px] flex flex-col gap-2">
+            <div className="skeleton h-10"></div>
+            <div className="skeleton h-16"></div>
+            <div className="skeleton h-16"></div>
+            <div className="skeleton h-16"></div>
+            <div className="skeleton h-16"></div>
+          </div>
+          <div className="flex-1 skeleton"></div>
+        </div>
+      </div>
+    );
+  }
+
   const nextLevelXp = user.level * 200;
   const xpProgress = (user.xp / nextLevelXp) * 100;
   const completedCount = missions.filter(m => m.status === 'COMPLETE').length;

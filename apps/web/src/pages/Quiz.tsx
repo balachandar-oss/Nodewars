@@ -147,7 +147,18 @@ const Quiz = () => {
   }
 
   if (!attempt) {
-    return <div className="text-center p-12" style={{ color: 'var(--text-secondary)' }}>Loading your quiz...</div>;
+    return (
+      <div className="max-w-2xl mx-auto p-6 md:p-10 animate-fade-in">
+        <div className="skeleton h-8 w-1/3 mb-6"></div>
+        <div className="skeleton h-40 mb-6"></div>
+        <div className="space-y-3">
+          <div className="skeleton h-12"></div>
+          <div className="skeleton h-12"></div>
+          <div className="skeleton h-12"></div>
+          <div className="skeleton h-12"></div>
+        </div>
+      </div>
+    );
   }
 
   const currentQ = attempt.questions[currentIndex].question;

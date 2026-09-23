@@ -283,8 +283,21 @@ const Lab = () => {
 
   if (!mission) {
     return (
-      <div className="flex items-center justify-center h-[60vh] text-sm animate-pulse" style={{ color: 'var(--accent-purple)' }}>
-        Loading your mission...
+      <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 p-6 max-w-[1920px] mx-auto animate-fade-in">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
+          <div className="lg:col-span-3 flex flex-col gap-3">
+            <div className="skeleton h-24"></div>
+            <div className="skeleton flex-1"></div>
+          </div>
+          <div className="lg:col-span-6 flex flex-col gap-3">
+            <div className="skeleton h-12"></div>
+            <div className="skeleton flex-1"></div>
+          </div>
+          <div className="lg:col-span-3 flex flex-col gap-3">
+            <div className="skeleton h-40"></div>
+            <div className="skeleton flex-1"></div>
+          </div>
+        </div>
       </div>
     );
   }

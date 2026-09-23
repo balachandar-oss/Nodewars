@@ -196,7 +196,17 @@ const Hunt = () => {
   };
 
   if (loading || !gameState) {
-    return <div className="p-12 text-center animate-pulse" style={{ color: 'var(--text-secondary)' }}>Loading the hunt...</div>;
+    return (
+      <div className="max-w-[1600px] mx-auto p-6 animate-fade-in">
+        <div className="skeleton h-16 mb-4"></div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="skeleton h-32"></div>
+          <div className="skeleton h-32"></div>
+          <div className="skeleton h-32"></div>
+          <div className="skeleton h-32"></div>
+        </div>
+      </div>
+    );
   }
 
   if (gameState.phase !== 'HUNT' && gameState.phase !== 'COMPLETE') {
