@@ -83,6 +83,7 @@ model Mission {
   hints           String // JSON string array
   prerequisites   String // JSON string array of mission IDs
   unlockComponent String
+  isBonus         Boolean           @default(false)
   progress        MissionProgress[]
   submissions     Submission[]
   createdAt       DateTime          @default(now())
@@ -132,6 +133,7 @@ model QuizAttempt {
   id             String            @id @default(uuid())
   user           User              @relation(fields: [userId], references: [id])
   userId         String
+  missionId      String?
   isCompleted    Boolean           @default(false)
   score          Int               @default(0)
   percentage     Float             @default(0)
