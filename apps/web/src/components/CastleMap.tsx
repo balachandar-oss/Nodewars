@@ -383,15 +383,13 @@ const CastleMap: React.FC<CastleMapProps> = ({
   }, [onPositionChange, updatePlayerPosition, setPlayerPosition]);
 
   return (
-    <div className="relative">
+    <div className="relative clay-panel p-2 inline-block">
       <div
         ref={containerRef}
-        className="castle-map-container"
+        className="castle-map-container rounded-2xl overflow-hidden"
         style={{
           width: `${GAME_CONFIG.CANVAS_WIDTH}px`,
           height: `${GAME_CONFIG.CANVAS_HEIGHT}px`,
-          border: '2px solid #333',
-          overflow: 'hidden',
           backgroundColor: '#000'
         }}
       />

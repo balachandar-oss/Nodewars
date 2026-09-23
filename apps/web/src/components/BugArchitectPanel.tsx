@@ -22,10 +22,10 @@ interface BugArchitectPanelProps {
 }
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  EASY: 'text-neon-green',
-  MEDIUM: 'text-neon-amber',
-  HARD: 'text-neon-red',
-  CRITICAL: 'text-neon-red'
+  EASY: 'var(--accent-mint)',
+  MEDIUM: 'var(--accent-gold)',
+  HARD: 'var(--accent-rose)',
+  CRITICAL: 'var(--accent-rose)'
 };
 
 const ROOM_OPTIONS = Object.values(ROOMS).map(r => ({ id: r.id, name: r.name }));
@@ -77,17 +77,17 @@ const BugArchitectPanel: React.FC<BugArchitectPanelProps> = ({ bug, onPlanted })
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* HEADER */}
-      <div className="glass-panel p-4 border-t-2 border-t-neon-purple bg-[#0a0510]">
+      <div className="glass-panel p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 border-2 border-neon-purple flex items-center justify-center bg-neon-purple/10 text-neon-purple">
-            <Target size={20} />
+          <div className="clay-inset w-10 h-10 rounded-xl flex items-center justify-center">
+            <Target size={20} style={{ color: 'var(--accent-purple)' }} />
           </div>
           <div>
-            <h2 className="text-lg font-title tracking-widest text-white uppercase">
-              YOUR ASSIGNED BUG
+            <h2 className="text-lg font-display font-bold" style={{ color: 'var(--text-primary)' }}>
+              Your assigned bug
             </h2>
-            <div className="text-[10px] font-mono text-neon-purple/70 tracking-widest mt-1">
-              ONE SHOT • CHOOSE WISELY
+            <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+              One shot &middot; choose wisely
             </div>
           </div>
         </div>
@@ -95,45 +95,45 @@ const BugArchitectPanel: React.FC<BugArchitectPanelProps> = ({ bug, onPlanted })
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0">
         {/* BUG DETAILS */}
-        <div className="lg:col-span-2 glass-panel flex flex-col border-t-2 border-t-white/20 bg-[#0a0510]">
-          <div className="p-4 border-b border-white/5 bg-black/40 shrink-0">
-            <h3 className="text-sm font-title tracking-widest text-white/70">
-              THREAT DETAILS
+        <div className="lg:col-span-2 glass-panel flex flex-col">
+          <div className="p-4 shrink-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+              Bug details
             </h3>
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
             {error && (
-              <div className="p-4 border border-neon-red text-neon-red bg-neon-red/5 font-mono text-xs flex items-center gap-3 mb-4">
+              <div className="p-4 rounded-2xl clay-inset text-sm flex items-center gap-3 mb-4" style={{ color: 'var(--accent-rose)' }}>
                 <AlertCircle size={16} className="shrink-0" />
                 {error}
               </div>
             )}
 
-            <div className="p-4 border border-neon-purple bg-neon-purple/10 shadow-[inset_0_0_15px_rgba(176,38,255,0.15)]">
+            <div className="p-4 rounded-2xl clay-inset">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <div className="font-bold text-xs tracking-widest mb-1 text-white">
+                  <div className="font-bold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>
                     {bug.vulnerabilityType.replace(/_/g, ' ')}
                   </div>
-                  <div className={`text-xs font-mono ${DIFFICULTY_COLORS[bug.difficulty] || 'text-white/50'}`}>
+                  <div className="text-xs font-semibold" style={{ color: DIFFICULTY_COLORS[bug.difficulty] || 'var(--text-muted)' }}>
                     {bug.difficulty}
                   </div>
                 </div>
               </div>
 
-              <div className="text-[10px] text-white/60 leading-relaxed border-t border-white/5 pt-2 mt-2">
-                <span className="text-white/40">TARGET SYSTEM: </span>
+              <div className="text-xs leading-relaxed pt-2 mt-2" style={{ color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Target system: </span>
                 {bug.targetSystem}
               </div>
 
-              <div className="text-[10px] text-white/60 leading-relaxed border-t border-white/5 pt-2 mt-2">
-                <span className="text-white/40">Q: </span>
+              <div className="text-xs leading-relaxed pt-2 mt-2" style={{ color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Question: </span>
                 {bug.question}
               </div>
 
               {bug.options?.length > 0 && (
-                <div className="text-[10px] text-white/50 leading-relaxed border-t border-white/5 pt-2 mt-2 space-y-1">
+                <div className="text-xs leading-relaxed pt-2 mt-2 space-y-1" style={{ color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)' }}>
                   {bug.options.map((opt, idx) => (
                     <div key={idx}>{String.fromCharCode(65 + idx)}. {opt}</div>
                   ))}
@@ -144,34 +144,34 @@ const BugArchitectPanel: React.FC<BugArchitectPanelProps> = ({ bug, onPlanted })
         </div>
 
         {/* LOCATION / STRUCTURE SELECTION & PLANTING */}
-        <div className="glass-panel flex flex-col border-t-2 border-t-neon-amber bg-[#0a0510]">
+        <div className="glass-panel flex flex-col">
           {bug.status === 'PLANTED' ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-6 gap-4">
-              <div className="w-16 h-16 border-2 border-neon-green rounded-full flex items-center justify-center bg-neon-green/10">
-                <CheckCircle size={28} className="text-neon-green" />
+              <div className="w-16 h-16 rounded-full flex items-center justify-center clay-inset">
+                <CheckCircle size={28} style={{ color: 'var(--accent-mint)' }} />
               </div>
-              <div className="font-title text-lg text-neon-green tracking-widest">PLANTED</div>
-              <div className="font-mono text-[10px] text-white/60 tracking-widest">
-                LOCATION: <span className="text-white">{bug.location || 'UNKNOWN'}</span>
+              <div className="text-lg font-display font-bold" style={{ color: 'var(--accent-mint)' }}>Planted</div>
+              <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                Location: <span style={{ color: 'var(--text-primary)' }}>{bug.location || 'Unknown'}</span>
               </div>
               {bug.structureType && (
-                <div className="font-mono text-[10px] text-white/60 tracking-widest">
-                  STRUCTURE: <span className="text-white">{bug.structureType}</span>
+                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  Structure: <span style={{ color: 'var(--text-primary)' }}>{bug.structureType}</span>
                 </div>
               )}
             </div>
           ) : (
             <>
-              <div className="p-4 border-b border-white/5 bg-black/40 shrink-0">
-                <h3 className="text-sm font-title tracking-widest text-white/70 flex items-center gap-2">
+              <div className="p-4 shrink-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                   <MapPin size={14} />
-                  PLANT LOCATION
+                  Plant location
                 </h3>
               </div>
 
               <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-4">
                 <div>
-                  <div className="text-[9px] font-mono text-white/40 tracking-widest mb-2">ROOM</div>
+                  <div className="text-xs mb-2 font-semibold" style={{ color: 'var(--text-muted)' }}>Room</div>
                   <div className="grid grid-cols-2 gap-2">
                     {ROOM_OPTIONS.map(room => {
                       const isSelected = selectedLocation === room.id;
@@ -179,13 +179,12 @@ const BugArchitectPanel: React.FC<BugArchitectPanelProps> = ({ bug, onPlanted })
                         <div
                           key={room.id}
                           onClick={() => setSelectedLocation(room.id)}
-                          className={`p-2 border text-center cursor-pointer transition-all font-mono text-[10px] tracking-widest font-bold ${
-                            isSelected
-                              ? 'border-neon-amber bg-neon-amber/10 text-neon-amber shadow-[inset_0_0_10px_rgba(255,170,0,0.2)]'
-                              : 'border-white/10 text-white/50 hover:border-white/30 bg-black/40'
+                          className={`p-2 rounded-xl text-center cursor-pointer transition-all text-xs font-semibold ${
+                            isSelected ? 'clay-panel' : 'clay-inset hover:opacity-90'
                           }`}
+                          style={{ color: isSelected ? 'var(--accent-purple)' : 'var(--text-secondary)' }}
                         >
-                          {room.name.toUpperCase()}
+                          {room.name}
                         </div>
                       );
                     })}
@@ -193,7 +192,7 @@ const BugArchitectPanel: React.FC<BugArchitectPanelProps> = ({ bug, onPlanted })
                 </div>
 
                 <div>
-                  <div className="text-[9px] font-mono text-white/40 tracking-widest mb-2">STRUCTURE TYPE</div>
+                  <div className="text-xs mb-2 font-semibold" style={{ color: 'var(--text-muted)' }}>Structure type</div>
                   <div className="grid grid-cols-1 gap-2">
                     {STRUCTURE_OPTIONS.map(type => {
                       const isSelected = selectedStructure === type;
@@ -201,11 +200,10 @@ const BugArchitectPanel: React.FC<BugArchitectPanelProps> = ({ bug, onPlanted })
                         <div
                           key={type}
                           onClick={() => setSelectedStructure(type)}
-                          className={`p-2 border text-center cursor-pointer transition-all font-mono text-[10px] tracking-widest font-bold ${
-                            isSelected
-                              ? 'border-neon-purple bg-neon-purple/10 text-neon-purple shadow-[inset_0_0_10px_rgba(176,38,255,0.2)]'
-                              : 'border-white/10 text-white/50 hover:border-white/30 bg-black/40'
+                          className={`p-2 rounded-xl text-center cursor-pointer transition-all text-xs font-semibold ${
+                            isSelected ? 'clay-panel' : 'clay-inset hover:opacity-90'
                           }`}
+                          style={{ color: isSelected ? 'var(--accent-purple)' : 'var(--text-secondary)' }}
                         >
                           {type.replace(/_/g, ' ')}
                         </div>
@@ -215,23 +213,19 @@ const BugArchitectPanel: React.FC<BugArchitectPanelProps> = ({ bug, onPlanted })
                 </div>
               </div>
 
-              <div className="p-4 border-t border-white/5 bg-black/40 shrink-0">
+              <div className="p-4 shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
                 <button
                   onClick={handlePlantBug}
                   disabled={!selectedLocation || !selectedStructure || isPlanting}
-                  className={`cyber-button w-full px-4 py-3 font-bold transition-all text-xs tracking-widest ${
-                    !selectedLocation || !selectedStructure
-                      ? 'opacity-50 border-white/10 text-white/30 cursor-not-allowed bg-black'
-                      : 'border-neon-green bg-neon-green/10 text-neon-green hover:bg-neon-green/20 shadow-[0_0_15px_rgba(34,255,100,0.2)]'
-                  }`}
+                  className="clay-button w-full px-4 py-3 font-bold text-sm disabled:opacity-40"
                 >
                   {isPlanting ? (
                     <span className="flex items-center justify-center gap-2">
                       <Loader size={12} className="animate-spin" />
-                      PLANTING...
+                      Planting...
                     </span>
                   ) : (
-                    'PLANT BUG'
+                    'Plant bug'
                   )}
                 </button>
               </div>

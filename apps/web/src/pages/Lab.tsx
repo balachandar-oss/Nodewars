@@ -105,7 +105,7 @@ const Lab = () => {
   const [progress, setProgress] = useState<any>(null);
   const [code, setCode] = useState<string>('');
   const [logs, setLogs] = useState<Array<{ type: 'info' | 'success' | 'error' | 'sim', message: string }>>([]);
-  
+
   const [evaluation, setEvaluation] = useState<any>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [showLesson, setShowLesson] = useState(false);
@@ -146,7 +146,7 @@ const Lab = () => {
         if (missionRes.ok && progressRes.ok) {
           const missionData = await missionRes.json();
           const progressData = await progressRes.json();
-          
+
           if (progressData.status === 'LOCKED') {
             if (!isDemoRole) {
               navigate('/dashboard');
@@ -158,12 +158,12 @@ const Lab = () => {
           setProgress(progressData);
           const solvedCode = isInstructorRole ? INSTRUCTOR_SOLUTIONS[missionId] : undefined;
           setCode(solvedCode || missionData.starterCode);
-          setLogs([{ type: 'info', message: 'Mission loaded. Engineering environment ready.' }]);
+          setLogs([{ type: 'info', message: 'Mission loaded. Your environment is ready.' }]);
           setEvaluation(null);
-          
+
           const hasViewedNarrative = sessionStorage.getItem(`node-lab-narrative-viewed-${missionId}`);
           const hasViewedLesson = sessionStorage.getItem(`node-lab-lesson-viewed-${missionId}`);
-          
+
           if (!hasViewedNarrative && missionData.order <= 7) {
             setShowNarrativeBriefing(true);
             setShowLesson(false);
@@ -174,7 +174,7 @@ const Lab = () => {
             setShowNarrativeBriefing(false);
             setShowLesson(false);
           }
-          
+
           if ((progressData.status !== 'LOCKED' || isDemoRole) && missionData.id === 'mission-06') {
              fetch(`${API_URL}/api/missions/${missionId}/enter`, {
                method: 'POST',
@@ -204,12 +204,12 @@ const Lab = () => {
 
   const handleRun = async () => {
     if (isEvaluating || !code.trim()) return;
-    
+
     setIsEvaluating(true);
     setLogs(prev => [
       ...prev,
       { type: 'info', message: '> node index.js' },
-      { type: 'info', message: 'Initializing simulator...' }
+      { type: 'info', message: 'Starting up...' }
     ]);
 
     try {
@@ -224,7 +224,7 @@ const Lab = () => {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) {
         setLogs(prev => [...prev, { type: 'error', message: data.error || 'Evaluation failed' }]);
         setIsEvaluating(false);
@@ -243,16 +243,16 @@ const Lab = () => {
       if (data.success && progress.status !== 'COMPLETE') {
         setProgress((prev: any) => ({ ...prev, status: 'COMPLETE' }));
         setLogs(prev => [
-          ...prev, 
-          { type: 'success', message: `[SYSTEM] MISSION 0${mission.order} COMPLETE. +${mission.xpReward} XP AWARDED.` }
+          ...prev,
+          { type: 'success', message: `Mission ${mission.order} complete. +${mission.xpReward} XP awarded.` }
         ]);
-        
+
         window.dispatchEvent(new Event('user-progress-updated'));
       }
 
     } catch (err) {
       console.error('Execution error', err);
-      setLogs(prev => [...prev, { type: 'error', message: 'Failed to contact execution engine.' }]);
+      setLogs(prev => [...prev, { type: 'error', message: 'Could not reach the execution engine.' }]);
     } finally {
       setIsEvaluating(false);
     }
@@ -262,7 +262,7 @@ const Lab = () => {
     if (mission) {
       const solvedCode = isInstructorRole ? INSTRUCTOR_SOLUTIONS[missionId || ''] : undefined;
       setCode(solvedCode || mission.starterCode);
-      setLogs([{ type: 'info', message: 'Code environment reset to original state.' }]);
+      setLogs([{ type: 'info', message: 'Code reset to the original starting point.' }]);
       setEvaluation(null);
     }
   };
@@ -282,7 +282,11 @@ const Lab = () => {
   };
 
   if (!mission) {
-    return <div className="text-white font-mono p-8 animate-pulse text-xs tracking-widest">ESTABLISHING WORKSTATION LINK...</div>;
+    return (
+      <div className="flex items-center justify-center h-[60vh] text-sm animate-pulse" style={{ color: 'var(--accent-purple)' }}>
+        Loading your mission...
+      </div>
+    );
   }
 
   const objectives = JSON.parse(mission.objectives || '[]');
@@ -290,30 +294,28 @@ const Lab = () => {
   const content = missionId ? teachingRegistry[missionId] : undefined;
   const identity = getMissionIdentity(mission.id);
   const visualState = getSystemVisualState(progress?.status || 'LOCKED', true);
-  
+
   const getStatusText = () => {
-    if (visualState === 'COMPLETED') return `${identity.systemName} ONLINE`;
+    if (visualState === 'COMPLETED') return `${identity.systemName} online`;
     switch (identity.missionId) {
-      case 'mission-01': return 'BOOT SEQUENCE';
-      case 'mission-02': return 'NPM PACKAGE LAYER';
-      case 'mission-06': return 'EVENT MONITORING';
-      case 'mission-08': return 'DEPLOYMENT CHECK';
-      case 'mission-03': return 'ACCESS CONTROL LAYER (BONUS)';
-      case 'mission-04': return 'RESOURCE STORAGE (BONUS)';
-      case 'mission-05': return 'ASYNC PROCESSING (BONUS)';
-      case 'mission-07': return 'CONTROLLED BREACH TEST (BONUS)';
-      default: return 'ACTIVE';
+      case 'mission-01': return 'Boot sequence';
+      case 'mission-02': return 'Package layer';
+      case 'mission-06': return 'Event monitoring';
+      case 'mission-08': return 'Deployment check';
+      case 'mission-03': return 'Access control (bonus)';
+      case 'mission-04': return 'Resource storage (bonus)';
+      case 'mission-05': return 'Async processing (bonus)';
+      case 'mission-07': return 'Controlled breach test (bonus)';
+      default: return 'Active';
     }
   };
 
   const isMission7 = mission.id === 'mission-08'; // finale styling now on the Deployment mission
-  const accentColor = isMission7 ? 'text-neon-amber' : 'text-neon-blue';
-  const borderColor = isMission7 ? 'border-neon-amber/30' : 'border-neon-blue/30';
-  const bgColor = isMission7 ? 'bg-neon-amber/5' : 'bg-neon-blue/5';
-  
+  const accentColor = isMission7 ? 'var(--accent-gold)' : 'var(--accent-purple)';
+
   return (
     <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 p-6 max-w-[1920px] mx-auto z-10 relative animate-slide-in">
-      
+
       {showNarrativeBriefing && content && (
         <NarrativeBriefing
           missionNumber={mission.order}
@@ -323,69 +325,66 @@ const Lab = () => {
       )}
 
       {showLesson && content && !showNarrativeBriefing && (
-        <TeachingLayer 
-          missionNumber={mission.order} 
-          content={content} 
+        <TeachingLayer
+          missionNumber={mission.order}
+          content={content}
           onBeginChallenge={() => {
             if (missionId) {
               sessionStorage.setItem(`node-lab-lesson-viewed-${missionId}`, 'true');
             }
             setShowLesson(false);
-          }} 
+          }}
         />
       )}
 
       {/* FULL WORKSTATION GRID */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 min-h-0 border border-white/10 glass-panel shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-        
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 min-h-0 glass-panel overflow-hidden">
+
         {/* LEFT COLUMN: MISSION CONTROL */}
-        <div className="lg:col-span-3 flex flex-col border-r border-white/10 relative overflow-hidden bg-black/60">
-          <div className={`p-4 border-b ${borderColor} ${bgColor}`}>
+        <div className="lg:col-span-3 flex flex-col relative overflow-hidden" style={{ borderRight: '1px solid var(--border-color)' }}>
+          <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isMission7 ? 'rgba(232, 184, 75, 0.06)' : 'rgba(124, 111, 224, 0.06)' }}>
             <div className="flex items-center gap-2 mb-2">
-              <identity.icon size={16} className={accentColor} />
-              <h1 className={`text-lg font-title tracking-widest uppercase ${accentColor}`}>
+              <identity.icon size={16} style={{ color: accentColor }} />
+              <h1 className="text-lg font-display font-bold" style={{ color: accentColor }}>
                 {identity.systemName}
               </h1>
             </div>
-            
+
             <div className="flex justify-between items-start mb-4">
               <div className="flex flex-col">
-                <span className="text-[10px] font-mono text-white/70 tracking-widest uppercase">
-                  MISSION {identity.designation} · {identity.shortName}
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                  Mission {identity.designation} &middot; {identity.shortName}
                 </span>
-                <span className="text-[9px] font-mono text-white/40 tracking-widest uppercase mt-0.5">
+                <span className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                   {identity.systemRole}
                 </span>
               </div>
               {content?.narrative && (
-                <button 
+                <button
                   onClick={() => setShowNarrativeBriefing(true)}
-                  className={`text-[9px] font-mono border px-2 py-0.5 mt-0.5 transition-colors ${
-                    isMission7 
-                      ? 'border-neon-amber/30 text-neon-amber hover:bg-neon-amber/20' 
-                      : 'border-neon-blue/30 text-neon-blue hover:bg-neon-blue/20'
-                  }`}
+                  className="chip text-[9px] transition-colors"
+                  style={isMission7 ? { backgroundColor: 'rgba(232, 184, 75, 0.12)', color: 'var(--accent-gold)' } : { backgroundColor: 'rgba(124, 111, 224, 0.12)', color: 'var(--accent-purple)' }}
                 >
-                  BRIEFING
+                  Briefing
                 </button>
               )}
             </div>
-            
-            <div className="p-2 border border-white/5 bg-black/40">
-              <div className="text-[9px] font-mono text-white/50 mb-1 tracking-widest">SYSTEM STATUS</div>
-              <div className={`text-xs font-mono tracking-widest uppercase ${
-                visualState === 'COMPLETED' ? 'text-neon-blue' : isMission7 ? 'text-neon-amber animate-pulse' : 'text-neon-green animate-pulse'
-              }`}>
+
+            <div className="clay-inset p-2 rounded-xl">
+              <div className="text-[10px] mb-1" style={{ color: 'var(--text-muted)' }}>Status</div>
+              <div className="text-xs font-semibold" style={{
+                color: visualState === 'COMPLETED' ? 'var(--accent-sky)' : isMission7 ? 'var(--accent-gold)' : 'var(--accent-mint)'
+              }}>
                 {getStatusText()}
               </div>
             </div>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
             {evaluation?.success && content ? (
-              <PostMissionDebrief 
-                content={content} 
-                onReviewLesson={() => setShowLesson(true)} 
+              <PostMissionDebrief
+                content={content}
+                onReviewLesson={() => setShowLesson(true)}
                 onContinue={handleContinue}
                 isFinalMission={allMissions.length > 0 && mission.order >= allMissions[allMissions.length - 1].order}
                 nextMissionId={allMissions.find(m => m.order === mission.order + 1)?.id || ''}
@@ -394,23 +393,23 @@ const Lab = () => {
               <div className="p-4 flex flex-col gap-6 h-full">
                 {content?.guidedTask ? (
                   <div data-testid="guided-task">
-                    <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1 uppercase">GUIDED TASK</div>
-                    <p className="text-xs font-mono text-white/90 leading-relaxed mb-6 bg-white/5 p-3 rounded-sm border-l-2 border-neon-blue">
+                    <div className="text-xs font-semibold mb-3 pb-1" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)' }}>Guided task</div>
+                    <p className="text-xs leading-relaxed mb-6 clay-inset p-3 rounded-xl" style={{ color: 'var(--text-primary)', borderLeft: '2px solid var(--accent-purple)' }}>
                       {content.guidedTask.task}
                     </p>
 
-                    <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1 uppercase">REQUIREMENTS</div>
+                    <div className="text-xs font-semibold mb-3 pb-1" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)' }}>Requirements</div>
                     <ul className="space-y-2 mb-6" data-testid="task-requirements">
                       {content.guidedTask.requirements.map((req: string, i: number) => (
-                        <li key={i} className="flex gap-3 text-xs font-mono items-start">
-                          <div className="text-neon-blue mt-0.5">■</div>
-                          <span className="leading-relaxed text-white/80">{req}</span>
+                        <li key={i} className="flex gap-3 text-xs items-start">
+                          <div className="mt-0.5" style={{ color: 'var(--accent-purple)' }}>&bull;</div>
+                          <span className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{req}</span>
                         </li>
                       ))}
                     </ul>
 
-                    <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1 uppercase">SUCCESS CONDITION</div>
-                    <p className="text-xs font-mono text-white/60 leading-relaxed italic" data-testid="task-success">
+                    <div className="text-xs font-semibold mb-3 pb-1" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)' }}>Success condition</div>
+                    <p className="text-xs leading-relaxed italic" style={{ color: 'var(--text-muted)' }} data-testid="task-success">
                       {content.guidedTask.successCondition}
                     </p>
                   </div>
@@ -418,21 +417,21 @@ const Lab = () => {
                   // Fallback for missing guided task
                   <div data-testid="fallback-task">
                     <div>
-                      <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1">DIRECTIVE</div>
-                      <p className="text-xs font-mono text-white/80 leading-relaxed uppercase">{mission.description}</p>
+                      <div className="text-xs font-semibold mb-3 pb-1" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)' }}>Directive</div>
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{mission.description}</p>
                     </div>
 
                     <div className="mt-6">
-                      <div className="text-cyber-light/40 font-mono text-[10px] tracking-widest mb-3 border-b border-white/10 pb-1">TACTICAL TASKS</div>
+                      <div className="text-xs font-semibold mb-3 pb-1" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)' }}>Tasks</div>
                       <ul className="space-y-2">
                         {objectives.map((obj: string, i: number) => {
                           const isChecked = evaluation?.success === true;
                           return (
-                            <li key={i} className="flex gap-3 text-[10px] font-mono items-center">
-                              <div className={`w-3 h-3 border flex items-center justify-center shrink-0 ${isChecked ? 'border-neon-green text-neon-green' : 'border-white/30 text-transparent'}`}>
-                                <CheckCircle size={8} />
+                            <li key={i} className="flex gap-3 text-xs items-center">
+                              <div className="w-4 h-4 rounded-md flex items-center justify-center shrink-0" style={{ border: `1px solid ${isChecked ? 'var(--accent-mint)' : 'var(--border-color)'}`, color: isChecked ? 'var(--accent-mint)' : 'transparent' }}>
+                                <CheckCircle size={10} />
                               </div>
-                              <span className={`leading-tight uppercase ${isChecked ? 'text-white/40' : 'text-white'}`}>{obj}</span>
+                              <span className="leading-tight" style={{ color: isChecked ? 'var(--text-muted)' : 'var(--text-primary)' }}>{obj}</span>
                             </li>
                           );
                         })}
@@ -443,12 +442,12 @@ const Lab = () => {
 
                 <div className="mt-auto flex flex-col gap-4 pt-6">
                    <HintPanel hints={hints} progressiveHints={content?.progressiveHints} hasFailed={!!evaluation && !evaluation.success} />
-                   <button 
+                   <button
                      onClick={() => setShowLesson(true)}
-                     className="flex items-center justify-center gap-2 w-full py-2 border border-neon-blue/30 bg-neon-blue/5 text-neon-blue font-mono text-[10px] tracking-widest hover:bg-neon-blue/20 transition-colors uppercase"
+                     className="clay-button-secondary flex items-center justify-center gap-2 w-full py-2.5 text-xs"
                    >
                      <BookOpen size={12} />
-                     REVIEW LESSON
+                     Review lesson
                    </button>
                 </div>
               </div>
@@ -457,32 +456,30 @@ const Lab = () => {
         </div>
 
         {/* CENTER COLUMN: CODE WORKBENCH */}
-        <div className="lg:col-span-6 flex flex-col border-r border-white/10 bg-black/80 relative">
-          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-            <LayoutDashboard size={120} />
-          </div>
-          
-          <div className="flex items-center justify-between p-3 border-b border-white/10 bg-black/40">
+        <div className="lg:col-span-6 flex flex-col relative" style={{ borderRight: '1px solid var(--border-color)' }}>
+
+          <div className="flex items-center justify-between p-3" style={{ borderBottom: '1px solid var(--border-color)' }}>
             <div className="flex items-center gap-3">
-              <TerminalIcon size={14} className="text-neon-blue" />
-              <div className="font-mono text-xs text-white tracking-widest uppercase">
-                NODE LAB // CODE WORKBENCH
+              <TerminalIcon size={14} style={{ color: 'var(--accent-purple)' }} />
+              <div className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                Code editor
               </div>
-              <div className="font-mono text-[10px] text-neon-blue tracking-widest opacity-60 hidden md:block">
-                {'>'} /SYSTEM/{mission.title.replace(/ /g, '_')}.js
+              <div className="text-[10px] opacity-70 hidden md:block" style={{ color: 'var(--accent-purple)' }}>
+                {mission.title.replace(/ /g, '_')}.js
               </div>
             </div>
             <div className="flex gap-4 items-center">
-              <button 
-                onClick={handleReset} 
-                className="flex items-center gap-1.5 text-[10px] font-mono text-white/40 hover:text-white transition-colors" 
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-1.5 text-[11px] transition-colors"
+                style={{ color: 'var(--text-muted)' }}
               >
-                <RotateCcw size={10} /> WIPE
+                <RotateCcw size={10} /> Reset
               </button>
             </div>
           </div>
-          
-          <div className="flex-1 relative bg-[#0a0a0f] p-2">
+
+          <div className="flex-1 relative p-2" style={{ backgroundColor: '#1e1c2e' }}>
             <Editor
               height="100%"
               defaultLanguage="javascript"
@@ -492,7 +489,7 @@ const Lab = () => {
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
-                fontFamily: 'Share Tech Mono, monospace',
+                fontFamily: 'Fira Code, monospace',
                 padding: { top: 16 },
                 scrollBeyondLastLine: false,
                 overviewRulerLanes: 0,
@@ -501,87 +498,80 @@ const Lab = () => {
               }}
             />
           </div>
-          
+
           {/* Main Action Bar */}
-          <div className="p-4 border-t border-white/10 bg-black flex justify-between items-center relative shrink-0 z-20">
-            <div className="text-[10px] font-mono text-white/40 flex items-center gap-2">
-              <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse"></span>
-              SYSTEM READY FOR EXECUTION
+          <div className="p-4 flex justify-between items-center relative shrink-0 z-20" style={{ borderTop: '1px solid var(--border-color)' }}>
+            <div className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-mint)' }}></span>
+              Ready to run
             </div>
-            
-            <button 
-              onClick={handleRun} 
+
+            <button
+              onClick={handleRun}
               disabled={isEvaluating}
-              className={`cyber-button px-8 py-3 font-bold flex items-center justify-center gap-3 text-xs w-full md:w-auto transition-all ${
-                isEvaluating 
-                  ? 'bg-neon-amber/10 border-neon-amber text-neon-amber' 
-                  : evaluation?.success 
-                    ? 'bg-neon-blue/10 border-neon-blue text-neon-blue' 
-                    : 'bg-neon-green/10 border-neon-green text-neon-green hover:bg-neon-green/20'
-              }`}
+              className="clay-button px-8 py-3 font-bold flex items-center justify-center gap-3 text-xs w-full md:w-auto"
             >
               {isEvaluating ? (
                 <>
-                  <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                  <span>EXECUTING...</span>
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Running...</span>
                 </>
               ) : evaluation?.success ? (
                 <>
                   <CheckCircle size={14} />
-                  <span>SYSTEM SECURED</span>
+                  <span>System secured</span>
                 </>
               ) : (
                 <>
                   <Play size={14} className="fill-current" />
-                  <span>EXECUTE MISSION</span>
+                  <span>Run my code</span>
                 </>
               )}
             </button>
           </div>
-          
+
           {/* TERMINAL ATTACHED DIRECTLY BELOW */}
-          <div className="h-48 border-t border-white/10 shrink-0">
-            {/* Override panel class inside Terminal if needed by passing a prop or just letting it render as glass-panel */}
-            <div className="h-full w-full bg-black/60">
+          <div className="h-48 shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
+            <div className="h-full w-full">
               <Terminal logs={logs} isEvaluating={isEvaluating} />
             </div>
           </div>
         </div>
 
         {/* RIGHT COLUMN: CASTLE DIAGNOSTICS */}
-        <div className="lg:col-span-3 flex flex-col bg-black/60 relative">
-          
+        <div className="lg:col-span-3 flex flex-col relative">
+
           {/* Castle Console */}
-          <div className="flex-[1.2] min-h-0 shrink-0 border-b border-white/10 bg-black/40 p-4">
-             <div className="text-[10px] font-mono text-cyber-light/40 tracking-widest mb-4">
-               NODE LAB // INFRASTRUCTURE
+          <div className="flex-[1.2] min-h-0 shrink-0 p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+             <div className="text-xs font-semibold mb-4" style={{ color: 'var(--text-muted)' }}>
+               Infrastructure
              </div>
              <div className="h-full w-full relative">
-               <CastlePreview 
-                 componentName={mission.unlockComponent} 
-                 missionOrder={mission.order} 
-                 isUnlocked={progress?.status === 'COMPLETE'} 
+               <CastlePreview
+                 componentName={mission.unlockComponent}
+                 missionOrder={mission.order}
+                 isUnlocked={progress?.status === 'COMPLETE'}
                />
              </div>
           </div>
-          
+
           {showMonitor && (
-            <div className="h-32 min-h-0 shrink-0 border-b border-white/10 bg-black/40">
+            <div className="h-32 min-h-0 shrink-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
               <LiveSecurityMonitor isConnected={isConnected} events={events} />
             </div>
           )}
 
           {/* Test Results Console */}
-          <div className="flex-1 min-h-0 bg-black/20 p-4">
-             <div className="text-[10px] font-mono text-cyber-light/40 tracking-widest mb-4">
-               SECURITY DIAGNOSTICS
+          <div className="flex-1 min-h-0 p-4">
+             <div className="text-xs font-semibold mb-4" style={{ color: 'var(--text-muted)' }}>
+               Security diagnostics
              </div>
              <div className="h-full w-full">
-               <TestResults 
-                 checks={evaluation?.checks || []} 
-                 score={evaluation?.score || 0} 
-                 total={evaluation?.checks?.length || 0} 
-                 success={evaluation?.success} 
+               <TestResults
+                 checks={evaluation?.checks || []}
+                 score={evaluation?.score || 0}
+                 total={evaluation?.checks?.length || 0}
+                 success={evaluation?.success}
                  failureGuidance={content?.failureGuidance}
                  successGuidance={content?.successGuidance}
                  isEvaluating={isEvaluating}

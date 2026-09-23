@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, Cpu, Sun, Moon, Lock } from 'lucide-react';
-import { useTheme } from '../hooks/useTheme';
+import { ShieldAlert, Crown, Lock } from 'lucide-react';
 import { API_URL } from '../utils/api';
 
 const AdminLogin = () => {
@@ -10,7 +9,6 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +32,7 @@ const AdminLogin = () => {
         localStorage.setItem('token', data.token);
         navigate('/admin/dashboard');
       } else {
-        setError(data.error || 'Admin login failed');
+        setError(data.error || 'That didn\'t work, please try again');
       }
     } catch (err) {
       setError('Network error. Is the server running?');
@@ -45,209 +43,121 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4 md:p-8" style={{ backgroundColor: 'var(--bg-primary)' }}>
-      <div className="scanline"></div>
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-12 gap-8 relative z-10">
 
-      <button
-        onClick={toggleTheme}
-        className="absolute top-6 right-6 cyber-button px-3 py-2 text-xs flex items-center gap-2 rounded-md z-50"
-        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-        aria-label={`Toggle theme - currently ${theme}`}
-      >
-        {theme === 'dark' ? (
-          <Sun size={14} />
-        ) : (
-          <Moon size={14} />
-        )}
-        <span className="hidden sm:inline uppercase">{theme === 'dark' ? 'LIGHT' : 'DARK'}</span>
-      </button>
-
-      <div className="absolute inset-0 pointer-events-none opacity-10">
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--accent-blue)" strokeWidth="0.5"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-      </div>
-
-      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-12 gap-8 relative z-10">
-
-        <div className="hidden md:flex md:col-span-3 flex-col justify-center items-center opacity-40 pointer-events-none relative">
-          <div className="relative">
-            <Lock size={120} className="mb-8 glow-text-red" style={{ color: 'var(--accent-red)' }} />
-            <svg className="absolute top-0 left-0 w-full h-full" overflow="visible">
-               <circle cx="50%" cy="50%" r="65" fill="none" stroke="var(--accent-red)" strokeWidth="1" strokeDasharray="4 8" className="animate-spin-slow opacity-50" />
-               <circle cx="50%" cy="50%" r="75" fill="none" stroke="var(--accent-red)" strokeWidth="0.5" opacity="0.2" />
-            </svg>
+        <div className="hidden md:flex md:col-span-3 flex-col justify-center items-center opacity-70 pointer-events-none">
+          <div className="clay-inset w-28 h-28 rounded-full flex items-center justify-center mb-6">
+            <Lock size={48} style={{ color: 'var(--accent-purple)' }} />
           </div>
-          <div className="font-mono text-[10px] tracking-widest text-center space-y-1" style={{ color: 'var(--accent-red)' }}>
-            <div className="animate-pulse" style={{ color: 'var(--accent-red)' }}>■ ADMIN CONTROL</div>
-            <div>[ RESTRICTED ACCESS ]</div>
-            <div className="mt-4 pt-4 w-full" style={{ borderTopColor: `var(--accent-red)${theme === 'dark' ? '4d' : '30'}` }}>
-              COMMAND CENTER
-            </div>
+          <div className="text-center space-y-2">
+            <div className="text-sm font-display font-bold" style={{ color: 'var(--text-primary)' }}>Admin Access</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Manage the workshop and game</div>
           </div>
         </div>
 
         <div className="col-span-1 md:col-span-6 flex flex-col justify-center">
-          <div className="glass-panel p-10 relative w-full animate-slide-in" style={{ borderTopWidth: '2px', borderTopColor: 'var(--accent-red)', borderBottomWidth: '2px', borderBottomColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(200,200,210,0.2)' }}>
-            <div className="text-center mb-10 pb-6" style={{ borderBottomColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(200,200,210,0.2)' }}>
-              <Lock className="mx-auto mb-4" size={32} style={{ color: 'var(--accent-red)' }} />
-              <h1 className="text-4xl font-title font-bold tracking-widest uppercase" style={{ color: 'var(--text-primary)' }}>
-                ADMIN PANEL
-              </h1>
-              <h2 className="text-xs font-mono tracking-widest mt-2 uppercase opacity-80" style={{ color: 'var(--accent-red)' }}>
-                COMMAND CENTER // ADMINISTRATIVE ACCESS
-              </h2>
-              <div className="mt-8 font-mono text-[10px] tracking-widest" style={{ color: 'var(--text-secondary)' }}>
-                {'>'} AUTHORIZATION REQUIRED...
+          <div className="glass-panel p-10 relative w-full animate-slide-in">
+            <div className="text-center mb-8 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+              <div className="clay-inset w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Crown size={28} style={{ color: 'var(--accent-purple)' }} />
               </div>
+              <h1 className="text-3xl font-display font-bold" style={{ color: 'var(--text-primary)' }}>
+                Admin sign in
+              </h1>
+              <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
+                Enter your admin credentials to continue
+              </p>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 font-mono text-xs flex items-start gap-3 glow-red animate-slide-in" style={{ borderColor: 'var(--accent-red)', backgroundColor: `var(--accent-red)${theme === 'dark' ? '1a' : '08'}`, color: 'var(--accent-red)' }}>
-                <ShieldAlert size={16} className="shrink-0 mt-0.5" />
-                <div>
-                  <div className="mb-1">{'>'} AUTHENTICATION FAILED</div>
-                  <div>{'>'} {error.toUpperCase()}</div>
-                  <div className="mt-2" style={{ color: `var(--accent-red)${theme === 'dark' ? 'b3' : '80'}` }}>{'>'} ACCESS DENIED</div>
-                </div>
+              <div className="mb-6 p-4 rounded-2xl text-sm flex items-start gap-3 animate-slide-in" style={{ backgroundColor: 'rgba(224, 124, 155, 0.1)', color: '#c14d72' }}>
+                <ShieldAlert size={18} className="shrink-0 mt-0.5" />
+                <div>{error}</div>
               </div>
             )}
 
-            <form onSubmit={handleAdminLogin} className="space-y-6">
+            <form onSubmit={handleAdminLogin} className="space-y-5">
               <div>
-                <label className="block text-[10px] font-mono mb-2 tracking-widest uppercase" style={{ color: 'var(--text-secondary)' }}>
-                  ADMIN USERNAME
+                <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  Admin username
                 </label>
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs" style={{ color: `var(--accent-red)${theme === 'dark' ? '80' : '80'}` }}>{'>'}</div>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full border-b pl-10 pr-3 py-4 font-mono text-sm focus:outline-none transition-all"
-                    style={{
-                      backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)',
-                      borderBottomColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(200,200,210,0.2)',
-                      color: 'var(--text-primary)',
-                    }}
-                    placeholder="ENTER ADMIN USERNAME"
-                    disabled={loading}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderBottomColor = 'var(--accent-red)';
-                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(255,0,0,0.05)' : 'rgba(204,0,0,0.05)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderBottomColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(200,200,210,0.2)';
-                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
-                    }}
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="clay-inset w-full px-4 py-3 text-sm focus:outline-none transition-all"
+                  style={{ color: 'var(--text-primary)' }}
+                  placeholder="Enter your username"
+                  disabled={loading}
+                />
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono mb-2 tracking-widest uppercase" style={{ color: 'var(--text-secondary)' }}>
-                  PASSWORD
+                <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  Password
                 </label>
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs" style={{ color: `var(--accent-red)${theme === 'dark' ? '80' : '80'}` }}>{'>'}</div>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full border-b pl-10 pr-3 py-4 font-mono text-sm focus:outline-none transition-all"
-                    style={{
-                      backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)',
-                      borderBottomColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(200,200,210,0.2)',
-                      color: 'var(--text-primary)',
-                    }}
-                    placeholder="ENTER MASTER PASSWORD"
-                    disabled={loading}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderBottomColor = 'var(--accent-red)';
-                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(255,0,0,0.05)' : 'rgba(204,0,0,0.05)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderBottomColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(200,200,210,0.2)';
-                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
-                    }}
-                  />
-                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="clay-inset w-full px-4 py-3 text-sm focus:outline-none transition-all"
+                  style={{ color: 'var(--text-primary)' }}
+                  placeholder="Enter your password"
+                  disabled={loading}
+                />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="cyber-button w-full py-4 mt-8 flex justify-center items-center gap-2 bg-transparent"
-                style={{
-                  borderColor: 'var(--accent-red)',
-                  color: 'var(--accent-red)'
-                }}
+                className="clay-button w-full py-4 mt-6 flex justify-center items-center gap-2"
               >
                 {loading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `var(--accent-red) transparent var(--accent-red) var(--accent-red)` }}></div>
-                    <span>[ VERIFYING... ]</span>
+                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'white transparent white white' }}></div>
+                    <span>Signing in...</span>
                   </>
                 ) : (
-                  <span>[ {'>'}{'>'}{'>'} GRANT ADMIN ACCESS ]</span>
+                  <span>Sign in</span>
                 )}
               </button>
             </form>
 
-            <div className="mt-8 pt-6 text-center" style={{ borderTopColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(200,200,210,0.2)' }}>
+            <div className="mt-8 pt-6 text-center" style={{ borderTop: '1px solid var(--border-color)' }}>
               <button
                 onClick={() => navigate('/login')}
-                className="text-xs font-mono transition-colors flex justify-center items-center gap-1 group cursor-pointer"
-                style={{
-                  color: 'var(--text-secondary)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'var(--accent-blue)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'var(--text-secondary)';
-                }}
+                className="text-sm transition-colors flex justify-center items-center gap-1 mx-auto cursor-pointer"
+                style={{ color: 'var(--text-secondary)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent-purple)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; }}
               >
-                <span>← RETURN TO LOGIN</span>
+                ← Back to login
               </button>
             </div>
           </div>
         </div>
 
         <div className="hidden md:flex md:col-span-3 flex-col justify-center">
-          <div className="p-6 font-mono text-xs" style={{ backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)', borderLeftColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(200,200,210,0.2)' }}>
-            <h3 className="tracking-widest mb-6 pb-2 uppercase flex flex-col gap-1" style={{ color: 'var(--text-secondary)', borderBottomColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(200,200,210,0.2)' }}>
-              <span>ADMIN PRIVILEGES</span>
-              <span className="text-[9px]" style={{ color: `var(--accent-red)${theme === 'dark' ? '80' : '80'}` }}>[ HIGH SECURITY ]</span>
+          <div className="clay-panel p-6">
+            <h3 className="text-sm font-display font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+              What admins can do
             </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                  <span style={{ color: 'var(--accent-red)' }}>[!]</span> GAME CONTROL
-                </div>
-                <span className="text-[10px] tracking-widest" style={{ color: 'var(--accent-red)' }}>ENABLED</span>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span style={{ color: 'var(--text-primary)' }}>Game control</span>
+                <span className="chip chip-mint">Enabled</span>
               </div>
-              <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                  <span style={{ color: 'var(--accent-red)' }}>[!]</span> LIVE MONITORING
-                </div>
-                <span className="text-[10px] tracking-widest" style={{ color: 'var(--accent-red)' }}>ACTIVE</span>
+              <div className="flex items-center justify-between">
+                <span style={{ color: 'var(--text-primary)' }}>Live monitoring</span>
+                <span className="chip chip-mint">Active</span>
               </div>
-              <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                  <span style={{ color: 'var(--accent-red)' }}>[!]</span> PLAYER MANAGEMENT
-                </div>
-                <span className="text-[10px] tracking-widest" style={{ color: 'var(--accent-red)' }}>AVAILABLE</span>
+              <div className="flex items-center justify-between">
+                <span style={{ color: 'var(--text-primary)' }}>Player management</span>
+                <span className="chip chip-sky">Available</span>
               </div>
-              <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                  <span style={{ color: 'var(--accent-red)' }}>[!]</span> SCORE MANAGEMENT
-                </div>
-                <span className="text-[10px] tracking-widest" style={{ color: 'var(--accent-red)' }}>RESTRICTED</span>
+              <div className="flex items-center justify-between">
+                <span style={{ color: 'var(--text-primary)' }}>Score management</span>
+                <span className="chip chip-rose">Restricted</span>
               </div>
             </div>
           </div>

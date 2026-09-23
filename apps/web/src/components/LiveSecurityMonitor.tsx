@@ -17,52 +17,49 @@ const LiveSecurityMonitor: React.FC<LiveSecurityMonitorProps> = ({ isConnected, 
   }, [events]);
 
   return (
-    <div className="panel flex flex-col h-full bg-black/80 border-2 border-neon-blue/30 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 bg-neon-blue/5 pointer-events-none"></div>
-
-      <div className="p-3 border-b border-neon-blue/30 flex justify-between items-center bg-black/60 z-10">
-        <div className="flex items-center gap-2 text-neon-blue glow-text-blue font-title tracking-widest text-sm">
+    <div className="glass-panel flex flex-col h-full relative overflow-hidden">
+      <div className="p-3 flex justify-between items-center" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <div className="flex items-center gap-2 font-display font-bold text-sm" style={{ color: 'var(--accent-purple)' }}>
           <ShieldAlert size={16} />
-          LIVE SECURITY MONITOR
+          Live security monitor
         </div>
-        
-        <div className={`flex items-center gap-2 text-[10px] font-mono tracking-widest px-2 py-1 border ${isConnected ? 'text-neon-green border-neon-green/30 bg-neon-green/10' : 'text-neon-red border-neon-red/30 bg-neon-red/10'}`}>
-          <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-neon-green animate-pulse' : 'bg-neon-red'}`}></div>
-          {isConnected ? 'SOCKET CONNECTED' : 'SOCKET DISCONNECTED'}
-        </div>
+
+        <span className={`chip ${isConnected ? 'chip-mint' : 'chip-rose'} flex items-center gap-2`}>
+          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isConnected ? 'var(--accent-mint)' : 'var(--accent-rose)' }}></div>
+          {isConnected ? 'Connected' : 'Disconnected'}
+        </span>
       </div>
 
-      <div className="flex-1 p-3 overflow-y-auto custom-scrollbar font-mono text-xs z-10">
+      <div className="flex-1 p-3 overflow-y-auto custom-scrollbar text-xs">
         {events.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-cyber-light/30 opacity-50">
+          <div className="h-full flex flex-col items-center justify-center opacity-60" style={{ color: 'var(--text-muted)' }}>
             <Activity size={32} className="mb-2" />
-            <p>AWAITING SECURITY EVENTS...</p>
+            <p>Waiting for security events...</p>
           </div>
         ) : (
           <div className="space-y-2">
             {events.map((evt, idx) => {
               const time = new Date(evt.timestamp).toLocaleTimeString([], { hour12: false });
-              
-              let typeColor = 'text-neon-blue';
-              if (evt.type === 'BUG_FOUND' || evt.type === 'SECURITY_BREACH') typeColor = 'text-neon-red';
-              else if (evt.type.includes('OPENED') || evt.type.includes('UNLOCKED') || evt.type === 'PLAYER_ENTERED') typeColor = 'text-neon-green';
+
+              let typeColor = 'var(--accent-sky)';
+              if (evt.type === 'BUG_FOUND' || evt.type === 'SECURITY_BREACH') typeColor = 'var(--accent-rose)';
+              else if (evt.type.includes('OPENED') || evt.type.includes('UNLOCKED') || evt.type === 'PLAYER_ENTERED') typeColor = 'var(--accent-mint)';
 
               return (
-                <div key={idx} className="flex flex-col border border-white/5 bg-white/5 p-2 rounded">
+                <div key={idx} className="flex flex-col clay-inset p-2 rounded-xl">
                   <div className="flex gap-2 items-center">
-                    <span className="text-cyber-light/50 text-[10px]">[{time}]</span>
-                    <span className={`${typeColor} font-bold tracking-widest`}>{evt.type}</span>
+                    <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{time}</span>
+                    <span className="font-semibold" style={{ color: typeColor }}>{evt.type}</span>
                   </div>
                   {(evt.playerId || evt.teamId) && (
-                    <div className="text-[10px] text-cyber-light/70 mt-1 flex gap-3">
-                      {evt.playerId && <span>USER: <span className="text-white">{evt.playerId}</span></span>}
-                      {evt.teamId && <span>TEAM: <span className="text-white">{evt.teamId}</span></span>}
+                    <div className="text-[10px] mt-1 flex gap-3" style={{ color: 'var(--text-secondary)' }}>
+                      {evt.playerId && <span>User: <span style={{ color: 'var(--text-primary)' }}>{evt.playerId}</span></span>}
+                      {evt.teamId && <span>Team: <span style={{ color: 'var(--text-primary)' }}>{evt.teamId}</span></span>}
                     </div>
                   )}
                   {evt.metadata && evt.metadata.missionTitle && (
-                    <div className="text-[10px] text-neon-amber mt-1">
-                      LOCATION: {evt.metadata.missionTitle}
+                    <div className="text-[10px] mt-1" style={{ color: 'var(--accent-gold)' }}>
+                      Location: {evt.metadata.missionTitle}
                     </div>
                   )}
                 </div>

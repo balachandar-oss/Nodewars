@@ -36,65 +36,67 @@ const Leaderboard = () => {
 
   return (
     <div className="max-w-[1200px] mx-auto h-[calc(100vh-60px)] -mt-6 p-6 flex flex-col gap-4 animate-slide-in relative z-10">
-      <div className="glass-panel shrink-0 p-6 border-t-2 border-t-neon-amber flex justify-between items-center bg-[#0a0510]">
+      <div className="glass-panel shrink-0 p-6 flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Trophy size={32} className="text-neon-amber" />
-          <h1 className="text-3xl font-title tracking-widest text-white uppercase leading-none">
-            GLOBAL LEADERBOARD
+          <div className="clay-inset w-12 h-12 rounded-2xl flex items-center justify-center">
+            <Trophy size={26} style={{ color: 'var(--accent-gold)' }} />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-display font-bold" style={{ color: 'var(--text-primary)' }}>
+            Leaderboard
           </h1>
         </div>
-        <div className="font-mono text-[10px] text-white/50 border border-white/5 px-4 py-2 bg-black/60 tracking-widest uppercase">
-          RANKING: SECURITY ASSESSMENT
+        <div className="chip chip-gold">
+          Ranked by quiz + hunt score
         </div>
       </div>
 
-      <div className="flex-1 glass-panel flex flex-col bg-black/60 border-t-2 border-t-white/10 overflow-hidden">
-        <div className="grid grid-cols-12 gap-4 p-4 border-b border-white/5 font-mono text-[10px] text-white/40 tracking-widest bg-black/80 shrink-0">
-          <div className="col-span-1 text-center">RANK</div>
-          <div className="col-span-3">OPERATIVE ID</div>
-          <div className="col-span-3">FACTION</div>
-          <div className="col-span-2 text-right">SCORE</div>
-          <div className="col-span-3 text-center">STATUS</div>
+      <div className="flex-1 glass-panel flex flex-col overflow-hidden">
+        <div className="grid grid-cols-12 gap-4 p-4 text-xs font-semibold shrink-0" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)' }}>
+          <div className="col-span-1 text-center">Rank</div>
+          <div className="col-span-3">Player</div>
+          <div className="col-span-3">Team</div>
+          <div className="col-span-2 text-right">Score</div>
+          <div className="col-span-3 text-center">Role</div>
         </div>
 
         {loading ? (
-          <div className="flex-1 flex items-center justify-center font-mono text-neon-amber text-xs tracking-widest animate-pulse">
-            LOADING GLOBAL DATA...
+          <div className="flex-1 flex items-center justify-center text-sm animate-pulse" style={{ color: 'var(--accent-gold)' }}>
+            Loading leaderboard...
           </div>
         ) : entries.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center font-mono text-white/30 text-xs tracking-widest">
-            NO ASSESSMENT DATA AVAILABLE
+          <div className="flex-1 flex items-center justify-center text-sm" style={{ color: 'var(--text-muted)' }}>
+            No data available yet
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
             {entries.map((entry, idx) => (
-              <div 
-                key={idx} 
-                className={`grid grid-cols-12 gap-4 p-3 font-mono text-xs items-center transition-all ${
-                  entry.isBugArchitect ? 'bg-neon-amber/5 border border-neon-amber/30' : 'bg-black/40 border border-white/5 hover:bg-white/5'
+              <div
+                key={idx}
+                className={`grid grid-cols-12 gap-4 p-4 rounded-2xl text-sm items-center transition-all ${
+                  entry.isBugArchitect ? 'clay-panel' : 'clay-inset hover:opacity-90'
                 }`}
               >
-                <div className="col-span-1 text-center font-bold text-white/80">
+                <div className="col-span-1 text-center font-bold" style={{ color: 'var(--text-primary)' }}>
                   #{entry.rank}
                 </div>
-                <div className={`col-span-3 font-bold flex items-center gap-2 ${entry.isBugArchitect ? 'text-neon-amber' : 'text-white'}`}>
-                  {entry.isBugArchitect && <ShieldAlert size={14} className="text-neon-amber" />}
-                  {entry.username.toUpperCase()}
+                <div className="col-span-3 font-semibold flex items-center gap-2" style={{ color: entry.isBugArchitect ? 'var(--accent-gold)' : 'var(--text-primary)' }}>
+                  {entry.isBugArchitect && <ShieldAlert size={14} style={{ color: 'var(--accent-gold)' }} />}
+                  {entry.username}
                 </div>
-                <div className="col-span-3 text-neon-purple tracking-widest">
+                <div className="col-span-3" style={{ color: 'var(--accent-purple)' }}>
                   {entry.teamName}
                 </div>
-                <div className="col-span-2 text-right text-neon-green font-bold">
+                <div className="col-span-2 text-right font-bold" style={{ color: 'var(--accent-mint)' }}>
                   {entry.score}
                 </div>
                 <div className="col-span-3 flex justify-center">
                   {entry.isBugArchitect ? (
-                    <span className="bg-neon-amber/20 border border-neon-amber text-neon-amber px-3 py-1 text-[9px] tracking-widest font-bold flex items-center gap-2 shadow-[0_0_10px_rgba(255,170,0,0.1)]">
-                      <Cpu size={12} /> BUG ARCHITECT
+                    <span className="chip chip-gold flex items-center gap-2">
+                      <Cpu size={12} /> Bug Architect
                     </span>
                   ) : (
-                    <span className="text-white/30 border border-white/10 px-3 py-1 text-[9px] tracking-widest">
-                      STANDARD CLEARANCE
+                    <span className="chip" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
+                      Standard
                     </span>
                   )}
                 </div>

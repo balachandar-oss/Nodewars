@@ -96,32 +96,33 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
 
   // Timer color based on remaining time
   const getTimerColor = () => {
-    if (timeRemaining <= 10) return 'text-neon-red animate-pulse';
-    if (timeRemaining <= 30) return 'text-neon-amber';
-    return 'text-neon-green';
+    if (timeRemaining <= 10) return 'var(--accent-rose)';
+    if (timeRemaining <= 30) return 'var(--accent-gold)';
+    return 'var(--accent-mint)';
   };
 
   const canSubmit = selectedAnswer && !isSubmitting && !feedback && timeRemaining > 0;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="glass-panel w-full max-w-2xl border-2 border-neon-blue bg-[#0a0510] relative overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(45, 42, 74, 0.55)', backdropFilter: 'blur(6px)' }}>
+      <div className="clay-panel w-full max-w-2xl relative overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b-2 border-neon-blue bg-black/60 flex items-start justify-between">
+        <div className="p-6 flex items-start justify-between" style={{ borderBottom: '1px solid var(--border-color)' }}>
           <div>
-            <h2 className="text-2xl font-title tracking-widest text-neon-blue uppercase mb-2">
-              BOUNTY CHALLENGE
+            <h2 className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--accent-purple)' }}>
+              Bounty challenge
             </h2>
-            <div className="flex items-center gap-2 text-[10px] font-mono text-neon-blue/70 tracking-widest">
+            <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
               <Trophy size={12} />
-              ANSWER TO CLAIM FRAGMENT
+              Answer to claim a fragment
             </div>
           </div>
 
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-white/50 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-sm"
+            className="clay-inset p-2 rounded-xl transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
           >
             <X size={20} />
           </button>
@@ -130,13 +131,13 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
         {/* Timer */}
         {!feedback && (
           <div className="px-6 pt-4 pb-2 flex items-center justify-between">
-            <div className={`flex items-center gap-2 font-mono text-sm font-bold ${getTimerColor()}`}>
+            <div className="flex items-center gap-2 text-sm font-bold" style={{ color: getTimerColor() }}>
               <Clock size={16} />
               {timeRemaining}s
             </div>
             {timeRemaining <= 10 && (
-              <div className="text-[10px] font-mono text-neon-amber tracking-widest animate-pulse">
-                TIME RUNNING OUT
+              <div className="text-xs animate-pulse-fast" style={{ color: 'var(--accent-gold)' }}>
+                Time running out
               </div>
             )}
           </div>
@@ -147,10 +148,10 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
           {/* Question */}
           <div>
             <div className="mb-4">
-              <div className="text-[10px] font-mono text-white/40 tracking-widest mb-2 uppercase">
+              <div className="text-xs mb-2 font-semibold" style={{ color: 'var(--text-muted)' }}>
                 Question
               </div>
-              <p className="text-base leading-relaxed text-white font-mono">
+              <p className="text-base leading-relaxed" style={{ color: 'var(--text-primary)' }}>
                 {question}
               </p>
             </div>
@@ -159,7 +160,7 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
           {/* Options */}
           {!feedback && (
             <div className="space-y-3">
-              <div className="text-[10px] font-mono text-white/40 tracking-widest mb-3 uppercase">
+              <div className="text-xs mb-3 font-semibold" style={{ color: 'var(--text-muted)' }}>
                 Select your answer
               </div>
 
@@ -171,17 +172,15 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
                   <div
                     key={idx}
                     onClick={() => !isSubmitting && setSelectedAnswer(optionLetter)}
-                    className={`p-4 border cursor-pointer transition-all font-mono text-sm ${
-                      isSelected
-                        ? 'border-neon-blue bg-neon-blue/10 shadow-[inset_0_0_15px_rgba(0,255,255,0.15)]'
-                        : 'border-white/10 hover:border-white/30 bg-black/40'
+                    className={`p-4 rounded-2xl cursor-pointer transition-all text-sm ${
+                      isSelected ? 'clay-panel' : 'clay-inset hover:opacity-90'
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <span className={`font-bold w-6 flex-shrink-0 ${isSelected ? 'text-neon-blue' : 'text-white/50'}`}>
+                      <span className="font-bold w-6 flex-shrink-0" style={{ color: isSelected ? 'var(--accent-purple)' : 'var(--text-muted)' }}>
                         {optionLetter}.
                       </span>
-                      <span className={isSelected ? 'text-white' : 'text-white/70'}>
+                      <span style={{ color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                         {option}
                       </span>
                     </div>
@@ -193,25 +192,25 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
 
           {/* Correct Feedback */}
           {feedback === 'correct' && (
-            <div className="p-6 border-2 border-neon-green bg-neon-green/10 space-y-4">
-              <div className="flex items-center gap-3 text-neon-green">
+            <div className="p-6 rounded-2xl clay-inset space-y-4">
+              <div className="flex items-center gap-3" style={{ color: 'var(--accent-mint)' }}>
                 <CheckCircle size={32} />
                 <div>
-                  <div className="text-xl font-title tracking-widest uppercase font-bold">
-                    CORRECT!
+                  <div className="text-xl font-display font-bold">
+                    Correct!
                   </div>
-                  <div className="text-sm font-mono">
-                    +{pointsEarned} POINTS
+                  <div className="text-sm">
+                    +{pointsEarned} points
                   </div>
                 </div>
               </div>
 
               {fragment && (
-                <div className="p-4 bg-black/40 border border-neon-green/30 rounded-sm">
-                  <div className="text-[10px] font-mono text-neon-green/70 tracking-widest mb-2">
-                    FLAG FRAGMENT UNLOCKED
+                <div className="p-4 clay-panel rounded-2xl">
+                  <div className="text-xs mb-2 font-semibold" style={{ color: 'var(--accent-mint)' }}>
+                    Fragment unlocked
                   </div>
-                  <div className="font-mono text-white text-lg tracking-wider break-all">
+                  <div className="text-lg tracking-wide break-all" style={{ color: 'var(--text-primary)' }}>
                     {fragment}
                   </div>
                 </div>
@@ -221,20 +220,20 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
 
           {/* Incorrect Feedback */}
           {feedback === 'incorrect' && (
-            <div className="p-6 border-2 border-neon-red bg-neon-red/10 space-y-4">
-              <div className="flex items-center gap-3 text-neon-red">
+            <div className="p-6 rounded-2xl clay-inset space-y-4">
+              <div className="flex items-center gap-3" style={{ color: 'var(--accent-rose)' }}>
                 <XCircle size={32} />
                 <div>
-                  <div className="text-xl font-title tracking-widest uppercase font-bold">
-                    INCORRECT
+                  <div className="text-xl font-display font-bold">
+                    Incorrect
                   </div>
-                  <div className="text-sm font-mono">
-                    -5 POINTS
+                  <div className="text-sm">
+                    -5 points
                   </div>
                 </div>
               </div>
 
-              <p className="text-white/70 font-mono text-sm leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 The answer you selected is incorrect. Review the question and try again!
               </p>
             </div>
@@ -242,15 +241,15 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
 
           {/* Timeout Feedback */}
           {feedback === 'timeout' && (
-            <div className="p-6 border-2 border-neon-amber bg-neon-amber/10 space-y-4">
-              <div className="flex items-center gap-3 text-neon-amber">
+            <div className="p-6 rounded-2xl clay-inset space-y-4">
+              <div className="flex items-center gap-3" style={{ color: 'var(--accent-gold)' }}>
                 <Clock size={32} />
                 <div>
-                  <div className="text-xl font-title tracking-widest uppercase font-bold">
-                    TIME'S UP
+                  <div className="text-xl font-display font-bold">
+                    Time's up
                   </div>
-                  <div className="text-sm font-mono">
-                    BOUNTY EXPIRED
+                  <div className="text-sm">
+                    Bounty expired
                   </div>
                 </div>
               </div>
@@ -259,43 +258,39 @@ const BountyPopup: React.FC<BountyPopupProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-white/5 bg-black/40 flex gap-3">
+        <div className="p-6 flex gap-3" style={{ borderTop: '1px solid var(--border-color)' }}>
           {!feedback ? (
             <>
               <button
                 onClick={onClose}
-                className="flex-1 py-3 border border-white/20 text-white/70 hover:text-white hover:bg-white/10 transition-colors font-mono text-xs tracking-widest uppercase font-bold rounded-sm"
+                className="flex-1 py-3 clay-button-secondary text-xs font-bold"
               >
-                CLOSE
+                Close
               </button>
 
               <button
                 onClick={handleSubmitAnswer}
                 disabled={!canSubmit}
-                className={`flex-1 py-3 font-bold transition-all text-xs tracking-widest uppercase rounded-sm ${
-                  canSubmit
-                    ? 'border-neon-blue bg-neon-blue/10 text-neon-blue hover:bg-neon-blue/20 shadow-[0_0_15px_rgba(0,255,255,0.2)]'
-                    : 'opacity-50 border-white/10 text-white/30 cursor-not-allowed bg-black'
-                }`}
+                className="flex-1 py-3 clay-button font-bold text-xs disabled:opacity-40"
               >
-                {isSubmitting ? 'SUBMITTING...' : 'SUBMIT ANSWER'}
+                {isSubmitting ? 'Submitting...' : 'Submit answer'}
               </button>
             </>
           ) : (
             <>
               <button
                 onClick={onClose}
-                className="flex-1 py-3 border border-white/20 text-white/70 hover:text-white hover:bg-white/10 transition-colors font-mono text-xs tracking-widest uppercase font-bold rounded-sm"
+                className="flex-1 py-3 clay-button-secondary text-xs font-bold"
               >
-                CLOSE
+                Close
               </button>
 
               {feedback === 'incorrect' && (
                 <button
                   onClick={handleRetry}
-                  className="flex-1 py-3 border border-neon-amber bg-neon-amber/10 text-neon-amber hover:bg-neon-amber/20 font-mono text-xs tracking-widest uppercase font-bold rounded-sm transition-colors shadow-[0_0_15px_rgba(255,170,0,0.2)]"
+                  className="flex-1 py-3 clay-button text-xs font-bold"
                 >
-                  RETRY
+                  Retry
                 </button>
               )}
             </>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lightbulb, Lock, CheckCircle, TerminalSquare } from 'lucide-react';
+import { Lightbulb, Lock, CheckCircle, Code } from 'lucide-react';
 import type { TeachingHint } from '@node-wars/shared';
 
 interface HintPanelProps {
@@ -15,8 +15,8 @@ const HintPanel: React.FC<HintPanelProps> = ({ hints = [], progressiveHints = []
   const [unlockedHints, setUnlockedHints] = useState<number>(0);
 
   // Use progressive hints if available, otherwise fallback to legacy strings mapping
-  const activeHints: TeachingHint[] = progressiveHints.length > 0 
-    ? progressiveHints 
+  const activeHints: TeachingHint[] = progressiveHints.length > 0
+    ? progressiveHints
     : hints.map((h, i) => ({
         label: i === 0 ? 'CONCEPT' : 'DIRECTION',
         text: h
@@ -26,16 +26,16 @@ const HintPanel: React.FC<HintPanelProps> = ({ hints = [], progressiveHints = []
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 mb-1 text-neon-amber">
+      <div className="flex items-center gap-2 mb-1" style={{ color: 'var(--accent-gold)' }}>
         <Lightbulb size={16} />
-        <h3 className="text-xs font-mono glow-text-amber tracking-widest uppercase">ENGINEERING HINTS</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wide">Hints</h3>
       </div>
-      
+
       {!hasFailed ? (
-        <div className="p-4 bg-black/40 border border-white/5 rounded-sm flex items-center justify-center text-center">
-          <div className="text-[10px] font-mono text-white/40 tracking-widest uppercase flex items-center gap-2">
+        <div className="p-4 clay-inset rounded-2xl flex items-center justify-center text-center">
+          <div className="text-xs flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
             <Lock size={12} />
-            Complete one failed attempt to unlock guidance
+            Try running your code once to unlock hints
           </div>
         </div>
       ) : (
@@ -44,27 +44,27 @@ const HintPanel: React.FC<HintPanelProps> = ({ hints = [], progressiveHints = []
           const isUnlocked = i < unlockedHints;
           const isNextToUnlock = i === unlockedHints;
           const isLocked = i > unlockedHints;
-          
+
           if (isUnlocked) {
             return (
-              <div key={i} className="p-4 bg-neon-amber/5 border border-neon-amber/30 rounded-sm" data-testid={`hint-revealed-${i}`}>
+              <div key={i} className="p-4 rounded-2xl" style={{ backgroundColor: 'rgba(232, 184, 75, 0.08)', border: '1px solid rgba(232, 184, 75, 0.3)' }} data-testid={`hint-revealed-${i}`}>
                 <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-2 text-neon-amber font-mono text-[10px] font-bold tracking-widest">
-                    <CheckCircle size={12} /> HINT {i + 1}
+                  <div className="flex items-center gap-2 text-xs font-semibold" style={{ color: 'var(--accent-gold)' }}>
+                    <CheckCircle size={12} /> Hint {i + 1}
                   </div>
-                  <div className="text-[10px] font-mono text-neon-amber/60 tracking-wider">
-                    {hint.label}
+                  <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                    {hint.label.charAt(0) + hint.label.slice(1).toLowerCase()}
                   </div>
                 </div>
-                <div className="text-xs font-mono text-white/80 leading-relaxed mb-2">
+                <div className="text-xs leading-relaxed mb-2" style={{ color: 'var(--text-primary)' }}>
                   {hint.text}
                 </div>
                 {hint.codeSnippet && (
-                   <div className="bg-[#050505] border border-white/10 p-3 relative mt-3 rounded-sm">
-                     <div className="absolute -top-2 left-2 bg-[#0a0a0f] px-1 text-[8px] font-mono text-white/40 flex items-center gap-1 border border-white/10 uppercase">
-                       <TerminalSquare size={8} /> SNIPPET
+                   <div className="clay-inset p-3 relative mt-3 rounded-xl">
+                     <div className="text-[10px] mb-1 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                       <Code size={10} /> Snippet
                      </div>
-                     <code className="text-xs font-mono text-neon-blue whitespace-pre-wrap break-all block pt-1">
+                     <code className="text-xs font-mono whitespace-pre-wrap break-all block" style={{ color: 'var(--accent-purple)' }}>
                        {hint.codeSnippet}
                      </code>
                    </div>
@@ -76,15 +76,16 @@ const HintPanel: React.FC<HintPanelProps> = ({ hints = [], progressiveHints = []
           if (isNextToUnlock) {
             return (
               <div key={i} className="flex flex-col gap-2" data-testid={`hint-unlock-${i}`}>
-                <div className="text-[10px] font-mono text-white/30 tracking-widest flex items-center gap-2">
-                  <Lock size={10} /> HINT {i + 1} OF {activeHints.length} LOCKED
+                <div className="text-[10px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                  <Lock size={10} /> Hint {i + 1} of {activeHints.length}
                 </div>
-                <button 
+                <button
                   onClick={() => setUnlockedHints(i + 1)}
                   data-testid="btn-show-hint"
-                  className="w-full py-2 border border-neon-amber/50 bg-neon-amber/10 text-neon-amber hover:bg-neon-amber/20 transition-colors text-xs font-mono tracking-widest rounded-sm uppercase flex items-center justify-center gap-2"
+                  className="clay-button-secondary w-full py-2.5 text-xs flex items-center justify-center gap-2"
+                  style={{ color: 'var(--accent-gold)' }}
                 >
-                  <Lightbulb size={12} /> SHOW HINT
+                  <Lightbulb size={12} /> Show hint
                 </button>
               </div>
             );
@@ -92,12 +93,12 @@ const HintPanel: React.FC<HintPanelProps> = ({ hints = [], progressiveHints = []
 
           if (isLocked) {
              return (
-               <div key={i} className="flex items-center gap-2 text-white/20 font-mono text-[10px] tracking-widest" data-testid={`hint-locked-${i}`}>
-                  <Lock size={10} /> HINT {i + 1} LOCKED
+               <div key={i} className="flex items-center gap-2 text-[10px]" style={{ color: 'var(--text-muted)' }} data-testid={`hint-locked-${i}`}>
+                  <Lock size={10} /> Hint {i + 1} locked
                </div>
              );
           }
-          
+
           return null;
         })}
       </div>

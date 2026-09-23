@@ -64,7 +64,7 @@ const Quiz = () => {
     if (!attempt) return;
     setIsSubmitting(true);
     const token = localStorage.getItem('token');
-    
+
     const formattedAnswers = Object.keys(answers).map(qId => ({
       questionId: qId,
       answer: answers[qId]
@@ -98,11 +98,11 @@ const Quiz = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
-        <ShieldAlert size={64} className="text-neon-red mb-4" />
-        <h2 className="text-2xl font-title text-neon-red mb-2">ACCESS DENIED</h2>
-        <p className="font-mono text-cyber-light">{error}</p>
-        <button onClick={() => navigate('/dashboard')} className="mt-8 cyber-button px-6 py-2">
-          RETURN TO COMMAND CENTER
+        <ShieldAlert size={64} style={{ color: 'var(--accent-rose)' }} className="mb-4" />
+        <h2 className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Something went wrong</h2>
+        <p style={{ color: 'var(--text-secondary)' }}>{error}</p>
+        <button onClick={() => navigate('/dashboard')} className="mt-8 clay-button px-6 py-3">
+          Go back
         </button>
       </div>
     );
@@ -111,36 +111,34 @@ const Quiz = () => {
   if (result) {
     return (
       <div className="max-w-4xl mx-auto mt-12 animate-slide-in">
-        <div className="glass-panel p-12 flex flex-col items-center text-center border-t-2 border-t-neon-blue">
-          <ShieldCheck size={80} className="text-neon-blue mb-6" />
-          <h1 className="text-4xl font-title text-white tracking-widest uppercase mb-2">
-            SECURITY ASSESSMENT COMPLETE
+        <div className="clay-panel p-12 flex flex-col items-center text-center">
+          <ShieldCheck size={80} style={{ color: 'var(--accent-purple)' }} className="mb-6" />
+          <h1 className="text-4xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+            Quiz complete!
           </h1>
-          <div className="font-mono text-xs text-neon-blue tracking-widest uppercase mb-8">EVALUATION FINALIZED</div>
-          
+          <div className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>Here's how you did</div>
+
           <div className="grid grid-cols-2 gap-4 w-full max-w-lg mb-8">
-            <div className="bg-black/40 border border-white/5 p-6 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-neon-amber"></div>
-              <div className="text-[10px] font-mono text-white/50 tracking-widest uppercase mb-2">FINAL SCORE</div>
-              <div className="text-4xl font-mono font-bold text-neon-amber">{result.score}</div>
+            <div className="clay-inset p-6">
+              <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Final score</div>
+              <div className="text-4xl font-bold" style={{ color: 'var(--accent-gold)' }}>{result.score}</div>
             </div>
-            <div className="bg-black/40 border border-white/5 p-6 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-neon-green"></div>
-              <div className="text-[10px] font-mono text-white/50 tracking-widest uppercase mb-2">SUCCESS RATE</div>
-              <div className="text-4xl font-mono font-bold text-neon-green">{result.correctAnswers} <span className="text-lg text-white/30">/ {result.totalQuestions}</span></div>
+            <div className="clay-inset p-6">
+              <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Correct answers</div>
+              <div className="text-4xl font-bold" style={{ color: 'var(--accent-mint)' }}>{result.correctAnswers} <span className="text-lg" style={{ color: 'var(--text-muted)' }}>/ {result.totalQuestions}</span></div>
             </div>
           </div>
-          
-          <div className="text-2xl font-mono text-white mb-10 border border-white/10 px-12 py-4 bg-black/60 shadow-[inset_0_0_20px_rgba(0,240,255,0.1)]">
-            FINAL GRADE: <span className="text-neon-blue font-bold">{Math.round(result.percentage)}%</span>
+
+          <div className="text-2xl mb-10 px-12 py-4 clay-inset" style={{ color: 'var(--text-primary)' }}>
+            Grade: <span className="font-bold" style={{ color: 'var(--accent-purple)' }}>{Math.round(result.percentage)}%</span>
           </div>
 
           <div className="flex gap-4 w-full max-w-lg">
-            <button onClick={() => navigate('/dashboard')} className="cyber-button flex-1 py-4 text-xs border-white/20 text-white/70 hover:bg-white/5">
-              COMMAND CENTER
+            <button onClick={() => navigate('/dashboard')} className="clay-button-secondary flex-1 py-4 text-sm">
+              Dashboard
             </button>
-            <button onClick={() => navigate('/leaderboard')} className="cyber-button flex-1 py-4 text-xs border-neon-purple text-neon-purple bg-neon-purple/10 hover:bg-neon-purple/20">
-              VIEW LEADERBOARD
+            <button onClick={() => navigate('/leaderboard')} className="clay-button flex-1 py-4 text-sm">
+              View leaderboard
             </button>
           </div>
         </div>
@@ -149,7 +147,7 @@ const Quiz = () => {
   }
 
   if (!attempt) {
-    return <div className="text-center font-mono text-neon-blue p-12">INITIALIZING SECURE PROTOCOL...</div>;
+    return <div className="text-center p-12" style={{ color: 'var(--text-secondary)' }}>Loading your quiz...</div>;
   }
 
   const currentQ = attempt.questions[currentIndex].question;
@@ -160,71 +158,72 @@ const Quiz = () => {
 
   return (
     <div className="max-w-4xl mx-auto h-[calc(100vh-100px)] flex flex-col relative z-10 animate-slide-in mt-6">
-      <div className="glass-panel shrink-0 p-6 border-t-2 border-t-neon-blue flex justify-between items-center bg-[#0a0510]">
-        <h2 className="text-xl font-title text-white tracking-widest flex items-center gap-3">
-          <Cpu className="text-neon-blue" size={24} /> 
+      <div className="glass-panel shrink-0 p-6 flex justify-between items-center">
+        <h2 className="text-xl font-display font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+          <Cpu style={{ color: 'var(--accent-purple)' }} size={24} />
           <div>
-            <div>SECURITY ASSESSMENT</div>
-            <div className="text-[10px] font-mono text-neon-blue tracking-widest opacity-70 mt-1">FINAL SYSTEM CHECK</div>
+            <div>Security Quiz</div>
+            <div className="text-xs font-sans font-normal mt-1" style={{ color: 'var(--text-secondary)' }}>Final knowledge check</div>
           </div>
         </h2>
-        <div className="font-mono text-neon-amber text-sm px-4 py-2 bg-neon-amber/5 border border-neon-amber/20 tracking-widest">
-          QUESTION {(currentIndex + 1).toString().padStart(2, '0')} / {attempt.questions.length}
+        <div className="chip chip-gold">
+          Question {currentIndex + 1} of {attempt.questions.length}
         </div>
       </div>
 
-      <div className="flex-1 glass-panel mt-4 p-10 flex flex-col bg-black/60 overflow-y-auto">
-        <h3 className="text-xl md:text-2xl font-mono text-white mb-10 leading-relaxed max-w-3xl">
+      <div className="flex-1 glass-panel mt-4 p-10 flex flex-col overflow-y-auto custom-scrollbar">
+        <h3 className="text-xl md:text-2xl mb-10 leading-relaxed max-w-3xl font-semibold" style={{ color: 'var(--text-primary)' }}>
           {currentQ.question}
         </h3>
-        
+
         <div className="space-y-4 flex-1">
           {options.map((opt: string, idx: number) => {
             const isSelected = answers[currentQ.id] === opt;
             return (
-              <div 
+              <div
                 key={idx}
                 onClick={() => setAnswers(prev => ({ ...prev, [currentQ.id]: opt }))}
-                className={`p-5 border font-mono text-sm cursor-pointer transition-all flex items-center gap-4 ${
-                  isSelected 
-                    ? 'border-neon-blue bg-neon-blue/10 text-white shadow-[inset_0_0_15px_rgba(0,240,255,0.15)]' 
-                    : 'border-white/5 text-white/50 hover:bg-white/5 hover:border-white/20 bg-black/40'
+                className={`p-5 rounded-2xl text-sm cursor-pointer transition-all flex items-center gap-4 ${
+                  isSelected ? 'clay-panel' : 'clay-inset hover:opacity-80'
                 }`}
+                style={{ color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)' }}
               >
-                <div className={`w-4 h-4 rounded-full border shrink-0 ${isSelected ? 'border-neon-blue bg-neon-blue' : 'border-white/20'}`}></div>
+                <div
+                  className="w-4 h-4 rounded-full shrink-0"
+                  style={{
+                    border: `2px solid ${isSelected ? 'var(--accent-purple)' : 'var(--border-color)'}`,
+                    backgroundColor: isSelected ? 'var(--accent-purple)' : 'transparent'
+                  }}
+                ></div>
                 <span className="leading-relaxed">{opt}</span>
               </div>
             );
           })}
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/5 flex justify-between items-center shrink-0">
-          <button 
+        <div className="mt-10 pt-6 flex justify-between items-center shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
+          <button
             onClick={() => setCurrentIndex(c => Math.max(0, c - 1))}
             disabled={currentIndex === 0}
-            className="cyber-button px-8 py-3 disabled:opacity-30 text-white/50 border-white/10 hover:text-white/80 text-xs tracking-widest"
+            className="clay-button-secondary px-8 py-3 disabled:opacity-30 text-sm"
           >
-            PREVIOUS
+            Previous
           </button>
-          
+
           {currentIndex < attempt.questions.length - 1 ? (
-            <button 
+            <button
               onClick={() => setCurrentIndex(c => c + 1)}
-              className="cyber-button px-10 py-3 text-neon-blue border-neon-blue/50 bg-neon-blue/5 hover:bg-neon-blue/20 text-xs tracking-widest"
+              className="clay-button px-10 py-3 text-sm"
             >
-              NEXT QUESTION
+              Next question
             </button>
           ) : (
-            <button 
+            <button
               onClick={handleSubmit}
               disabled={isSubmitting || Object.keys(answers).length < attempt.questions.length}
-              className={`cyber-button px-10 py-3 font-bold transition-all text-xs tracking-widest ${
-                Object.keys(answers).length < attempt.questions.length
-                  ? 'opacity-50 border-white/10 text-white/30 cursor-not-allowed bg-black/40'
-                  : 'bg-neon-green/10 border-neon-green text-neon-green hover:bg-neon-green/30 shadow-[0_0_15px_rgba(57,255,20,0.2)]'
-              }`}
+              className="clay-button px-10 py-3 text-sm font-bold disabled:opacity-40"
             >
-              {isSubmitting ? 'PROCESSING...' : 'SUBMIT ASSESSMENT'}
+              {isSubmitting ? 'Submitting...' : 'Submit quiz'}
             </button>
           )}
         </div>

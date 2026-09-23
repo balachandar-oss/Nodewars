@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crosshair, ShieldAlert, Cpu, AlertTriangle, ShieldCheck, Camera, X, Activity, Terminal as TerminalIcon, CheckCircle } from 'lucide-react';
+import { Crosshair, ShieldAlert, Cpu, AlertTriangle, ShieldCheck, Camera, X, Activity, ListChecks, CheckCircle } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { API_URL } from '../utils/api';
@@ -16,12 +16,12 @@ const Hunt = () => {
   const [targets, setTargets] = useState<Target[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   const [selectedTarget, setSelectedTarget] = useState<Target | null>(null);
   const [bugDetails, setBugDetails] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [solveSelection, setSolveSelection] = useState('');
-  
+
   const [physicalCode, setPhysicalCode] = useState('');
   const [scanLoading, setScanLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -38,18 +38,18 @@ const Hunt = () => {
       navigate('/login');
       return;
     }
-    
+
     try {
       const res = await fetch(`${API_URL}/api/hunt/status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) {
-        setError('UNAUTHORIZED');
+        setError('You are not authorized to view this page.');
         return;
       }
       const data = await res.json();
       if (data.phase !== 'HUNT') {
-        setError('HUNT PHASE NOT ACTIVE');
+        setError('The hunt phase is not active right now.');
         return;
       }
 
@@ -60,7 +60,7 @@ const Hunt = () => {
         setTargets(await tRes.json());
       }
     } catch (err) {
-      setError('CONNECTION ERROR');
+      setError('Connection error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ const Hunt = () => {
   const handleAction = async (action: 'discover' | 'claim' | 'solve', id: string) => {
     const token = localStorage.getItem('token');
     setActionLoading(true);
-    
+
     try {
       let endpoint = '';
       if (action === 'discover') {
@@ -134,7 +134,7 @@ const Hunt = () => {
     if (!codeToScan) return;
     setScanLoading(true);
     const token = localStorage.getItem('token');
-    
+
     try {
       const res = await fetch(`${API_URL}/api/castle/scan`, {
         method: 'POST',
@@ -144,7 +144,7 @@ const Hunt = () => {
         },
         body: JSON.stringify({ physicalCode: codeToScan })
       });
-      
+
       const data = await res.json();
       if (res.ok) {
         const t = targets.find(sys => sys.system === data.component.systemId);
@@ -184,29 +184,29 @@ const Hunt = () => {
     console.error(err);
     if (err instanceof Error) {
       if (err.name === 'NotAllowedError') {
-        setScanError('CAMERA PERMISSION DENIED');
+        setScanError('Camera permission denied');
       } else if (err.name === 'NotFoundError') {
-        setScanError('NO CAMERA FOUND');
+        setScanError('No camera found');
       } else {
-        setScanError('CAMERA ERROR');
+        setScanError('Camera error');
       }
     } else {
-      setScanError('CAMERA UNAVAILABLE');
+      setScanError('Camera unavailable');
     }
   };
 
   if (loading || !gameState) {
-    return <div className="p-12 text-center font-mono text-neon-blue animate-pulse">ESTABLISHING HUNT UPLINK...</div>;
+    return <div className="p-12 text-center animate-pulse" style={{ color: 'var(--text-secondary)' }}>Loading the hunt...</div>;
   }
 
   if (gameState.phase !== 'HUNT' && gameState.phase !== 'COMPLETE') {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] text-center p-12">
-        <ShieldAlert size={64} className="text-white/20 mb-6" />
-        <h1 className="text-4xl font-title text-white mb-2">TACTICAL SCANNER LOCKED</h1>
-        <p className="text-white/50 font-mono tracking-widest text-sm mb-8 uppercase">AWAITING HUNT PHASE AUTHORIZATION. CURRENT: {gameState.phase}</p>
-        <button onClick={() => navigate('/dashboard')} className="cyber-button px-8 py-3 bg-white/5">
-          RETURN TO COMMAND
+        <ShieldAlert size={64} style={{ color: 'var(--text-muted)' }} className="mb-6" />
+        <h1 className="text-4xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Hunt hasn't started yet</h1>
+        <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>Check back once the hunt phase begins. Current phase: {gameState.phase}</p>
+        <button onClick={() => navigate('/dashboard')} className="clay-button-secondary px-8 py-3">
+          Return to dashboard
         </button>
       </div>
     );
@@ -215,11 +215,11 @@ const Hunt = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] text-center p-12">
-        <ShieldAlert size={64} className="text-neon-red mb-6 animate-pulse" />
-        <h2 className="text-2xl font-title text-neon-red mb-2">UPLINK DENIED</h2>
-        <p className="font-mono text-white/50 tracking-widest text-sm mb-8">{error}</p>
-        <button onClick={() => navigate('/dashboard')} className="cyber-button px-8 py-3 bg-neon-red/10 text-neon-red border-neon-red">
-          TERMINATE LINK
+        <ShieldAlert size={64} style={{ color: 'var(--accent-rose)' }} className="mb-6" />
+        <h2 className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Something went wrong</h2>
+        <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>{error}</p>
+        <button onClick={() => navigate('/dashboard')} className="clay-button-secondary px-8 py-3">
+          Go back
         </button>
       </div>
     );
@@ -227,106 +227,102 @@ const Hunt = () => {
 
   return (
     <div className="max-w-[1600px] mx-auto h-[calc(100vh-60px)] -mt-6 p-6 flex flex-col gap-4 animate-slide-in relative z-10">
-      
-      {/* TACTICAL HEADER */}
-      <div className="glass-panel shrink-0 p-6 flex justify-between items-center border-t-2 border-t-neon-blue">
+
+      {/* HEADER */}
+      <div className="glass-panel shrink-0 p-6 flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Crosshair className="text-neon-blue" size={32} />
+          <div className="clay-inset w-12 h-12 rounded-2xl flex items-center justify-center">
+            <Crosshair style={{ color: 'var(--accent-purple)' }} size={26} />
+          </div>
           <div>
-            <h1 className="text-2xl font-title tracking-widest text-white uppercase leading-none">
-              TACTICAL SCANNER
+            <h1 className="text-2xl font-display font-bold" style={{ color: 'var(--text-primary)' }}>
+              Bug Hunt
             </h1>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="w-2 h-2 bg-neon-red animate-pulse"></span>
-              <span className="text-[10px] font-mono text-neon-red tracking-widest uppercase">
-                ENTER THE BREACH | TARGET: {gameState.playerView.targetTeam} INFRASTRUCTURE
+            <div className="flex items-center gap-2 mt-1">
+              <span className="chip chip-rose">
+                Target: {gameState.playerView.targetTeam} infrastructure
               </span>
             </div>
           </div>
         </div>
-        
-        <div className="flex gap-8 bg-black/60 p-4 border border-white/5">
+
+        <div className="flex gap-6 clay-inset px-6 py-3 rounded-2xl">
           <div className="text-right">
-            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1">PRINCE</div>
-            <div className="text-2xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['PRINCE'] || 0}</div>
+            <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Prince</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{gameState.scoreSummary['PRINCE'] || 0}</div>
           </div>
-          <div className="w-px bg-white/10"></div>
+          <div className="w-px" style={{ backgroundColor: 'var(--border-color)' }}></div>
           <div className="text-left">
-            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1">PRINCESS</div>
-            <div className="text-2xl font-bold font-mono text-white leading-none">{gameState.scoreSummary['PRINCESS'] || 0}</div>
+            <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Princess</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{gameState.scoreSummary['PRINCESS'] || 0}</div>
           </div>
         </div>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
-        
-        {/* LEFT/CENTER COL: TARGET INFRASTRUCTURE MAP & SCANNER */}
-        <div className="lg:col-span-7 glass-panel flex flex-col relative overflow-hidden border-t-2 border-t-neon-purple">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==')] pointer-events-none opacity-30 z-0"></div>
-          
-          <div className="p-4 border-b border-white/5 bg-black/40 relative z-10 flex justify-between items-center">
-            <h2 className="text-sm font-title tracking-widest text-white/70">OPPOSING ARCHITECTURE</h2>
-            <button 
+
+        {/* LEFT/CENTER COL: TARGETS */}
+        <div className="lg:col-span-7 glass-panel flex flex-col relative overflow-hidden">
+          <div className="p-4 flex justify-between items-center" style={{ borderBottom: '1px solid var(--border-color)' }}>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Opposing infrastructure</h2>
+            <button
               onClick={() => setIsScanning(true)}
-              className="cyber-button px-4 py-2 text-[10px] border-neon-blue text-neon-blue bg-neon-blue/10 flex items-center gap-2"
+              className="clay-button-secondary px-4 py-2 text-xs flex items-center gap-2"
             >
-              <Camera size={14} /> PHYSICAL SCAN
+              <Camera size={14} /> Scan a code
             </button>
           </div>
 
           {isScanning && (
-            <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-8 animate-fade-in">
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-8 animate-slide-in" style={{ backgroundColor: 'rgba(45, 42, 74, 0.75)', backdropFilter: 'blur(8px)' }}>
               <div className="w-full max-w-md space-y-4">
-                <div className="text-center font-mono text-neon-blue tracking-widest mb-4">
-                  [ ESTABLISHING HARDWARE LINK ]
+                <div className="text-center text-white mb-4 font-semibold">
+                  Connecting to scanner...
                 </div>
-                <div className="relative border-2 border-neon-blue bg-black overflow-hidden rounded aspect-square">
+                <div className="relative overflow-hidden rounded-3xl clay-panel aspect-square">
                   <Scanner
                     onScan={handleQRScan}
                     onError={handleQRError}
                     components={{ finder: false }}
                   />
-                  
-                  {/* Scanner overlay guides */}
-                  <div className="absolute inset-0 border-[40px] border-black/50 pointer-events-none"></div>
-                  <div className="absolute top-1/2 left-0 w-full h-px bg-neon-blue/50 animate-scan pointer-events-none shadow-[0_0_10px_var(--color-neon-blue)]"></div>
 
                   {scanLoading && (
-                    <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center font-mono text-neon-blue text-sm">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-sm font-semibold" style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: 'var(--accent-purple)' }}>
                       <Activity className="animate-spin mb-4" size={32} />
-                      PROCESSING SIGNAL...
+                      Processing...
                     </div>
                   )}
                   {scanError && (
-                    <div className="absolute inset-0 bg-black/90 flex items-center justify-center font-mono text-neon-red flex-col text-center p-4">
+                    <div className="absolute inset-0 flex items-center justify-center flex-col text-center p-4" style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: 'var(--accent-rose)' }}>
                       <AlertTriangle size={32} className="mb-2" />
                       {scanError}
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex gap-2">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={physicalCode}
                     onChange={e => setPhysicalCode(e.target.value)}
-                    placeholder="MANUAL OVERRIDE CODE"
-                    className="cyber-input flex-1 font-mono text-xs uppercase bg-black/60"
+                    placeholder="Enter code manually"
+                    className="clay-inset flex-1 text-sm px-4 py-3 rounded-2xl outline-none"
+                    style={{ color: 'var(--text-primary)' }}
                   />
-                  <button 
+                  <button
                     onClick={handleScan}
                     disabled={scanLoading || !physicalCode}
-                    className="cyber-button px-4 py-2 text-xs border-white/40 text-white/70"
+                    className="clay-button-secondary px-4 py-2 text-sm"
                   >
-                    OVERRIDE
+                    Submit
                   </button>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={() => { setIsScanning(false); setScanError(''); }}
-                  className="w-full cyber-button py-3 text-xs border-white/20 text-white/50 hover:text-white mt-4"
+                  className="w-full clay-button-secondary py-3 text-sm mt-4"
                 >
-                  <X size={14} className="inline mr-2 mb-0.5" /> CANCEL LINK
+                  <X size={14} className="inline mr-2 mb-0.5" /> Cancel
                 </button>
               </div>
             </div>
@@ -335,47 +331,41 @@ const Hunt = () => {
           <div className="flex-1 overflow-y-auto p-8 relative z-10 custom-scrollbar flex flex-col items-center">
             <div className="w-full max-w-lg space-y-4">
               {targets.map(t => {
-                let stateClass = 'state-locked text-white/30';
                 let Icon = Cpu;
-                
+                let iconColor = 'var(--text-muted)';
+                let panelStyle = 'clay-inset';
+
                 if (t.status === 'BUG_DETECTED') {
-                  stateClass = 'state-building text-neon-amber bg-neon-amber/5';
+                  iconColor = 'var(--accent-gold)';
                   Icon = AlertTriangle;
                 } else if (t.status === 'UNDER_INVESTIGATION') {
-                  stateClass = 'state-breached text-neon-red bg-neon-red/5';
+                  iconColor = 'var(--accent-rose)';
                   Icon = ShieldAlert;
                 } else if (t.status === 'SECURED') {
-                  stateClass = 'state-resolved text-neon-green bg-neon-green/5';
+                  iconColor = 'var(--accent-mint)';
                   Icon = ShieldCheck;
-                } else if (t.status === 'UNKNOWN') {
-                  stateClass = 'border-white/10 text-white hover:border-white/30 cursor-pointer bg-black/40';
                 }
 
                 const isSelected = selectedTarget?.system === t.system;
 
                 return (
-                  <div 
+                  <div
                     key={t.system}
                     onClick={() => handleTargetClick(t)}
-                    className={`p-4 font-mono transition-all flex items-center justify-between border cursor-pointer ${stateClass} ${isSelected ? 'scale-105 shadow-[0_0_30px_rgba(255,255,255,0.1)] z-10 relative bg-white/5 border-white' : 'opacity-80 hover:opacity-100'}`}
+                    className={`p-4 rounded-2xl transition-all flex items-center justify-between cursor-pointer ${isSelected ? 'clay-panel' : panelStyle + ' hover:opacity-90'}`}
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 border flex items-center justify-center ${
-                        t.status === 'BUG_DETECTED' ? 'border-neon-amber text-neon-amber' :
-                        t.status === 'UNDER_INVESTIGATION' ? 'border-neon-red text-neon-red bg-neon-red/20' :
-                        t.status === 'SECURED' ? 'border-neon-green text-neon-green' :
-                        'border-white/20 text-white/40'
-                      }`}>
-                        <Icon size={18} className={t.status === 'UNDER_INVESTIGATION' ? 'animate-pulse' : ''} />
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center clay-inset">
+                        <Icon size={18} style={{ color: iconColor }} />
                       </div>
                       <div>
-                        <div className="font-bold text-sm tracking-widest">{t.system}</div>
-                        <div className="text-[9px] tracking-widest mt-1 opacity-70">
-                          {t.status.replace(/_/g, ' ')}
+                        <div className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{t.system}</div>
+                        <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                          {t.status.replace(/_/g, ' ').toLowerCase()}
                         </div>
                       </div>
                     </div>
-                    {isSelected && <div className="w-2 h-2 bg-white rounded-full animate-pulse-fast"></div>}
+                    {isSelected && <div className="w-2 h-2 rounded-full animate-pulse-fast" style={{ backgroundColor: 'var(--accent-purple)' }}></div>}
                   </div>
                 );
               })}
@@ -383,114 +373,110 @@ const Hunt = () => {
           </div>
         </div>
 
-        {/* RIGHT COL: ACTION CONSOLE */}
-        <div className="lg:col-span-5 glass-panel flex flex-col bg-black/80 border-t-2 border-t-white relative">
-          
-          <div className="p-4 border-b border-white/5 bg-black/40 flex items-center gap-2">
-            <TerminalIcon size={16} className="text-white/50" />
-            <h2 className="text-sm font-title tracking-widest text-white/70">ACTION CONSOLE</h2>
+        {/* RIGHT COL: ACTIONS */}
+        <div className="lg:col-span-5 glass-panel flex flex-col relative">
+
+          <div className="p-4 flex items-center gap-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
+            <ListChecks size={16} style={{ color: 'var(--text-secondary)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Actions</h2>
           </div>
 
           <div className="flex-1 p-8 flex flex-col overflow-y-auto custom-scrollbar">
             {!selectedTarget ? (
-              <div className="h-full flex flex-col items-center justify-center text-white/20 font-mono text-sm">
+              <div className="h-full flex flex-col items-center justify-center text-sm" style={{ color: 'var(--text-muted)' }}>
                 <Crosshair size={48} className="mb-6 opacity-50" />
-                AWAITING TARGET SELECTION
+                Select a target to get started
               </div>
             ) : (
-              <div className="space-y-8 animate-fade-in h-full flex flex-col">
-                <div className="border-b border-white/10 pb-6 text-center">
-                  <h3 className="text-2xl font-title text-white tracking-widest">{selectedTarget.system}</h3>
-                  <div className="font-mono text-[10px] text-white/50 mt-2 tracking-widest">CURRENT STATUS: {selectedTarget.status.replace(/_/g, ' ')}</div>
+              <div className="space-y-8 animate-slide-in h-full flex flex-col">
+                <div className="pb-6 text-center" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <h3 className="text-2xl font-display font-bold" style={{ color: 'var(--text-primary)' }}>{selectedTarget.system}</h3>
+                  <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Status: {selectedTarget.status.replace(/_/g, ' ').toLowerCase()}</div>
                 </div>
 
                 {selectedTarget.status === 'UNKNOWN' && gameState.phase === 'HUNT' && (
                   <div className="flex-1 flex flex-col items-center justify-center">
-                    <button 
+                    <button
                       onClick={() => handleAction('discover', selectedTarget.system)}
                       disabled={actionLoading}
-                      className="cyber-button px-8 py-4 bg-white/5 hover:bg-white/10 w-full max-w-sm text-sm tracking-widest"
+                      className="clay-button px-8 py-4 w-full max-w-sm text-sm"
                     >
-                      {actionLoading ? 'SCANNING SECTOR...' : 'INVESTIGATE SYSTEM'}
+                      {actionLoading ? 'Scanning...' : 'Investigate system'}
                     </button>
-                    <p className="font-mono text-[10px] text-white/40 mt-6 text-center max-w-xs uppercase leading-relaxed">
-                      Initiate an active scan of the system architecture to reveal hidden vulnerabilities.
+                    <p className="text-xs mt-6 text-center max-w-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                      Scan this system to reveal any hidden vulnerabilities.
                     </p>
                   </div>
                 )}
 
                 {selectedTarget.status === 'BUG_DETECTED' && selectedTarget.bugId && gameState.phase === 'HUNT' && (
                   <div className="flex-1 flex flex-col items-center justify-center text-center space-y-8">
-                    <div className="w-32 h-32 border-2 border-neon-amber rounded-full flex flex-col items-center justify-center bg-neon-amber/5 shadow-[0_0_50px_rgba(255,170,0,0.2)]">
-                      <AlertTriangle size={48} className="text-neon-amber animate-pulse" />
+                    <div className="w-32 h-32 rounded-full flex flex-col items-center justify-center clay-inset">
+                      <AlertTriangle size={48} style={{ color: 'var(--accent-gold)' }} />
                     </div>
                     <div>
-                      <div className="font-title text-2xl text-neon-amber mb-2 tracking-widest">ANOMALY DETECTED</div>
-                      <div className="font-mono text-xs text-white/60 max-w-xs mx-auto">An unauthorized modification has been located within the infrastructure.</div>
+                      <div className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--accent-gold)' }}>Bug found</div>
+                      <div className="text-sm max-w-xs mx-auto" style={{ color: 'var(--text-secondary)' }}>An unauthorized change was found in this system.</div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => handleAction('claim', selectedTarget.bugId!)}
                       disabled={actionLoading}
-                      className="cyber-button px-8 py-4 text-sm tracking-widest border-neon-amber text-neon-amber bg-neon-amber/10 w-full max-w-sm"
+                      className="clay-button px-8 py-4 text-sm w-full max-w-sm"
                     >
-                      {actionLoading ? 'SECURING...' : 'CLAIM INCIDENT (+10 PTS)'}
+                      {actionLoading ? 'Claiming...' : 'Claim bug (+10 pts)'}
                     </button>
                   </div>
                 )}
 
                 {selectedTarget.status === 'UNDER_INVESTIGATION' && bugDetails && gameState.phase === 'HUNT' && (
                   <div className="flex-1 flex flex-col space-y-6">
-                    <div className="p-5 border border-neon-red bg-neon-red/10 font-mono relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-2 opacity-10"><ShieldAlert size={64}/></div>
-                      <div className="flex items-center gap-3 text-neon-red font-bold mb-4">
-                        <span className="w-2 h-2 bg-neon-red animate-pulse"></span>
-                        SECURITY INCIDENT
+                    <div className="p-5 rounded-2xl clay-inset">
+                      <div className="flex items-center gap-3 font-bold mb-4" style={{ color: 'var(--accent-rose)' }}>
+                        <span className="w-2 h-2 rounded-full animate-pulse-fast" style={{ backgroundColor: 'var(--accent-rose)' }}></span>
+                        Security incident
                       </div>
-                      <div className="text-[10px] space-y-2 relative z-10 tracking-widest">
-                        <div className="flex justify-between border-b border-neon-red/20 pb-1">
-                          <span className="text-white/50">CATEGORY</span> 
-                          <span className="text-white text-right">{bugDetails.category}</span>
+                      <div className="text-xs space-y-2">
+                        <div className="flex justify-between pb-1" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Category</span>
+                          <span style={{ color: 'var(--text-primary)' }}>{bugDetails.category}</span>
                         </div>
-                        <div className="flex justify-between border-b border-neon-red/20 pb-1">
-                          <span className="text-white/50">DIFFICULTY</span> 
-                          <span className="text-white text-right">{bugDetails.difficulty}</span>
+                        <div className="flex justify-between pb-1" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Difficulty</span>
+                          <span style={{ color: 'var(--text-primary)' }}>{bugDetails.difficulty}</span>
                         </div>
-                        <div className="flex justify-between border-b border-neon-red/20 pb-1">
-                          <span className="text-white/50">VULNERABILITY</span> 
-                          <span className="text-white text-right">{bugDetails.vulnerabilityType.replace(/_/g, ' ')}</span>
+                        <div className="flex justify-between pb-1" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Vulnerability</span>
+                          <span style={{ color: 'var(--text-primary)' }}>{bugDetails.vulnerabilityType.replace(/_/g, ' ')}</span>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex-1">
-                      <label className="block font-mono text-[10px] text-white/50 mb-3 tracking-widest uppercase">SELECT REMEDIATION PROTOCOL</label>
+                      <label className="block text-xs mb-3 font-semibold" style={{ color: 'var(--text-secondary)' }}>Select a fix</label>
                       <div className="grid grid-cols-1 gap-2">
                         {['Authentication', 'Authorization', 'Input Validation', 'Logging'].map(opt => (
-                          <div 
+                          <div
                             key={opt}
                             onClick={() => setSolveSelection(opt)}
-                            className={`p-4 border font-mono text-xs cursor-pointer transition-colors flex items-center justify-between ${
-                              solveSelection === opt ? 'border-neon-blue bg-neon-blue/20 text-white shadow-[inset_0_0_10px_rgba(0,240,255,0.2)]' : 'border-white/10 hover:border-white/30 text-white/60 bg-black/40'
+                            className={`p-4 rounded-2xl text-xs cursor-pointer transition-colors flex items-center justify-between ${
+                              solveSelection === opt ? 'clay-panel' : 'clay-inset hover:opacity-90'
                             }`}
+                            style={{ color: solveSelection === opt ? 'var(--text-primary)' : 'var(--text-secondary)' }}
                           >
-                            <span className="uppercase">{opt}</span>
-                            {solveSelection === opt && <CheckCircle size={14} className="text-neon-blue" />}
+                            <span>{opt}</span>
+                            {solveSelection === opt && <CheckCircle size={14} style={{ color: 'var(--accent-purple)' }} />}
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    <div className="pt-6 border-t border-white/10">
-                      <button 
+                    <div className="pt-6" style={{ borderTop: '1px solid var(--border-color)' }}>
+                      <button
                         onClick={() => handleAction('solve', selectedTarget.bugId!)}
                         disabled={!solveSelection || actionLoading}
-                        className={`cyber-button w-full py-4 text-sm tracking-widest font-bold transition-all ${
-                          !solveSelection
-                            ? 'border-white/10 text-white/30 cursor-not-allowed bg-black/40'
-                            : 'border-neon-green text-neon-green bg-neon-green/10 hover:bg-neon-green/20'
-                        }`}
+                        className="clay-button w-full py-4 text-sm font-bold disabled:opacity-40"
                       >
-                        {actionLoading ? 'PROCESSING PROTOCOL...' : 'DEPLOY FIX (+50 PTS)'}
+                        {actionLoading ? 'Submitting fix...' : 'Deploy fix (+50 pts)'}
                       </button>
                     </div>
                   </div>
@@ -498,12 +484,12 @@ const Hunt = () => {
 
                 {selectedTarget.status === 'SECURED' && (
                   <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
-                    <div className="w-32 h-32 border-2 border-neon-green rounded-full flex flex-col items-center justify-center bg-neon-green/5 shadow-[0_0_50px_rgba(57,255,20,0.2)]">
-                      <ShieldCheck size={48} className="text-neon-green" />
+                    <div className="w-32 h-32 rounded-full flex flex-col items-center justify-center clay-inset">
+                      <ShieldCheck size={48} style={{ color: 'var(--accent-mint)' }} />
                     </div>
                     <div>
-                      <div className="font-title text-2xl text-neon-green mb-2 tracking-widest">SYSTEM SECURED</div>
-                      <div className="font-mono text-xs text-white/50 uppercase tracking-widest">The vulnerability has been resolved.</div>
+                      <div className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--accent-mint)' }}>System secured</div>
+                      <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>The vulnerability has been resolved.</div>
                     </div>
                   </div>
                 )}

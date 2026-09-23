@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { teachingRegistry } from '@node-wars/shared';
+import { ChevronLeft, ChevronRight, Play, Pause, RotateCcw } from 'lucide-react';
 
 // The 150-minute seminar schedule template
 const SEMINAR_SCHEDULE = [
@@ -55,8 +56,8 @@ const InstructorMode = () => {
   // Authorization Check
   if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) {
     return (
-      <div className="h-screen flex items-center justify-center bg-[#0a0510]">
-        <div className="text-red-500 font-mono tracking-widest bg-black p-8 border border-red-500/50">
+      <div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="clay-panel p-8 text-center" style={{ color: '#c14d72' }}>
           Instructor access required.
         </div>
       </div>
@@ -77,7 +78,7 @@ const InstructorMode = () => {
   };
 
   const handlePauseTimer = () => setTimerActive(false);
-  
+
   const handleResetTimer = () => {
     setTimerActive(false);
     if (guide) setTimerSeconds(guide.durationMinutes * 60);
@@ -85,25 +86,31 @@ const InstructorMode = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 p-6 max-w-[1920px] mx-auto z-10 relative animate-slide-in font-mono text-white overflow-hidden">
-      <header className="glass-panel shrink-0 p-4 border-t-2 border-t-neon-blue flex justify-between items-center bg-[#0a0510] mb-6">
+    <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 p-6 max-w-[1920px] mx-auto z-10 relative animate-slide-in overflow-hidden">
+      <header className="glass-panel shrink-0 p-4 flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-title tracking-widest uppercase">NODE LAB // INSTRUCTOR MODE</h1>
-          <p className="text-neon-blue text-[10px] mt-1 tracking-widest uppercase">Live Seminar Guidance System</p>
+          <h1 className="text-xl font-display font-bold" style={{ color: 'var(--text-primary)' }}>Instructor mode</h1>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Live seminar guidance</p>
         </div>
-        
+
         {/* Timer UI */}
-        <div className="flex items-center gap-4 bg-black/50 p-2 border border-white/10 rounded-sm">
-          <div className="text-2xl font-bold tracking-widest w-24 text-center">
+        <div className="flex items-center gap-4 clay-inset px-4 py-2 rounded-2xl">
+          <div className="text-2xl font-display font-bold w-24 text-center" style={{ color: 'var(--text-primary)' }}>
             {formatTime(timerSeconds)}
           </div>
-          <div className="flex gap-2 text-[10px]">
+          <div className="flex gap-2">
             {!timerActive ? (
-              <button data-testid="timer-start" onClick={handleStartTimer} className="px-3 py-1 bg-neon-green/10 text-neon-green border border-neon-green/30 hover:bg-neon-green/20">START</button>
+              <button data-testid="timer-start" onClick={handleStartTimer} className="clay-button px-3 py-1.5 text-xs flex items-center gap-1">
+                <Play size={12} /> Start
+              </button>
             ) : (
-              <button data-testid="timer-pause" onClick={handlePauseTimer} className="px-3 py-1 bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/20">PAUSE</button>
+              <button data-testid="timer-pause" onClick={handlePauseTimer} className="clay-button-secondary px-3 py-1.5 text-xs flex items-center gap-1" style={{ color: '#a87f1e' }}>
+                <Pause size={12} /> Pause
+              </button>
             )}
-            <button data-testid="timer-reset" onClick={handleResetTimer} className="px-3 py-1 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20">RESET</button>
+            <button data-testid="timer-reset" onClick={handleResetTimer} className="clay-button-secondary px-3 py-1.5 text-xs flex items-center gap-1" style={{ color: '#c14d72' }}>
+              <RotateCcw size={12} /> Reset
+            </button>
           </div>
         </div>
       </header>
@@ -111,115 +118,115 @@ const InstructorMode = () => {
       <div className="flex gap-6 flex-1 min-h-0">
         {/* LEFT COLUMN: Seminar Plan & Checklist */}
         <div className="w-1/3 flex flex-col gap-6">
-          <div className="glass-panel bg-black/60 p-6 flex-1 overflow-y-auto custom-scrollbar border border-white/5">
-            <h2 className="text-lg font-title text-neon-blue tracking-widest uppercase border-b border-white/10 pb-2 mb-4">SEMINAR PLAN</h2>
-            <div className="space-y-2 text-xs">
+          <div className="glass-panel p-6 flex-1 overflow-y-auto custom-scrollbar">
+            <h2 className="text-sm font-display font-bold pb-2 mb-4" style={{ color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>Seminar plan</h2>
+            <div className="space-y-2 text-sm">
               {SEMINAR_SCHEDULE.map((item, i) => (
-                <div key={i} className="flex gap-4 p-2 hover:bg-white/5">
-                  <div className="w-16 text-white/50">{item.time}</div>
-                  <div className="text-white/90">{item.task}</div>
+                <div key={i} className="flex gap-4 p-2 rounded-lg" style={{ color: 'var(--text-primary)' }}>
+                  <div className="w-16" style={{ color: 'var(--text-muted)' }}>{item.time}</div>
+                  <div>{item.task}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="glass-panel bg-black/60 p-6 border border-white/5">
-            <h2 className="text-lg font-title text-neon-blue tracking-widest uppercase border-b border-white/10 pb-2 mb-4">PRE-FLIGHT CHECKLIST</h2>
-            <ul className="space-y-2 text-[11px] text-white/80">
+          <div className="glass-panel p-6">
+            <h2 className="text-sm font-display font-bold pb-2 mb-4" style={{ color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>Pre-flight checklist</h2>
+            <ul className="space-y-2 text-sm" style={{ color: 'var(--text-primary)' }}>
               {CHECKLIST.map((item, i) => (
                 <li key={i} className="flex gap-3 items-center">
-                  <input type="checkbox" className="accent-neon-blue w-3 h-3" />
+                  <input type="checkbox" className="w-4 h-4 accent-[var(--accent-purple)]" />
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
-            <div className="mt-4 pt-3 border-t border-white/10 text-[9px] text-red-400 uppercase tracking-widest">
+            <div className="mt-4 pt-3 text-xs" style={{ borderTop: '1px solid var(--border-color)', color: 'var(--accent-rose)' }}>
               Note: Node Wars is a separate application. Do not include its dependencies here.
             </div>
           </div>
         </div>
 
         {/* RIGHT COLUMN: Mission Guide */}
-        <div className="w-2/3 glass-panel bg-black/60 flex flex-col border border-white/5 min-h-0">
-          
-          <div className="flex justify-between items-center p-4 border-b border-white/10 bg-white/5">
-            <button 
+        <div className="w-2/3 glass-panel flex flex-col min-h-0">
+
+          <div className="flex justify-between items-center p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+            <button
               onClick={() => setSelectedMissionIndex(Math.max(0, selectedMissionIndex - 1))}
               disabled={selectedMissionIndex === 0}
-              className="text-[10px] tracking-widest px-4 py-2 border border-white/20 disabled:opacity-30 hover:bg-white/10"
+              className="clay-button-secondary px-4 py-2 text-sm flex items-center gap-1 disabled:opacity-30"
             >
-              [ PREVIOUS ]
+              <ChevronLeft size={14} /> Previous
             </button>
-            <div className="text-lg font-bold tracking-widest text-center uppercase">
-              {currentMission?.title || 'SELECT MISSION'}
+            <div className="text-lg font-display font-bold text-center" style={{ color: 'var(--text-primary)' }}>
+              {currentMission?.title || 'Select mission'}
             </div>
-            <button 
+            <button
               onClick={() => setSelectedMissionIndex(Math.max(0, Math.min(missions.length - 1, selectedMissionIndex + 1)))}
               disabled={selectedMissionIndex === missions.length - 1}
-              className="text-[10px] tracking-widest px-4 py-2 border border-white/20 disabled:opacity-30 hover:bg-white/10"
+              className="clay-button-secondary px-4 py-2 text-sm flex items-center gap-1 disabled:opacity-30"
             >
-              [ NEXT MISSION ]
+              Next mission <ChevronRight size={14} />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
             {!guide ? (
-              <div className="text-white/50 text-center mt-10">No instructor guide available for this mission.</div>
+              <div className="text-center mt-10" style={{ color: 'var(--text-secondary)' }}>No instructor guide available for this mission.</div>
             ) : (
               <>
                 <section>
-                  <h3 className="text-xs text-neon-blue tracking-widest uppercase mb-2">TIME</h3>
-                  <div className="text-sm">{guide.timeLabel}</div>
+                  <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--accent-sky)' }}>Time</h3>
+                  <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{guide.timeLabel}</div>
                 </section>
 
                 <section>
-                  <h3 className="text-xs text-neon-blue tracking-widest uppercase mb-2">PURPOSE</h3>
-                  <div className="text-sm text-white/90 leading-relaxed bg-white/5 p-3 border-l-2 border-neon-blue">
+                  <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--accent-sky)' }}>Purpose</h3>
+                  <div className="text-sm leading-relaxed clay-inset p-3" style={{ color: 'var(--text-primary)' }}>
                     {guide.purpose}
                   </div>
                 </section>
 
                 <section>
-                  <h3 className="text-xs text-neon-blue tracking-widest uppercase mb-2">TEACH</h3>
+                  <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--accent-sky)' }}>Teach</h3>
                   <ul className="list-none space-y-1">
                     {guide.teach.map((point, i) => (
-                      <li key={i} className="flex gap-2 text-sm text-white/80">
-                        <span className="text-neon-blue">■</span> {point}
+                      <li key={i} className="flex gap-2 text-sm" style={{ color: 'var(--text-primary)' }}>
+                        <span style={{ color: 'var(--accent-sky)' }}>•</span> {point}
                       </li>
                     ))}
                   </ul>
                 </section>
 
                 <section>
-                  <h3 className="text-xs text-neon-green tracking-widest uppercase mb-2">DEMONSTRATE</h3>
-                  <div className="text-sm text-neon-green/90 bg-neon-green/5 p-3 border border-neon-green/20">
+                  <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--accent-mint)' }}>Demonstrate</h3>
+                  <div className="text-sm p-3 rounded-xl" style={{ color: '#2a9c68', backgroundColor: 'rgba(111, 216, 168, 0.12)' }}>
                     {guide.demonstrate}
                   </div>
                 </section>
 
                 <section>
-                  <h3 className="text-xs text-purple-400 tracking-widest uppercase mb-2">ASK</h3>
-                  <div className="text-sm italic text-white/90">"{guide.ask}"</div>
+                  <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--accent-purple)' }}>Ask</h3>
+                  <div className="text-sm italic" style={{ color: 'var(--text-primary)' }}>"{guide.ask}"</div>
                 </section>
 
                 <section>
-                  <h3 className="text-xs text-red-400 tracking-widest uppercase mb-2">WATCH FOR</h3>
-                  <div className="text-sm text-white/80">{guide.watchFor}</div>
+                  <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--accent-rose)' }}>Watch for</h3>
+                  <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{guide.watchFor}</div>
                 </section>
 
                 <section>
-                  <h3 className="text-xs text-neon-blue tracking-widest uppercase mb-2">LET STUDENTS CODE</h3>
-                  <div className="text-sm text-white/80">{guide.letStudentsCode}</div>
+                  <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--accent-sky)' }}>Let students code</h3>
+                  <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{guide.letStudentsCode}</div>
                 </section>
 
                 <section>
-                  <h3 className="text-xs text-neon-blue tracking-widest uppercase mb-2">DEBRIEF</h3>
-                  <div className="text-sm text-white/80">{guide.debrief}</div>
+                  <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--accent-sky)' }}>Debrief</h3>
+                  <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{guide.debrief}</div>
                 </section>
 
                 <section>
-                  <h3 className="text-xs text-yellow-400 tracking-widest uppercase mb-2">TRANSITION</h3>
-                  <div className="text-sm italic text-yellow-400/90 bg-yellow-400/5 p-3 border-l-2 border-yellow-400">
+                  <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--accent-gold)' }}>Transition</h3>
+                  <div className="text-sm italic p-3 rounded-xl" style={{ color: '#a87f1e', backgroundColor: 'rgba(232, 184, 75, 0.12)' }}>
                     "{guide.transition}"
                   </div>
                 </section>

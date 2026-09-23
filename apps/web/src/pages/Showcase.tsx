@@ -46,8 +46,8 @@ const Showcase = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen text-neon-blue font-mono text-xs tracking-widest animate-pulse">
-        ASSEMBLING RECAP...
+      <div className="flex items-center justify-center h-screen text-sm animate-pulse" style={{ color: 'var(--accent-purple)' }}>
+        Putting together your recap...
       </div>
     );
   }
@@ -55,15 +55,17 @@ const Showcase = () => {
   return (
     <div className="max-w-4xl mx-auto p-6 md:p-10 animate-slide-in">
       <div className="text-center mb-10">
-        <Trophy size={40} className="mx-auto mb-4 text-neon-amber glow-text-amber" />
-        <h1 className="text-3xl md:text-4xl font-title tracking-widest uppercase text-white glow-text-blue">
-          What You Just Built
+        <div className="clay-inset w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Trophy size={36} style={{ color: 'var(--accent-gold)' }} />
+        </div>
+        <h1 className="text-3xl md:text-4xl font-display font-bold" style={{ color: 'var(--text-primary)' }}>
+          What you just built
         </h1>
-        <p className="text-white/50 font-mono text-xs md:text-sm mt-3 tracking-wide max-w-xl mx-auto">
+        <p className="text-sm mt-3 max-w-xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
           Four small systems. Each one is a real piece of how this exact castle you're standing in actually runs.
         </p>
-        <div className="mt-4 inline-block px-4 py-1.5 border border-neon-blue/30 bg-neon-blue/5 rounded-full">
-          <span className="text-neon-blue font-mono text-xs tracking-widest">{completedCount} / {items.length} SYSTEMS ONLINE</span>
+        <div className="mt-4 inline-block">
+          <span className="chip chip-sky">{completedCount} / {items.length} systems online</span>
         </div>
       </div>
 
@@ -73,9 +75,7 @@ const Showcase = () => {
           return (
             <div
               key={item.missionId}
-              className={`glass-panel border transition-all overflow-hidden ${
-                item.completed ? 'border-neon-blue/30' : 'border-white/10 opacity-50'
-              }`}
+              className={`glass-panel overflow-hidden transition-all ${!item.completed ? 'opacity-50' : ''}`}
             >
               <button
                 onClick={() => item.completed && setExpanded(isOpen ? null : item.missionId)}
@@ -83,32 +83,32 @@ const Showcase = () => {
                 className="w-full flex items-center justify-between p-4 md:p-5 text-left"
               >
                 <div className="flex items-center gap-4">
-                  <div className="font-mono text-[10px] text-white/30 w-6">{String(idx + 1).padStart(2, '0')}</div>
+                  <div className="text-[10px] w-6" style={{ color: 'var(--text-muted)' }}>{String(idx + 1).padStart(2, '0')}</div>
                   {item.completed ? (
-                    <CheckCircle size={18} className="text-neon-blue shrink-0" />
+                    <CheckCircle size={18} className="shrink-0" style={{ color: 'var(--accent-sky)' }} />
                   ) : (
-                    <Circle size={18} className="text-white/20 shrink-0" />
+                    <Circle size={18} className="shrink-0" style={{ color: 'var(--text-muted)' }} />
                   )}
                   <div>
-                    <div className="font-title text-sm md:text-base tracking-widest uppercase text-white">
+                    <div className="text-sm md:text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
                       {item.title}
                     </div>
-                    <div className="text-[10px] font-mono text-white/40 tracking-widest uppercase mt-0.5">
-                      {item.completed ? item.unlockComponent || 'ONLINE' : 'NOT COMPLETED'}
+                    <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      {item.completed ? item.unlockComponent || 'Online' : 'Not completed'}
                     </div>
                   </div>
                 </div>
                 {item.completed && (
-                  <ArrowRight size={16} className={`text-white/40 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                  <ArrowRight size={16} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} style={{ color: 'var(--text-muted)' }} />
                 )}
               </button>
 
               {isOpen && item.code && (
-                <div className="border-t border-white/10 bg-black/60 p-4 md:p-5">
-                  <div className="text-[9px] font-mono text-neon-green/70 tracking-widest mb-2 uppercase">
+                <div className="p-4 md:p-5" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <div className="text-[10px] mb-2" style={{ color: 'var(--accent-mint)' }}>
                     Your working solution
                   </div>
-                  <pre className="text-[11px] md:text-xs font-mono text-white/80 overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto custom-scrollbar">
+                  <pre className="text-[11px] md:text-xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto custom-scrollbar clay-inset p-3 rounded-xl" style={{ color: 'var(--text-secondary)' }}>
                     {item.code}
                   </pre>
                 </div>
@@ -119,15 +119,15 @@ const Showcase = () => {
       </div>
 
       <div className="mt-10 text-center">
-        <p className="text-white/40 font-mono text-xs tracking-wide mb-6 max-w-lg mx-auto">
+        <p className="text-xs mb-6 max-w-lg mx-auto" style={{ color: 'var(--text-muted)' }}>
           Every one of these is a small version of something already running the real game you're about to play.
           Now it's time to see who understood it best.
         </p>
         <button
           onClick={() => navigate('/quiz')}
-          className="cyber-button px-10 py-4 text-sm font-bold tracking-widest uppercase bg-neon-amber/10 border-neon-amber text-neon-amber hover:bg-neon-amber/20 transition-colors"
+          className="clay-button px-10 py-4 text-sm font-bold"
         >
-          Continue to the Quiz
+          Continue to the quiz
         </button>
       </div>
     </div>

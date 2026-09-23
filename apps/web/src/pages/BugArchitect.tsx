@@ -40,13 +40,13 @@ const BugArchitect = () => {
         setBug(data);
         setError('');
       } else if (res.status === 404) {
-        setError('BUG ARCHITECT ROUTE NOT YET AVAILABLE');
+        setError('This feature is not available yet.');
       } else {
-        setError('FAILED TO LOAD ASSIGNMENT');
+        setError('Failed to load your assignment.');
       }
     } catch (err) {
       console.error('Failed to fetch bug assignment', err);
-      setError('CONNECTION ERROR');
+      setError('Connection error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -91,17 +91,17 @@ const BugArchitect = () => {
   };
 
   if (loading) {
-    return <div className="p-12 text-center font-mono text-neon-purple animate-pulse">AUTHORIZING ARCHITECT PROTOCOL...</div>;
+    return <div className="p-12 text-center animate-pulse" style={{ color: 'var(--text-secondary)' }}>Loading your assignment...</div>;
   }
 
   if (error && !bug) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] text-center p-12">
-        <ShieldAlert size={64} className="text-neon-red mb-6 animate-pulse" />
-        <h2 className="text-2xl font-title text-neon-red mb-2">ACCESS DENIED</h2>
-        <p className="font-mono text-white/50 tracking-widest text-sm mb-8">{error}</p>
-        <button onClick={() => navigate('/dashboard')} className="cyber-button px-8 py-3 bg-neon-red/10 text-neon-red border-neon-red">
-          RETURN TO COMMAND CENTER
+        <ShieldAlert size={64} style={{ color: 'var(--accent-rose)' }} className="mb-6" />
+        <h2 className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Something went wrong</h2>
+        <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>{error}</p>
+        <button onClick={() => navigate('/dashboard')} className="clay-button-secondary px-8 py-3">
+          Return to dashboard
         </button>
       </div>
     );
@@ -110,11 +110,11 @@ const BugArchitect = () => {
   if (!bug) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] text-center p-12">
-        <BugIcon size={64} className="text-white/20 mb-6" />
-        <h2 className="text-2xl font-title text-white/50 mb-2">NO BUG ASSIGNED</h2>
-        <p className="font-mono text-white/40 tracking-widest text-sm mb-8">CHECK BACK WHEN THE PLACEMENT PHASE BEGINS.</p>
-        <button onClick={() => navigate('/dashboard')} className="cyber-button px-8 py-3 bg-white/5">
-          RETURN TO COMMAND CENTER
+        <BugIcon size={64} style={{ color: 'var(--text-muted)' }} className="mb-6" />
+        <h2 className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No bug assigned</h2>
+        <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>Check back once the placement phase begins.</p>
+        <button onClick={() => navigate('/dashboard')} className="clay-button-secondary px-8 py-3">
+          Return to dashboard
         </button>
       </div>
     );
@@ -138,32 +138,31 @@ const BugArchitect = () => {
     <div className="max-w-[1600px] mx-auto h-[calc(100vh-60px)] -mt-6 p-6 flex flex-col gap-4 animate-slide-in relative z-10">
 
       {/* HEADER */}
-      <div className="glass-panel shrink-0 p-6 flex justify-between items-center border-t-2 border-t-neon-purple bg-[#0a0510]">
+      <div className="glass-panel shrink-0 p-6 flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 border-2 border-neon-purple flex items-center justify-center bg-neon-purple/10 text-neon-purple">
-            <BugIcon size={24} />
+          <div className="clay-inset w-12 h-12 rounded-2xl flex items-center justify-center">
+            <BugIcon size={24} style={{ color: 'var(--accent-purple)' }} />
           </div>
           <div>
-            <h1 className="text-3xl font-title tracking-widest text-white uppercase leading-none">
-              OFFENSIVE SECURITY CONSOLE
+            <h1 className="text-2xl md:text-3xl font-display font-bold" style={{ color: 'var(--text-primary)' }}>
+              Bug Architect
             </h1>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="w-2 h-2 bg-neon-purple animate-pulse"></span>
-              <span className="text-[10px] font-mono text-neon-purple tracking-widest uppercase">
-                DEFENDER → ATTACKER | BUG PLACEMENT WINDOW {huntStatus ? `| PHASE: ${huntStatus.phase}` : ''}
+            <div className="flex items-center gap-2 mt-1">
+              <span className="chip chip-purple">
+                Bug placement window {huntStatus ? `· ${huntStatus.phase}` : ''}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="text-right bg-black/60 p-4 border border-white/5 flex items-center gap-3">
-          <Clock size={18} className="text-neon-amber" />
+        <div className="clay-inset px-6 py-3 rounded-2xl flex items-center gap-3">
+          <Clock size={18} style={{ color: 'var(--accent-gold)' }} />
           <div>
-            <div className="text-[10px] text-white/50 font-mono tracking-widest mb-1 uppercase">
-              {countdownLabel ? 'TIME REMAINING' : 'HUNT STATUS'}
+            <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
+              {countdownLabel ? 'Time remaining' : 'Hunt status'}
             </div>
-            <div className="text-2xl font-bold font-mono text-white leading-none">
-              {countdownLabel ? countdownLabel : bug.status === 'PLANTED' ? 'HUNT STARTS SOON' : 'AWAITING PLACEMENT'}
+            <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              {countdownLabel ? countdownLabel : bug.status === 'PLANTED' ? 'Hunt starts soon' : 'Awaiting placement'}
             </div>
           </div>
         </div>

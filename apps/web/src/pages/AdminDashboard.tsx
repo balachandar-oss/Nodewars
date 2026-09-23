@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Square, RotateCcw, Eye, EyeOff, Users, Bug, Lock, MapPin, Activity, AlertCircle } from 'lucide-react';
-import { useTheme } from '../hooks/useTheme';
+import { Play, Square, RotateCcw, Eye, EyeOff, Users, Bug, Lock, MapPin, Activity, AlertCircle, Crown } from 'lucide-react';
 import { useAdminGameState } from '../hooks/useAdminGameState';
 import { API_URL } from '../utils/api';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const { gameState, loading, error } = useAdminGameState();
   const [showScores, setShowScores] = useState(false);
   const [gameCountdown, setGameCountdown] = useState<number | null>(null);
@@ -194,23 +192,23 @@ const AdminDashboard = () => {
 
   const getPhaseLabel = (phase?: string): string => {
     switch (phase) {
-      case 'ENGINEERING': return 'LAB IN PROGRESS';
-      case 'BUG_PLACEMENT': return 'BUG PLACEMENT';
-      case 'HUNT': return 'HUNT ACTIVE';
-      case 'COMPLETE': return 'GAME COMPLETE';
-      case 'ENDED': return 'GAME ENDED';
-      default: return 'UNKNOWN';
+      case 'ENGINEERING': return 'Lab in progress';
+      case 'BUG_PLACEMENT': return 'Bug placement';
+      case 'HUNT': return 'Hunt active';
+      case 'COMPLETE': return 'Game complete';
+      case 'ENDED': return 'Game ended';
+      default: return 'Unknown';
     }
   };
 
-  const getPhaseColor = (phase?: string): string => {
+  const getPhaseChipClass = (phase?: string): string => {
     switch (phase) {
-      case 'ENGINEERING': return 'var(--accent-amber)';
-      case 'BUG_PLACEMENT': return 'var(--accent-purple)';
-      case 'HUNT': return 'var(--accent-green)';
-      case 'COMPLETE': return 'var(--accent-red)';
-      case 'ENDED': return 'var(--accent-red)';
-      default: return 'var(--text-secondary)';
+      case 'ENGINEERING': return 'chip-gold';
+      case 'BUG_PLACEMENT': return 'chip-purple';
+      case 'HUNT': return 'chip-mint';
+      case 'COMPLETE': return 'chip-rose';
+      case 'ENDED': return 'chip-rose';
+      default: return 'chip-purple';
     }
   };
 
@@ -226,8 +224,8 @@ const AdminDashboard = () => {
     return (
       <div className="flex items-center justify-center h-screen" style={{ color: 'var(--text-secondary)' }}>
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: `var(--accent-blue) transparent var(--accent-blue) var(--accent-blue)` }}></div>
-          <p className="font-mono uppercase tracking-widest">LOADING GAME STATE...</p>
+          <div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: 'var(--accent-purple) transparent var(--accent-purple) var(--accent-purple)' }}></div>
+          <p className="font-semibold">Loading game state...</p>
         </div>
       </div>
     );
@@ -235,10 +233,10 @@ const AdminDashboard = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ color: 'var(--accent-red)' }}>
+      <div className="flex items-center justify-center h-screen" style={{ color: '#c14d72' }}>
         <div className="text-center">
           <AlertCircle size={32} className="mx-auto mb-4" />
-          <p className="font-mono uppercase tracking-widest">{error}</p>
+          <p className="font-semibold">{error}</p>
         </div>
       </div>
     );
@@ -247,77 +245,73 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Status Bar */}
-      <div className="panel p-6" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--accent-blue)' }}>
+      <div className="clay-panel p-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <div className="text-xs font-mono tracking-widest mb-2" style={{ color: 'var(--text-secondary)' }}>GAME STATUS</div>
+            <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Game status</div>
             <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full animate-pulse" style={{ backgroundColor: getPhaseColor(gameState?.phase) }}></div>
-              <span className="text-lg font-mono font-bold" style={{ color: getPhaseColor(gameState?.phase) }}>
+              <span className={`chip ${getPhaseChipClass(gameState?.phase)} text-sm`}>
                 {getPhaseLabel(gameState?.phase)}
               </span>
               {gameCountdown && (
-                <span className="text-xs font-mono px-3 py-1 rounded" style={{ backgroundColor: `var(--accent-amber)${theme === 'dark' ? '1a' : '15'}`, color: 'var(--accent-amber)' }}>
+                <span className="chip chip-gold text-sm">
                   {Math.floor(gameCountdown / 60)}:{(gameCountdown % 60).toString().padStart(2, '0')}
                 </span>
               )}
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             {(!gameState?.phase || gameState?.phase === 'ENGINEERING') && (
               <button
                 onClick={handleStartGame}
                 disabled={isStarting}
-                className="cyber-button px-4 py-2 text-xs flex items-center gap-2"
-                style={{ borderColor: 'var(--accent-green)', color: 'var(--accent-green)' }}
+                className="clay-button px-4 py-2 text-sm flex items-center gap-2"
               >
                 <Play size={14} />
-                {gameState?.countdownSeconds ? 'RESTART TIMER' : 'START GAME'}
+                {gameState?.countdownSeconds ? 'Restart timer' : 'Start game'}
               </button>
             )}
             {gameState?.phase === 'ENGINEERING' && (
               <button
                 onClick={handleStartPlacement}
                 disabled={isAdvancingPhase}
-                className="cyber-button px-4 py-2 text-xs flex items-center gap-2"
-                style={{ borderColor: 'var(--accent-purple)', color: 'var(--accent-purple)' }}
+                className="clay-button px-4 py-2 text-sm flex items-center gap-2"
               >
                 <Play size={14} />
-                START BUG PLACEMENT
+                Start bug placement
               </button>
             )}
             {gameState?.phase === 'BUG_PLACEMENT' && (
               <button
                 onClick={handleStartHunt}
                 disabled={isAdvancingPhase}
-                className="cyber-button px-4 py-2 text-xs flex items-center gap-2"
-                style={{ borderColor: 'var(--accent-green)', color: 'var(--accent-green)' }}
+                className="clay-button px-4 py-2 text-sm flex items-center gap-2"
               >
                 <Play size={14} />
-                START HUNT
+                Start hunt
               </button>
             )}
             {(gameState?.phase === 'ENGINEERING' || gameState?.phase === 'BUG_PLACEMENT' || gameState?.phase === 'HUNT') && (
               <button
                 onClick={handleEndGame}
                 disabled={isEnding}
-                className="cyber-button px-4 py-2 text-xs flex items-center gap-2"
-                style={{ borderColor: 'var(--accent-red)', color: 'var(--accent-red)' }}
+                className="clay-button-secondary px-4 py-2 text-sm flex items-center gap-2"
+                style={{ color: '#c14d72' }}
               >
                 <Square size={14} />
-                END GAME
+                End game
               </button>
             )}
             {(gameState?.phase === 'ENDED' || gameState?.phase === 'COMPLETE') && (
               <button
                 onClick={handleRestartGame}
                 disabled={isRestarting}
-                className="cyber-button px-4 py-2 text-xs flex items-center gap-2"
-                style={{ borderColor: 'var(--accent-amber)', color: 'var(--accent-amber)' }}
+                className="clay-button-secondary px-4 py-2 text-sm flex items-center gap-2"
+                style={{ color: '#a87f1e' }}
               >
                 <RotateCcw size={14} />
-                RESTART GAME
+                Restart game
               </button>
             )}
           </div>
@@ -328,10 +322,10 @@ const AdminDashboard = () => {
         {/* Left: Player Stats & Management */}
         <div className="lg:col-span-1 space-y-6">
           {/* Teams Summary */}
-          <div className="panel p-6" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--accent-blue)' }}>
+          <div className="clay-panel p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Users size={16} style={{ color: 'var(--accent-blue)' }} />
-              <span className="text-xs font-mono tracking-widest" style={{ color: 'var(--text-secondary)' }}>TEAM OVERVIEW</span>
+              <Users size={16} style={{ color: 'var(--accent-sky)' }} />
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Team overview</span>
             </div>
             <div className="space-y-3">
               {(() => {
@@ -345,15 +339,15 @@ const AdminDashboard = () => {
                   return (
                     <div
                       key={team.id}
-                      className="flex justify-between items-center text-xs p-2 rounded"
-                      style={isLeader ? { backgroundColor: `var(--accent-amber)${theme === 'dark' ? '1a' : '15'}`, border: '1px solid var(--accent-amber)' } : undefined}
+                      className={`flex justify-between items-center text-sm p-3 rounded-2xl ${isLeader ? 'clay-inset' : ''}`}
+                      style={isLeader ? { boxShadow: 'inset 4px 4px 10px rgba(232, 184, 75, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)' } : undefined}
                     >
-                      <span className="font-mono flex items-center gap-2" style={{ color: isLeader ? 'var(--accent-amber)' : 'var(--text-primary)' }}>
-                        {isLeader && '👑'} {team.name}
+                      <span className="flex items-center gap-2 font-semibold" style={{ color: isLeader ? '#a87f1e' : 'var(--text-primary)' }}>
+                        {isLeader && <Crown size={14} style={{ color: 'var(--accent-gold)' }} />} {team.name}
                       </span>
-                      <div className="flex gap-2">
-                        <span style={{ color: 'var(--accent-amber)' }}>[{team.totalPlayers} PLAYERS]</span>
-                        <span style={{ color: 'var(--accent-green)' }}>SCORE: {team.huntScore}</span>
+                      <div className="flex gap-2 items-center">
+                        <span className="chip chip-purple">{team.totalPlayers} players</span>
+                        <span className="chip chip-mint">Score {team.huntScore}</span>
                       </div>
                     </div>
                   );
@@ -363,92 +357,89 @@ const AdminDashboard = () => {
           </div>
 
           {/* Bug Stats */}
-          <div className="panel p-6" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--accent-green)' }}>
+          <div className="clay-panel p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Bug size={16} style={{ color: 'var(--accent-green)' }} />
-              <span className="text-xs font-mono tracking-widest" style={{ color: 'var(--text-secondary)' }}>BUG TRACKING</span>
+              <Bug size={16} style={{ color: 'var(--accent-mint)' }} />
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Bug tracking</span>
             </div>
             <div className="space-y-3">
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-mono" style={{ color: 'var(--text-primary)' }}>PLANTED</span>
+              <div className="flex justify-between items-center text-sm">
+                <span style={{ color: 'var(--text-primary)' }}>Planted</span>
                 <span className="font-bold" style={{ color: 'var(--accent-purple)' }}>{gameState?.bugStats.planted || 0}</span>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-mono" style={{ color: 'var(--text-primary)' }}>DISCOVERED</span>
-                <span className="font-bold" style={{ color: 'var(--accent-amber)' }}>{gameState?.bugStats.discovered || 0}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span style={{ color: 'var(--text-primary)' }}>Discovered</span>
+                <span className="font-bold" style={{ color: 'var(--accent-gold)' }}>{gameState?.bugStats.discovered || 0}</span>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-mono" style={{ color: 'var(--text-primary)' }}>SOLVED</span>
-                <span className="font-bold" style={{ color: 'var(--accent-green)' }}>{gameState?.bugStats.solved || 0}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span style={{ color: 'var(--text-primary)' }}>Solved</span>
+                <span className="font-bold" style={{ color: 'var(--accent-mint)' }}>{gameState?.bugStats.solved || 0}</span>
               </div>
             </div>
           </div>
 
           {/* Royal Room */}
-          <div className="panel p-6" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--accent-red)' }}>
+          <div className="clay-panel p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Lock size={16} style={{ color: 'var(--accent-red)' }} />
-              <span className="text-xs font-mono tracking-widest" style={{ color: 'var(--text-secondary)' }}>ROYAL ROOM</span>
+              <Lock size={16} style={{ color: 'var(--accent-rose)' }} />
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Royal room</span>
             </div>
-            <div className="text-2xl font-mono font-bold" style={{ color: 'var(--accent-red)' }}>
+            <div className="text-3xl font-display font-bold" style={{ color: 'var(--accent-rose)' }}>
               {gameState?.royalRoomAttempts || 0}
             </div>
-            <div className="text-xs font-mono mt-2" style={{ color: 'var(--text-secondary)' }}>UNLOCK ATTEMPTS</div>
+            <div className="text-xs mt-2" style={{ color: 'var(--text-secondary)' }}>Unlock attempts</div>
           </div>
         </div>
 
         {/* Center: Score Management & Leaderboard */}
         <div className="lg:col-span-1 space-y-6">
           {/* Score Management */}
-          <div className="panel p-6" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: showScores ? 'var(--accent-green)' : 'var(--accent-amber)' }}>
+          <div className="clay-panel p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                {showScores ? <Eye size={16} style={{ color: 'var(--accent-green)' }} /> : <EyeOff size={16} style={{ color: 'var(--accent-amber)' }} />}
-                <span className="text-xs font-mono tracking-widest" style={{ color: 'var(--text-secondary)' }}>SCORE STATUS</span>
+                {showScores ? <Eye size={16} style={{ color: 'var(--accent-mint)' }} /> : <EyeOff size={16} style={{ color: 'var(--accent-gold)' }} />}
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Score status</span>
               </div>
-              <span className="text-xs font-mono px-2 py-1 rounded" style={{ backgroundColor: showScores ? `var(--accent-green)${theme === 'dark' ? '1a' : '15'}` : `var(--accent-amber)${theme === 'dark' ? '1a' : '15'}`, color: showScores ? 'var(--accent-green)' : 'var(--accent-amber)' }}>
-                {showScores ? 'REVEALED' : 'HIDDEN'}
+              <span className={`chip ${showScores ? 'chip-mint' : 'chip-gold'}`}>
+                {showScores ? 'Revealed' : 'Hidden'}
               </span>
             </div>
             <button
               onClick={handleRevealScores}
               disabled={isRevealing || showScores}
-              className="w-full cyber-button py-3 text-xs flex items-center justify-center gap-2 font-mono"
-              style={{ borderColor: showScores ? 'var(--accent-green)' : 'var(--accent-amber)', color: showScores ? 'var(--accent-green)' : 'var(--accent-amber)' }}
+              className={showScores ? 'w-full clay-button-secondary py-3 text-sm flex items-center justify-center gap-2' : 'w-full clay-button py-3 text-sm flex items-center justify-center gap-2'}
             >
               <Eye size={14} />
-              {showScores ? 'SCORES REVEALED' : 'REVEAL SCORES'}
+              {showScores ? 'Scores revealed' : 'Reveal scores'}
             </button>
             {showScores && (
-              <div className="text-xs font-mono mt-3 pt-3" style={{ color: 'var(--accent-green)', borderTopColor: 'var(--accent-green)', borderTopWidth: '1px' }}>
+              <div className="text-xs mt-3 pt-3" style={{ color: 'var(--accent-mint)', borderTop: '1px solid var(--border-color)' }}>
                 Top 5 per team assigned as Bug Architects
               </div>
             )}
           </div>
 
           {/* Top Players */}
-          <div className="panel p-6" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--accent-purple)' }}>
+          <div className="clay-panel p-6">
             <div className="flex items-center gap-2 mb-4">
               <Activity size={16} style={{ color: 'var(--accent-purple)' }} />
-              <span className="text-xs font-mono tracking-widest" style={{ color: 'var(--text-secondary)' }}>TOP 10 PLAYERS</span>
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Top 10 players</span>
             </div>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
               {topPlayers.map((player, idx) => (
-                <div key={player.id} className="flex items-center justify-between text-xs p-2 rounded" style={{ backgroundColor: `var(--accent-blue)${theme === 'dark' ? '0a' : '08'}` }}>
+                <div key={player.id} className="flex items-center justify-between text-sm p-2 rounded-xl clay-inset">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold w-6" style={{ color: 'var(--accent-amber)' }}>#{idx + 1}</span>
+                    <span className="font-bold w-6" style={{ color: 'var(--accent-gold)' }}>#{idx + 1}</span>
                     <div>
-                      <div className="font-mono" style={{ color: 'var(--text-primary)' }}>{player.username}</div>
-                      <div className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>{player.teamName}</div>
+                      <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{player.username}</div>
+                      <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{player.teamName}</div>
                     </div>
                   </div>
                   <div className="text-right">
                     {player.isBugArchitect && (
-                      <div className="text-[10px] px-1 rounded mb-1" style={{ backgroundColor: 'var(--accent-amber)', color: 'black' }}>
-                        ARCHITECT
-                      </div>
+                      <div className="chip chip-gold mb-1">Architect</div>
                     )}
-                    <div className="font-mono font-bold" style={{ color: 'var(--accent-green)' }}>{player.score}</div>
+                    <div className="font-bold" style={{ color: 'var(--accent-mint)' }}>{player.score}</div>
                   </div>
                 </div>
               ))}
@@ -460,20 +451,20 @@ const AdminDashboard = () => {
         <div className="lg:col-span-1 space-y-6">
           {/* Bug Architects */}
           {showScores && (
-            <div className="panel p-6" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--accent-amber)' }}>
+            <div className="clay-panel p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Bug size={16} style={{ color: 'var(--accent-amber)' }} />
-                <span className="text-xs font-mono tracking-widest" style={{ color: 'var(--text-secondary)' }}>BUG ARCHITECTS</span>
+                <Bug size={16} style={{ color: 'var(--accent-gold)' }} />
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Bug architects</span>
               </div>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {bugArchitects.map((player, idx) => (
-                  <div key={player.id} className="text-xs p-2 rounded" style={{ backgroundColor: `var(--accent-amber)${theme === 'dark' ? '1a' : '15'}` }}>
+              <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                {bugArchitects.map((player) => (
+                  <div key={player.id} className="text-sm p-2 rounded-xl clay-inset">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-mono font-bold" style={{ color: 'var(--accent-amber)' }}>{player.username}</div>
-                        <div className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>{player.teamName}</div>
+                        <div className="font-bold" style={{ color: 'var(--accent-gold)' }}>{player.username}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{player.teamName}</div>
                       </div>
-                      <div className="font-mono font-bold" style={{ color: 'var(--accent-green)' }}>{player.score}</div>
+                      <div className="font-bold" style={{ color: 'var(--accent-mint)' }}>{player.score}</div>
                     </div>
                   </div>
                 ))}
@@ -482,19 +473,18 @@ const AdminDashboard = () => {
           )}
 
           {/* Live Events */}
-          <div className="panel p-6" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--accent-blue)' }}>
+          <div className="clay-panel p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Activity size={16} style={{ color: 'var(--accent-blue)' }} />
-              <span className="text-xs font-mono tracking-widest" style={{ color: 'var(--text-secondary)' }}>LIVE EVENTS</span>
+              <Activity size={16} style={{ color: 'var(--accent-sky)' }} />
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Live events</span>
             </div>
-            <div className="space-y-2 max-h-96 overflow-y-auto font-mono text-[10px]">
+            <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar text-xs">
               {events.length === 0 ? (
-                <div style={{ color: 'var(--text-secondary)' }}>[ NO EVENTS YET ]</div>
+                <div style={{ color: 'var(--text-secondary)' }}>No events yet</div>
               ) : (
                 events.map(event => (
-                  <div key={event.id} className="flex gap-2 p-1" style={{ color: event.type === 'ERROR' ? 'var(--accent-red)' : event.type === 'SCORES_REVEALED' ? 'var(--accent-green)' : 'var(--accent-purple)' }}>
-                    <span className="text-[9px]">{event.timestamp}</span>
-                    <span>{'>'}</span>
+                  <div key={event.id} className="flex gap-2 p-1" style={{ color: event.type === 'ERROR' ? '#c14d72' : event.type === 'SCORES_REVEALED' ? 'var(--accent-mint)' : 'var(--accent-purple)' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>{event.timestamp}</span>
                     <span>{event.message}</span>
                   </div>
                 ))
@@ -506,16 +496,16 @@ const AdminDashboard = () => {
 
       {/* Player Grid with Positions */}
       {gameState?.players && gameState.players.length > 0 && (
-        <div className="panel p-6" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--accent-blue)' }}>
+        <div className="clay-panel p-6">
           <div className="flex items-center gap-2 mb-4">
-            <MapPin size={16} style={{ color: 'var(--accent-blue)' }} />
-            <span className="text-xs font-mono tracking-widest" style={{ color: 'var(--text-secondary)' }}>PLAYER POSITIONS</span>
+            <MapPin size={16} style={{ color: 'var(--accent-sky)' }} />
+            <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Player positions</span>
           </div>
-          <div className="relative w-full h-64 rounded border" style={{ borderColor: 'var(--accent-blue)', backgroundColor: `var(--accent-blue)${theme === 'dark' ? '08' : '05'}` }}>
+          <div className="relative w-full h-64 rounded-2xl clay-inset">
             {/* Grid background */}
-            <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 gap-0" style={{ borderColor: `var(--accent-blue)${theme === 'dark' ? '20' : '15'}` }}>
+            <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 gap-0">
               {Array(16).fill(0).map((_, i) => (
-                <div key={i} style={{ borderColor: `var(--accent-blue)${theme === 'dark' ? '20' : '15'}`, borderWidth: '1px' }}></div>
+                <div key={i} style={{ borderColor: 'rgba(124, 111, 224, 0.12)', borderWidth: '1px' }}></div>
               ))}
             </div>
 
@@ -527,11 +517,11 @@ const AdminDashboard = () => {
                 style={{
                   left: `${(player.position?.x || Math.random()) * 100}%`,
                   top: `${(player.position?.y || Math.random()) * 100}%`,
-                  backgroundColor: player.teamName === 'PRINCE' ? 'var(--accent-blue)' : 'var(--accent-purple)',
+                  backgroundColor: player.teamName === 'PRINCE' ? 'var(--accent-sky)' : 'var(--accent-purple)',
                 }}
                 title={`${player.username} (${player.teamName})`}
               >
-                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded text-xs font-mono whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', borderColor: 'var(--accent-blue)', borderWidth: '1px' }}>
+                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity glass-panel" style={{ color: 'var(--text-primary)' }}>
                   {player.username}
                 </div>
               </div>

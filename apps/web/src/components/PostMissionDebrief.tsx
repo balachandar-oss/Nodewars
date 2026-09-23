@@ -28,31 +28,31 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
 
   return (
     <div className="flex flex-col h-full overflow-y-auto custom-scrollbar p-4" data-testid="post-mission-debrief">
-      <div className="text-neon-blue font-title text-xl mb-4 tracking-widest uppercase glow-text-blue border-b border-neon-blue/30 pb-2">
-        MISSION COMPLETE // DEBRIEF
+      <div className="font-display text-xl font-bold mb-4 pb-2" style={{ color: 'var(--accent-sky)', borderBottom: '1px solid var(--border-color)' }}>
+        Mission complete
       </div>
 
       {content.narrative && (
-        <div className="mb-6 bg-neon-green/5 border border-neon-green/30 p-4">
-          <div className="flex items-center gap-2 text-neon-green font-mono text-sm tracking-widest uppercase mb-4 pb-2 border-b border-neon-green/20">
+        <div className="mb-6 rounded-2xl p-4" style={{ backgroundColor: 'rgba(111, 216, 168, 0.08)', border: '1px solid rgba(111, 216, 168, 0.3)' }}>
+          <div className="flex items-center gap-2 text-sm font-semibold mb-4 pb-2" style={{ color: 'var(--accent-mint)', borderBottom: '1px solid rgba(111, 216, 168, 0.2)' }}>
             <ShieldCheck size={18} />
             {content.narrative.successMessage}
           </div>
           <div className="space-y-4">
             <div>
-              <div className="text-neon-green/70 font-mono text-[10px] tracking-widest mb-1 uppercase">SYSTEM STATUS</div>
-              <p className="text-xs font-mono text-white/90">{content.narrative.systemStatus}</p>
+              <div className="text-xs mb-1" style={{ color: 'var(--accent-mint)' }}>Status</div>
+              <p className="text-xs" style={{ color: 'var(--text-primary)' }}>{content.narrative.systemStatus}</p>
             </div>
             {content.narrative.nextThreat && (
-              <div className="pt-3 border-t border-neon-green/10">
-                <div className="text-neon-amber/70 font-mono text-[10px] tracking-widest mb-1 uppercase">NEW THREAT</div>
-                <p className="text-xs font-mono text-white/90">{content.narrative.nextThreat}</p>
+              <div className="pt-3" style={{ borderTop: '1px solid rgba(111, 216, 168, 0.15)' }}>
+                <div className="text-xs mb-1" style={{ color: 'var(--accent-gold)' }}>What's next</div>
+                <p className="text-xs" style={{ color: 'var(--text-primary)' }}>{content.narrative.nextThreat}</p>
               </div>
             )}
             {content.narrative.nextObjective && (
-              <div className="pt-3 border-t border-neon-amber/10">
-                <div className="text-neon-blue/70 font-mono text-[10px] tracking-widest mb-1 uppercase">NEXT OBJECTIVE</div>
-                <p className="text-xs font-mono text-white/90">{content.narrative.nextObjective}</p>
+              <div className="pt-3" style={{ borderTop: '1px solid rgba(232, 184, 75, 0.15)' }}>
+                <div className="text-xs mb-1" style={{ color: 'var(--accent-sky)' }}>Next objective</div>
+                <p className="text-xs" style={{ color: 'var(--text-primary)' }}>{content.narrative.nextObjective}</p>
               </div>
             )}
           </div>
@@ -62,14 +62,14 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
       {content.successGuidance && (
         <div className="mb-6 space-y-4">
           <div>
-            <div className="text-cyber-light/50 font-mono text-[10px] tracking-widest mb-1 uppercase">WHAT YOU BUILT</div>
-            <p className="text-xs font-mono text-white/90 leading-relaxed bg-white/5 p-3 rounded-sm border-l-2 border-neon-blue">
+            <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>What you built</div>
+            <p className="text-xs leading-relaxed clay-inset p-3 rounded-xl" style={{ color: 'var(--text-primary)' }}>
               {content.successGuidance.whatYouDid}
             </p>
           </div>
           <div>
-            <div className="text-cyber-light/50 font-mono text-[10px] tracking-widest mb-1 uppercase">WHY IT MATTERS</div>
-            <p className="text-xs font-mono text-white/80 leading-relaxed italic px-2">
+            <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>Why it matters</div>
+            <p className="text-xs leading-relaxed italic px-2" style={{ color: 'var(--text-secondary)' }}>
               {content.successGuidance.whyItWorks}
             </p>
           </div>
@@ -77,27 +77,27 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
       )}
 
       {content.reflection && !content.narrative && (
-        <div className="mb-6 space-y-4 bg-black/40 p-4 border border-white/5">
+        <div className="mb-6 space-y-4 clay-inset p-4 rounded-2xl">
           <div>
-            <div className="text-cyber-light/50 font-mono text-[10px] tracking-widest mb-2 uppercase">WHAT YOU JUST LEARNED</div>
+            <div className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>What you just learned</div>
             <ul className="space-y-2">
               {content.reflection.whatYouLearned.map((item, i) => (
-                <li key={i} className="flex gap-3 text-xs font-mono items-start">
-                  <div className="text-neon-green mt-0.5">■</div>
-                  <span className="leading-relaxed text-white/90">{item}</span>
+                <li key={i} className="flex gap-3 text-xs items-start">
+                  <div className="mt-0.5" style={{ color: 'var(--accent-mint)' }}>&bull;</div>
+                  <span className="leading-relaxed" style={{ color: 'var(--text-primary)' }}>{item}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="mt-4 pt-4 border-t border-white/10">
-            <div className="text-cyber-light/50 font-mono text-[10px] tracking-widest mb-1 uppercase">WHY THIS MATTERS</div>
-            <p className="text-xs font-mono text-neon-blue/80 leading-relaxed">
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+            <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>Why this matters</div>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--accent-sky)' }}>
               {content.reflection.whyItMatters}
             </p>
           </div>
-          <div className="mt-4 bg-white/5 p-3 border-l-2 border-neon-amber">
-            <div className="text-neon-amber font-mono text-[10px] tracking-widest mb-1 uppercase">REFLECT</div>
-            <p className="text-xs font-mono text-white/90 leading-relaxed italic">
+          <div className="mt-4 clay-panel p-3 rounded-xl" style={{ borderLeft: '3px solid var(--accent-gold)' }}>
+            <div className="text-xs mb-1" style={{ color: 'var(--accent-gold)' }}>Reflect</div>
+            <p className="text-xs leading-relaxed italic" style={{ color: 'var(--text-primary)' }}>
               "{content.reflection.prompt}"
             </p>
           </div>
@@ -106,7 +106,7 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
 
       {content.conceptCheck && content.conceptCheck.length > 0 && (
         <div className="mb-8">
-          <div className="text-cyber-light/50 font-mono text-[10px] tracking-widest mb-4 border-b border-white/10 pb-1 uppercase">CONCEPT CHECK</div>
+          <div className="text-xs mb-4 pb-1" style={{ color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>Concept check</div>
           <div className="space-y-6">
             {content.conceptCheck.map((q, qIndex) => {
               const selectedAnswer = answers[qIndex];
@@ -114,20 +114,19 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
               const isCorrect = selectedAnswer === q.correctAnswerIndex;
 
               return (
-                <div key={qIndex} className="bg-black/40 p-4 border border-white/5">
-                  <p className="text-xs font-mono text-white/90 mb-4">{q.question}</p>
+                <div key={qIndex} className="clay-inset p-4 rounded-2xl">
+                  <p className="text-xs mb-4" style={{ color: 'var(--text-primary)' }}>{q.question}</p>
                   <div className="space-y-2">
                     {q.options.map((opt, optIndex) => {
-                      let btnClass = "w-full text-left p-3 text-xs font-mono border transition-all duration-200 ";
-                      if (!isAnswered) {
-                        btnClass += "border-white/10 bg-white/5 hover:border-neon-blue/50 hover:bg-neon-blue/10 text-white/70 hover:text-white cursor-pointer";
-                      } else {
+                      let style: React.CSSProperties = { color: 'var(--text-secondary)', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' };
+                      let clickable = !isAnswered;
+                      if (isAnswered) {
                         if (optIndex === q.correctAnswerIndex) {
-                          btnClass += "border-neon-green bg-neon-green/10 text-neon-green";
+                          style = { color: 'var(--accent-mint)', backgroundColor: 'rgba(111, 216, 168, 0.1)', border: '1px solid var(--accent-mint)' };
                         } else if (optIndex === selectedAnswer) {
-                          btnClass += "border-neon-red bg-neon-red/10 text-neon-red";
+                          style = { color: 'var(--accent-rose)', backgroundColor: 'rgba(224, 124, 155, 0.1)', border: '1px solid var(--accent-rose)' };
                         } else {
-                          btnClass += "border-white/5 bg-transparent text-white/30 cursor-not-allowed";
+                          style = { color: 'var(--text-muted)', backgroundColor: 'transparent', border: '1px solid var(--border-color)' };
                         }
                       }
 
@@ -136,10 +135,11 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
                           key={optIndex}
                           disabled={isAnswered}
                           onClick={() => handleAnswerSelect(qIndex, optIndex)}
-                          className={btnClass}
+                          className={`w-full text-left p-3 text-xs rounded-xl transition-all duration-200 ${clickable ? 'cursor-pointer hover:opacity-80' : 'cursor-not-allowed'}`}
+                          style={style}
                         >
                           <div className="flex items-start gap-3">
-                            <span className="text-cyber-light/50">[{String.fromCharCode(65 + optIndex)}]</span>
+                            <span style={{ color: 'var(--text-muted)' }}>{String.fromCharCode(65 + optIndex)}.</span>
                             <span>{opt}</span>
                           </div>
                         </button>
@@ -148,12 +148,12 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
                   </div>
 
                   {isAnswered && (
-                    <div className={`mt-4 p-3 border-l-2 flex flex-col gap-2 ${isCorrect ? 'bg-neon-green/5 border-neon-green' : 'bg-neon-red/5 border-neon-red'}`}>
-                      <div className={`flex items-center gap-2 text-xs font-bold font-mono tracking-widest ${isCorrect ? 'text-neon-green' : 'text-neon-red'}`}>
+                    <div className="mt-4 p-3 rounded-xl flex flex-col gap-2" style={{ backgroundColor: isCorrect ? 'rgba(111, 216, 168, 0.08)' : 'rgba(224, 124, 155, 0.08)', borderLeft: `2px solid ${isCorrect ? 'var(--accent-mint)' : 'var(--accent-rose)'}` }}>
+                      <div className="flex items-center gap-2 text-xs font-semibold" style={{ color: isCorrect ? 'var(--accent-mint)' : 'var(--accent-rose)' }}>
                         {isCorrect ? <CheckCircle size={14} /> : <XCircle size={14} />}
-                        {isCorrect ? 'CORRECT' : 'NOT QUITE'}
+                        {isCorrect ? 'Correct' : 'Not quite'}
                       </div>
-                      <p className="text-xs font-mono text-white/80 leading-relaxed italic">
+                      <p className="text-xs leading-relaxed italic" style={{ color: 'var(--text-primary)' }}>
                         {q.explanation}
                       </p>
                     </div>
@@ -166,20 +166,20 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
       )}
 
       {/* Action Buttons */}
-      <div className="mt-8 pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-4 shrink-0">
-        <button 
+      <div className="mt-8 pt-4 flex flex-col sm:flex-row gap-4 shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
+        <button
           onClick={onReviewLesson}
-          className="flex-1 py-3 border border-neon-blue/30 bg-neon-blue/5 text-neon-blue font-mono text-xs tracking-widest hover:bg-neon-blue/20 transition-colors uppercase flex items-center justify-center gap-2"
+          className="clay-button-secondary flex-1 py-3 text-xs flex items-center justify-center gap-2"
         >
-          <BookOpen size={14} /> REVIEW LESSON
+          <BookOpen size={14} /> Review lesson
         </button>
-        <button 
+        <button
           onClick={onContinue}
-          className="flex-1 py-3 border border-neon-green/30 bg-neon-green/10 text-neon-green font-mono text-xs tracking-widest hover:bg-neon-green/20 transition-colors uppercase flex items-center justify-center gap-2"
+          className="clay-button flex-1 py-3 text-xs flex items-center justify-center gap-2"
         >
-          {isFinalMission 
-            ? 'NEXT: QUIZ / BUG ARCHITECT / BUG HUNT' 
-            : `NEXT SYSTEM: ${nextMissionId ? getMissionIdentity(nextMissionId).systemName : 'CONTINUE'}`} <ArrowRight size={14} />
+          {isFinalMission
+            ? 'Continue to the quiz'
+            : `Next: ${nextMissionId ? getMissionIdentity(nextMissionId).systemName : 'Continue'}`} <ArrowRight size={14} />
         </button>
       </div>
     </div>
