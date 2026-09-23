@@ -1,5 +1,5 @@
 import React from 'react';
-import { Server as ServerIcon, DoorOpen, Shield, HardDrive, Zap, Radio, Bug } from 'lucide-react';
+import { Server as ServerIcon, Package, Zap, Radio } from 'lucide-react';
 
 interface CastlePreviewProps {
   componentName: string;
@@ -8,9 +8,6 @@ interface CastlePreviewProps {
 }
 
 const CastlePreview: React.FC<CastlePreviewProps> = ({ componentName, missionOrder, isUnlocked }) => {
-  // We represent the 7 systems as nodes in a schematic.
-  // 1: Server, 2: Door, 3: Shield, 4: Vault, 5: Async, 6: Radar, 7: Core
-
   const getNodeStyle = (order: number): React.CSSProperties => {
     if (missionOrder > order || (missionOrder === order && isUnlocked)) {
       return { color: 'var(--accent-sky)', borderColor: 'var(--accent-sky)', backgroundColor: 'rgba(111, 184, 224, 0.12)' }; // COMPLETE
@@ -32,7 +29,7 @@ const CastlePreview: React.FC<CastlePreviewProps> = ({ componentName, missionOrd
   return (
     <div className="w-full h-full p-4 flex flex-col relative overflow-hidden clay-inset rounded-2xl">
       <div className="text-xs mb-2 z-10 flex items-center justify-between pb-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
-        <span style={{ color: 'var(--text-secondary)' }}>Castle core</span>
+        <span style={{ color: 'var(--text-secondary)' }}>Castle schematic</span>
         <span className={`chip ${isUnlocked ? 'chip-sky' : 'chip-gold'}`}>
           {isUnlocked ? 'Online' : 'Updating'}
         </span>
@@ -49,64 +46,41 @@ const CastlePreview: React.FC<CastlePreviewProps> = ({ componentName, missionOrd
           </defs>
 
           {/* Main vertical trunk */}
-          <line x1="50%" y1="10%" x2="50%" y2="90%" strokeWidth="2" style={getLineStyle(4)} />
-
-          {/* Branches */}
-          <line x1="50%" y1="30%" x2="12.5%" y2="30%" strokeWidth="2" style={getLineStyle(2)} />
-          <line x1="50%" y1="50%" x2="87.5%" y2="50%" strokeWidth="2" style={getLineStyle(3)} />
-          <line x1="50%" y1="70%" x2="12.5%" y2="70%" strokeWidth="2" style={getLineStyle(5)} />
-          <line x1="50%" y1="90%" x2="87.5%" y2="90%" strokeWidth="2" style={getLineStyle(6)} />
+          <line x1="50%" y1="80%" x2="50%" y2="60%" strokeWidth="2" style={getLineStyle(2)} />
+          <line x1="50%" y1="60%" x2="50%" y2="40%" strokeWidth="2" style={getLineStyle(3)} />
+          <line x1="50%" y1="40%" x2="50%" y2="20%" strokeWidth="2" style={getLineStyle(4)} />
         </svg>
 
         {/* CSS GRID OVERLAY FOR NODES */}
-        <div className="w-full h-full grid grid-cols-4 grid-rows-5 gap-2 relative">
+        <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-between py-6">
 
-          {/* NODE 1: SERVER (Top Center) */}
-          <div className="col-start-2 col-span-2 row-start-1 flex justify-center items-center">
-            <div className="w-10 h-10 border-2 rounded-xl flex items-center justify-center transition-all" style={getNodeStyle(1)}>
-              <ServerIcon size={18} />
-            </div>
-          </div>
-
-          {/* NODE 2: DOOR (Left Branch) */}
-          <div className="col-start-1 row-start-2 flex justify-center items-center">
-            <div className="w-10 h-10 border-2 rounded-xl flex items-center justify-center transition-all" style={getNodeStyle(2)}>
-              <DoorOpen size={18} />
-            </div>
-          </div>
-
-          {/* NODE 3: SHIELD (Right Branch) */}
-          <div className="col-start-4 row-start-3 flex justify-center items-center">
-            <div className="w-10 h-10 border-2 rounded-xl flex items-center justify-center transition-all" style={getNodeStyle(3)}>
-              <Shield size={18} />
-            </div>
-          </div>
-
-          {/* NODE 4: VAULT (Center Trunk) */}
-          <div className="col-start-2 col-span-2 row-start-3 flex justify-center items-center">
-            <div className="w-12 h-12 border-2 rounded-2xl flex items-center justify-center transition-all" style={getNodeStyle(4)}>
-              <HardDrive size={20} />
-            </div>
-          </div>
-
-          {/* NODE 5: ASYNC (Left Branch) */}
-          <div className="col-start-1 row-start-4 flex justify-center items-center">
-            <div className="w-10 h-10 border-2 rounded-xl flex items-center justify-center transition-all" style={getNodeStyle(5)}>
-              <Zap size={18} />
-            </div>
-          </div>
-
-          {/* NODE 6: RADAR (Right Branch) */}
-          <div className="col-start-4 row-start-5 flex justify-center items-center">
-            <div className="w-10 h-10 border-2 rounded-xl flex items-center justify-center transition-all" style={getNodeStyle(6)}>
+          {/* NODE 4: SIGNAL TOWER */}
+          <div className="flex justify-center items-center h-10 w-full absolute" style={{ top: 'calc(20% - 20px)' }}>
+            <div className="w-10 h-10 border-2 rounded-xl flex items-center justify-center transition-all" style={getNodeStyle(4)}>
               <Radio size={18} />
             </div>
           </div>
 
-          {/* NODE 7: CORE PATCH (Bottom Center) */}
-          <div className="col-start-2 col-span-2 row-start-5 flex justify-center items-center">
-            <div className="w-10 h-10 border-2 rounded-xl flex items-center justify-center transition-all" style={getNodeStyle(7)}>
-              <Bug size={18} />
+          {/* NODE 3: EVENT SYSTEM */}
+          <div className="flex justify-center items-center h-10 w-full absolute" style={{ top: 'calc(40% - 20px)' }}>
+            <div className="w-10 h-10 border-2 rounded-xl flex items-center justify-center transition-all" style={getNodeStyle(3)}>
+              <Zap size={18} />
+            </div>
+          </div>
+
+          {/* NODE 2: NPM SUPPLY */}
+          <div className="flex justify-center items-center h-10 w-full absolute" style={{ top: 'calc(60% - 20px)' }}>
+            <div className="w-10 h-10 border-2 rounded-xl flex items-center justify-center transition-all" style={getNodeStyle(2)}>
+              <Package size={18} />
+            </div>
+          </div>
+
+          {/* NODE 1: NODE CORE */}
+          <div className="flex justify-center items-center h-12 w-full absolute" style={{ top: 'calc(80% - 24px)' }}>
+            <div className="w-12 h-12 border-2 rounded-2xl flex items-center justify-center transition-all transform rotate-45" style={getNodeStyle(1)}>
+              <div className="-rotate-45">
+                <ServerIcon size={20} />
+              </div>
             </div>
           </div>
 

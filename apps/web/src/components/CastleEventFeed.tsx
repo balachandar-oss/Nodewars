@@ -2,12 +2,12 @@ import React, { useEffect, useRef } from 'react';
 import { Activity, ShieldAlert } from 'lucide-react';
 import type { GameEvent } from '../hooks/useGameSocket';
 
-interface LiveSecurityMonitorProps {
+interface CastleEventFeedProps {
   isConnected: boolean;
   events: GameEvent[];
 }
 
-const LiveSecurityMonitor: React.FC<LiveSecurityMonitorProps> = ({ isConnected, events }) => {
+const CastleEventFeed: React.FC<CastleEventFeedProps> = ({ isConnected, events }) => {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ const LiveSecurityMonitor: React.FC<LiveSecurityMonitorProps> = ({ isConnected, 
       <div className="p-3 flex justify-between items-center" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div className="flex items-center gap-2 font-display font-bold text-sm" style={{ color: 'var(--accent-purple)' }}>
           <ShieldAlert size={16} />
-          Live security monitor
+          Castle Event Feed
         </div>
 
         <span className={`chip ${isConnected ? 'chip-mint' : 'chip-rose'} flex items-center gap-2`}>
@@ -73,4 +73,4 @@ const LiveSecurityMonitor: React.FC<LiveSecurityMonitorProps> = ({ isConnected, 
   );
 };
 
-export default LiveSecurityMonitor;
+export default CastleEventFeed;

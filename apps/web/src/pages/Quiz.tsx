@@ -26,6 +26,7 @@ const Quiz = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
+  const [eligibility, setEligibility] = useState<any>(null);
 
   useEffect(() => {
     const startQuiz = async () => {
@@ -49,7 +50,11 @@ const Quiz = () => {
           const res2 = await fetch(`${API_URL}/api/quiz/results`, {
             headers: { Authorization: `Bearer ${token}` }
           });
+          const res3 = await fetch(`${API_URL}/api/quiz/eligibility`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
           if (res2.ok) setResult(await res2.json());
+          if (res3.ok) setEligibility(await res3.json());
         } else {
           setAttempt(data);
         }
@@ -85,6 +90,10 @@ const Quiz = () => {
       const data = await res.json();
       if (res.ok) {
         setResult(data);
+        const res3 = await fetch(`${API_URL}/api/quiz/eligibility`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res3.ok) setEligibility(await res3.json());
       } else {
         setError(data.error);
       }
@@ -108,38 +117,44 @@ const Quiz = () => {
     );
   }
 
-  if (result) {
+  if (result && eligibility) {
+    const isArchitect = eligibility.isBugArchitect;
+    const royal = eligibility.royal;
+
     return (
       <div className="max-w-4xl mx-auto mt-12 animate-slide-in">
         <div className="clay-panel p-12 flex flex-col items-center text-center">
-          <ShieldCheck size={80} style={{ color: 'var(--accent-purple)' }} className="mb-6" />
-          <h1 className="text-4xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-            Quiz complete!
+          <ShieldCheck size={80} style={{ color: 'var(--accent-gold)' }} className="mb-6" />
+          <h1 className="text-4xl font-display font-bold mb-2 uppercase tracking-widest" style={{ color: 'var(--text-primary)' }}>
+            Royal Trial Complete
           </h1>
-          <div className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>Here's how you did</div>
+          <div className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>The Sovereign has evaluated your work</div>
 
           <div className="grid grid-cols-2 gap-4 w-full max-w-lg mb-8">
             <div className="clay-inset p-6">
-              <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Final score</div>
-              <div className="text-4xl font-bold" style={{ color: 'var(--accent-gold)' }}>{result.score}</div>
+              <div className="text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Quiz score</div>
+              <div className="text-4xl font-bold" style={{ color: 'var(--accent-gold)' }}>{result.correctAnswers} <span className="text-lg" style={{ color: 'var(--text-muted)' }}>/ {result.totalQuestions}</span></div>
             </div>
             <div className="clay-inset p-6">
-              <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Correct answers</div>
-              <div className="text-4xl font-bold" style={{ color: 'var(--accent-mint)' }}>{result.correctAnswers} <span className="text-lg" style={{ color: 'var(--text-muted)' }}>/ {result.totalQuestions}</span></div>
+              <div className="text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Team rank</div>
+              <div className="text-4xl font-bold" style={{ color: 'var(--accent-mint)' }}>#{eligibility.teamRank}</div>
             </div>
           </div>
 
-          <div className="text-2xl mb-10 px-12 py-4 clay-inset" style={{ color: 'var(--text-primary)' }}>
-            Grade: <span className="font-bold" style={{ color: 'var(--accent-purple)' }}>{Math.round(result.percentage)}%</span>
+          <div className="text-lg mb-10 px-12 py-4 clay-inset flex flex-col gap-2" style={{ color: 'var(--text-primary)' }}>
+            <div>Bug Architect Status: <span className="font-bold ml-2" style={{ color: isArchitect ? 'var(--accent-mint)' : 'var(--accent-rose)' }}>{isArchitect ? 'ELIGIBLE ✓' : 'NOT ELIGIBLE'}</span></div>
           </div>
 
           <div className="flex gap-4 w-full max-w-lg">
-            <button onClick={() => navigate('/dashboard')} className="clay-button-secondary flex-1 py-4 text-sm">
-              Dashboard
-            </button>
-            <button onClick={() => navigate('/leaderboard')} className="clay-button flex-1 py-4 text-sm">
-              View leaderboard
-            </button>
+            {isArchitect ? (
+              <button onClick={() => navigate('/bug-architect')} className="clay-button flex-1 py-4 text-sm font-bold shadow-lg" style={{ backgroundColor: 'var(--accent-gold)' }}>
+                {royal} STATUS: PROTECTED (Bug Architect)
+              </button>
+            ) : (
+              <button onClick={() => navigate('/both-castles')} className="clay-button-secondary flex-1 py-4 text-sm font-bold" style={{ borderColor: 'var(--accent-purple)', color: 'var(--accent-purple)' }}>
+                {royal} STATUS: PROTECTED (Bug Hunt)
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -169,16 +184,16 @@ const Quiz = () => {
 
   return (
     <div className="max-w-4xl mx-auto h-[calc(100vh-100px)] flex flex-col relative z-10 animate-slide-in mt-6">
-      <div className="glass-panel shrink-0 p-6 flex justify-between items-center">
+      <div className="glass-panel shrink-0 p-6 flex justify-between items-center" style={{ borderBottom: '2px solid var(--accent-gold)' }}>
         <h2 className="text-xl font-display font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
-          <Cpu style={{ color: 'var(--accent-purple)' }} size={24} />
+          <ShieldAlert style={{ color: 'var(--accent-gold)' }} size={24} />
           <div>
-            <div>Security Quiz</div>
-            <div className="text-xs font-sans font-normal mt-1" style={{ color: 'var(--text-secondary)' }}>Final knowledge check</div>
+            <div className="uppercase tracking-widest text-lg">Royal Trial</div>
+            <div className="text-xs font-sans font-normal mt-1 uppercase" style={{ color: 'var(--text-secondary)' }}>Knowledge Verification</div>
           </div>
         </h2>
         <div className="chip chip-gold">
-          Question {currentIndex + 1} of {attempt.questions.length}
+          {currentIndex + 1} / {attempt.questions.length}
         </div>
       </div>
 

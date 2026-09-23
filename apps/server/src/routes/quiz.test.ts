@@ -8,6 +8,10 @@ jest.mock('../utils/prisma', () => {
   return {
     __esModule: true,
     default: {
+      mission: {
+        findFirst: jest.fn(),
+        findMany: jest.fn()
+      },
       missionProgress: {
         findUnique: jest.fn()
       },
@@ -66,14 +70,16 @@ describe('Quiz API', () => {
       expect(res.status).toBe(401);
     });
 
-    it('rejects if Mission 07 is not COMPLETE', async () => {
+    it('rejects if the last core mission is not COMPLETE', async () => {
+      (prismaMock.mission.findFirst as jest.Mock).mockResolvedValue({ id: 'mission-04' });
       (prismaMock.missionProgress.findUnique as jest.Mock).mockResolvedValue(null);
       const res = await request(app).post('/quiz/start').set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(403);
-      expect(res.body.error).toMatch(/Complete Mission 07 first/);
+      expect(res.body.error).toMatch(/Complete all missions first/);
     });
 
     it('returns existing attempt if one already exists', async () => {
+      (prismaMock.mission.findFirst as jest.Mock).mockResolvedValue({ id: 'mission-04' });
       (prismaMock.missionProgress.findUnique as jest.Mock).mockResolvedValue({ status: 'COMPLETE' });
       (prismaMock.quizAttempt.findUnique as jest.Mock).mockResolvedValue({
         id: 'existing-attempt',
@@ -88,6 +94,8 @@ describe('Quiz API', () => {
     });
 
     it('creates a new attempt and assigns 20 questions if none exists', async () => {
+      (prismaMock.mission.findFirst as jest.Mock).mockResolvedValue({ id: 'mission-04' });
+      (prismaMock.mission.findMany as jest.Mock).mockResolvedValue([{ id: 'mission-01' }]);
       (prismaMock.missionProgress.findUnique as jest.Mock).mockResolvedValue({ status: 'COMPLETE' });
       (prismaMock.quizAttempt.findUnique as jest.Mock).mockResolvedValue(null);
       

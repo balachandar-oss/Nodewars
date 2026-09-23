@@ -243,4 +243,16 @@ router.post('/submit', authenticate, async (req: any, res) => {
   }
 });
 
+// GET /api/quiz/eligibility
+router.get('/eligibility', authenticate, async (req: any, res) => {
+  try {
+    const { LeaderboardService } = await import('../services/LeaderboardService');
+    const eligibility = await LeaderboardService.getEligibility(req.user.id);
+    res.json(eligibility);
+  } catch (error) {
+    console.error('Failed to get eligibility', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;

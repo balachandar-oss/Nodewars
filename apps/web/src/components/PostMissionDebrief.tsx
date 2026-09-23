@@ -28,14 +28,16 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
 
   return (
     <div className="flex flex-col h-full overflow-y-auto custom-scrollbar p-4" data-testid="post-mission-debrief">
-      <div className="font-display text-xl font-bold mb-4 pb-2" style={{ color: 'var(--accent-sky)', borderBottom: '1px solid var(--border-color)' }}>
-        Mission complete
+      <div className="font-display text-2xl font-bold mb-6 pb-4 flex items-center justify-between" style={{ color: 'var(--accent-sky)', borderBottom: '1px solid var(--border-color)' }}>
+        <span>BOUNTY COMPLETE</span>
+        <div className="flex items-center gap-2 text-sm">
+          <ShieldCheck size={18} /> CASTLE ELEMENT RESTORED
+        </div>
       </div>
 
       {content.narrative && (
         <div className="mb-6 rounded-2xl p-4" style={{ backgroundColor: 'rgba(111, 216, 168, 0.08)', border: '1px solid rgba(111, 216, 168, 0.3)' }}>
           <div className="flex items-center gap-2 text-sm font-semibold mb-4 pb-2" style={{ color: 'var(--accent-mint)', borderBottom: '1px solid rgba(111, 216, 168, 0.2)' }}>
-            <ShieldCheck size={18} />
             {content.narrative.successMessage}
           </div>
           <div className="space-y-4">
@@ -79,7 +81,7 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
       {content.reflection && !content.narrative && (
         <div className="mb-6 space-y-4 clay-inset p-4 rounded-2xl">
           <div>
-            <div className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>What you just learned</div>
+            <div className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>You learned</div>
             <ul className="space-y-2">
               {content.reflection.whatYouLearned.map((item, i) => (
                 <li key={i} className="flex gap-3 text-xs items-start">

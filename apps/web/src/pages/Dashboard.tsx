@@ -126,14 +126,10 @@ const Dashboard = () => {
   };
 
   const positions = {
-    1: { left: '50%', top: '50%' }, // FIRST SERVER (core)
-    2: { left: '50%', top: '15%' }, // SMART DOOR (core)
-    3: { left: '75%', top: '32.5%' }, // LIVE SECURITY MONITOR / Events (core)
-    4: { left: '25%', top: '32.5%' }, // SIGNAL TOWER / Deployment (core)
-    5: { left: '20%', top: '67.5%' }, // SECURITY GATE (bonus)
-    6: { left: '50%', top: '78%' }, // RESOURCE VAULT (bonus)
-    7: { left: '80%', top: '67.5%' }, // ASYNC OPERATIONS (bonus)
-    8: { left: '50%', top: '92%' }, // BREAK IT / ADMIN VAULT (bonus)
+    1: { left: '50%', top: '80%' },
+    2: { left: '50%', top: '60%' },
+    3: { left: '50%', top: '40%' },
+    4: { left: '50%', top: '20%' },
   };
 
   return (
@@ -158,7 +154,7 @@ const Dashboard = () => {
               <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(xpProgress, 100)}%`, backgroundColor: 'var(--accent-gold)' }}></div>
             </div>
           </span>
-          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Systems {completedCount} / 7</span>
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Systems {completedCount} / 4</span>
         </div>
       </div>
 
@@ -300,20 +296,12 @@ const Dashboard = () => {
                 <rect x="180" y="240" width="640" height="520" fill="rgba(124,111,224,0.03)" stroke="rgba(124,111,224,0.15)" strokeWidth="1" />
 
                 {/* Data Conduits (Paths) */}
-                <path d="M 500 500 L 250 325" className={getPathClass(1, 3)} />
-                <path d="M 500 500 L 750 325" className={getPathClass(1, 4)} />
-                <path d="M 500 500 L 250 675" className={getPathClass(1, 5)} />
-                <path d="M 500 500 L 750 675" className={getPathClass(1, 6)} />
+                <path d="M 500 800 L 500 600" className={getPathClass(1, 2)} />
+                <path d="M 500 600 L 500 400" className={getPathClass(2, 3)} />
+                <path d="M 500 400 L 500 200" className={getPathClass(3, 4)} />
 
-                <path d="M 250 325 L 500 150" className={getPathClass(3, 2)} />
-                <path d="M 750 325 L 500 150" className={getPathClass(4, 2)} />
-
-                <path d="M 250 675 L 500 850" className={getPathClass(5, 7)} />
-                <path d="M 750 675 L 500 850" className={getPathClass(6, 7)} />
-
-                {/* Cross Links (always dim) */}
-                <path d="M 250 325 L 250 675" stroke="rgba(124,111,224,0.06)" fill="none" strokeWidth="1" strokeDasharray="2 4" />
-                <path d="M 750 325 L 750 675" stroke="rgba(124,111,224,0.06)" fill="none" strokeWidth="1" strokeDasharray="2 4" />
+                {/* Final Connection to Royal Crown */}
+                <path d="M 500 200 L 500 50" className={getPathClass(4, 5)} />
 
               </svg>
 
@@ -327,7 +315,6 @@ const Dashboard = () => {
                 const isCurrent = visualState === 'CURRENT';
                 const isAccessible = visualState !== 'LOCKED';
                 const isCore = mission.order === 1;
-                const isMission7 = mission.order === 8;
 
                 let nodeColor = 'var(--text-muted)';
                 let nodeBorder = 'var(--border-color)';
@@ -356,15 +343,6 @@ const Dashboard = () => {
 
                 let statusLabel = isComplete ? 'Online' : isCurrent ? 'Current' : isAccessible ? 'Ready' : 'Locked';
                 let displaySystemName = identity.systemName;
-
-                if (isMission7) {
-                  if (isComplete) {
-                    statusLabel = 'Online';
-                  } else if (isCurrent || isAccessible) {
-                    statusLabel = 'Ready';
-                    displaySystemName = 'System test';
-                  }
-                }
 
                 return (
                   <div

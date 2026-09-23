@@ -156,7 +156,8 @@ router.post('/', authenticate, async (req: any, res) => {
 // ============================================
 router.get('/my-assignment', authenticate, async (req: any, res) => {
   try {
-    if (req.user.role !== 'BUG_ARCHITECT') {
+    const isArchitect = await LeaderboardService.isBugArchitect(req.user.id);
+    if (!isArchitect && req.user.role !== 'DEMO') {
       return res.status(403).json({ error: 'Bug Architect privileges required.' });
     }
 
@@ -198,7 +199,8 @@ router.get('/my-assignment', authenticate, async (req: any, res) => {
 // ============================================
 router.post('/:bugId/plant', authenticate, async (req: any, res) => {
   try {
-    if (req.user.role !== 'BUG_ARCHITECT') {
+    const isArchitect = await LeaderboardService.isBugArchitect(req.user.id);
+    if (!isArchitect && req.user.role !== 'DEMO') {
       return res.status(403).json({ error: 'Bug Architect privileges required.' });
     }
 
