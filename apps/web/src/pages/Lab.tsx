@@ -6,8 +6,6 @@ import { Play, CheckCircle, RotateCcw, Terminal as TerminalIcon, BookOpen } from
 import Terminal from '../components/Terminal';
 import HintPanel from '../components/HintPanel';
 import TestResults from '../components/TestResults';
-import { useGameSocket } from '../hooks/useGameSocket';
-import CastleEventFeed from '../components/CastleEventFeed';
 import TeachingLayer from '../components/TeachingLayer';
 import PostMissionDebrief from '../components/PostMissionDebrief';
 import NarrativeBriefing from '../components/NarrativeBriefing';
@@ -51,11 +49,6 @@ const Lab = () => {
   const { user } = useOutletContext<{ user: any }>();
   const isDemoRole = user?.role === 'DEMO' || user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
   const isInstructorRole = user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
-  
-  // The Events mission is the one wired to the live Socket.IO monitor
-  // This is now Mission 3 (Event System).
-  const showMonitor = mission?.id === 'mission-03' && progress && (progress.status !== 'LOCKED' || isDemoRole);
-  const { isConnected, events } = useGameSocket(!!showMonitor);
 
   useEffect(() => {
     const fetchMission = async () => {
@@ -124,12 +117,6 @@ const Lab = () => {
              setPhase('INTERACT');
           }
 
-          if ((progressData.status !== 'LOCKED' || isDemoRole) && missionData.id === 'mission-03') {
-             fetch(`${API_URL}/api/missions/${missionId}/enter`, {
-               method: 'POST',
-               headers: { 'Authorization': `Bearer ${token}` }
-             }).catch(console.error);
-          }
         } else {
           navigate('/dashboard');
         }
@@ -452,12 +439,6 @@ const Lab = () => {
                      <BookOpen size={12} /> Review lesson
                    </button>
                  </div>
-
-                 {showMonitor && (
-                   <div className="h-48 min-h-[12rem] shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
-                     <CastleEventFeed isConnected={isConnected} events={events} />
-                   </div>
-                 )}
               </div>
 
               {/* RIGHT COLUMN (CODE PHASE): MONACO + TERMINAL + TEST RESULTS */}
