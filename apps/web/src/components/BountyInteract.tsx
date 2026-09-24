@@ -129,7 +129,7 @@ const BountyInteract: React.FC<BountyInteractProps> = ({ missionId, onOpenCode }
 
       {bountyDetected && (
         <div className="w-full bg-black/40 border border-[var(--accent-gold)] rounded-xl p-6 shadow-2xl animate-slide-in relative overflow-hidden">
-          <div className="absolute inset-0 bg-[var(--accent-gold)] opacity-5 animate-pulse"></div>
+          <div className="absolute inset-0 bg-[var(--accent-gold)] opacity-5 animate-pulse pointer-events-none"></div>
           
           <div className="flex items-center gap-3 mb-6 relative z-10">
             <ShieldAlert size={24} className="text-[var(--accent-gold)] animate-bounce" />
