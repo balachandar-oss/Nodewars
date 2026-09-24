@@ -143,13 +143,14 @@ const Lab = () => {
 
   // Persist in-progress code locally so a reload doesn't lose unsaved work
   useEffect(() => {
-    if (!missionId || !code) return;
+    // Only save if the currently loaded mission matches the URL param
+    if (!missionId || !code || mission?.id !== missionId) return;
     try {
       localStorage.setItem(`node-lab-code-${missionId}`, code);
     } catch {
       // ignore - non-critical
     }
-  }, [missionId, code]);
+  }, [missionId, code, mission?.id]);
 
   const handleEnterMission = () => {
     if (missionId) sessionStorage.setItem(`node-lab-narrative-viewed-${missionId}`, 'true');
