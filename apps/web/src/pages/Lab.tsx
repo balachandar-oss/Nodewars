@@ -435,10 +435,20 @@ const Lab = () => {
             </div>
           ) : (
             <>
-              {/* LEFT COLUMN (CODE PHASE): BOUNTY + CASTLE */}
+              {/* LEFT COLUMN (CODE PHASE): BOUNTY + HINTS + CASTLE */}
               <div className="lg:col-span-4 flex flex-col relative min-h-0" style={{ borderRight: '1px solid var(--border-color)' }}>
-                 <div className="shrink-0 min-h-0 flex-1">
+                 <div className="shrink-0">
                    <BountyPanel missionId={mission.id} isCompleted={progress?.status === 'COMPLETE'} />
+                 </div>
+
+                 <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-4">
+                   <HintPanel hints={hints} progressiveHints={content?.progressiveHints} hasFailed={!!evaluation && !evaluation.success} />
+                   <button
+                     onClick={() => setPhase('LEARN')}
+                     className="clay-button-secondary flex items-center justify-center gap-2 w-full py-2.5 text-xs"
+                   >
+                     <BookOpen size={12} /> Review lesson
+                   </button>
                  </div>
 
                  {showMonitor && (
