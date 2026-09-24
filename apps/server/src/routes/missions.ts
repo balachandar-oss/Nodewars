@@ -117,11 +117,30 @@ router.get('/:id/progress', authenticate, async (req: AuthRequest, res) => {
         return res.status(404).json({ error: 'Mission not found' });
       }
 
+      // A mission should never default to LOCKED if the student already
+      // completed the mission before it - this can happen if a mission's ID
+      // changes (e.g. a content restructure) and this is the first time a
+      // progress row is created under the new ID.
+      let status = 'LOCKED';
+      if (mission.order === 1) {
+        status = 'ACTIVE';
+      } else {
+        const prevMission = await prisma.mission.findFirst({ where: { order: mission.order - 1 } });
+        const prevProgress = prevMission
+          ? await prisma.missionProgress.findUnique({
+              where: { userId_missionId: { userId, missionId: prevMission.id } }
+            })
+          : null;
+        if (prevProgress?.status === 'COMPLETE') {
+          status = 'ACTIVE';
+        }
+      }
+
       progress = await prisma.missionProgress.create({
         data: {
           userId,
           missionId: id,
-          status: mission.order === 1 ? 'ACTIVE' : 'LOCKED'
+          status
         }
       });
     }
