@@ -211,6 +211,10 @@ const Lab = () => {
     }
     const next = allMissions.find(m => m.order === mission.order + 1);
     if (next) {
+      // Reset immediately so the loading skeleton shows right away instead of
+      // leaving the previous mission's debrief on screen while the next
+      // mission's data is still being fetched.
+      setMission(null);
       navigate(`/lab/${next.id}`);
     } else {
       navigate('/showcase');
