@@ -156,6 +156,12 @@ const Quiz = () => {
       const state = await fetchSessionState();
       if (cancelled || !state) return;
 
+      if (state.phase === 'QUIZ_WAITING') {
+        fetch(`${API_URL}/api/quiz-session/heartbeat`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => {});
+      }
       if (state.phase === 'QUIZ_ACTIVE' && !attempt && !submittedRef.current) {
         await startAttempt();
       }

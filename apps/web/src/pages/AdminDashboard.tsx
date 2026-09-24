@@ -1,11 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Play, Square, RotateCcw, Clock, Crown, AlertCircle } from 'lucide-react';
+import { Play, Square, RotateCcw, Clock, Crown, AlertCircle, Users } from 'lucide-react';
 import { API_URL } from '../utils/api';
 
 interface SessionState {
   phase: 'QUIZ_WAITING' | 'QUIZ_ACTIVE' | 'QUIZ_ENDED';
   startTime: string | null;
   endTime: string | null;
+}
+
+interface WaitingRoom {
+  count: number;
+  students: Array<{ username: string; team: string }>;
 }
 
 interface TeamResult {
@@ -21,6 +26,7 @@ interface TeamResults {
 const AdminDashboard = () => {
   const [session, setSession] = useState<SessionState | null>(null);
   const [results, setResults] = useState<TeamResults | null>(null);
+  const [waitingRoom, setWaitingRoom] = useState<WaitingRoom | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState('');
@@ -46,10 +52,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchWaitingRoom = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/quiz-session/waiting-room`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) setWaitingRoom(await res.json());
+    } catch {
+      // ignore, retry on next poll
+    }
+  };
+
   useEffect(() => {
     const tick = async () => {
       await fetchState();
       await fetchResults();
+      await fetchWaitingRoom();
     };
     tick();
     pollRef.current = setInterval(tick, 4000);
@@ -166,6 +182,30 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Waiting Room */}
+      {phase === 'QUIZ_WAITING' && (
+        <div className="clay-panel p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Users size={16} style={{ color: 'var(--accent-mint)' }} />
+            <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+              Waiting room &mdash; {waitingRoom?.count ?? 0} student{waitingRoom?.count === 1 ? '' : 's'} present
+            </span>
+          </div>
+          {waitingRoom && waitingRoom.count > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto custom-scrollbar">
+              {waitingRoom.students.map(s => (
+                <div key={s.username} className="text-xs p-2 rounded-xl clay-inset flex flex-col">
+                  <span style={{ color: 'var(--text-primary)' }}>{s.username}</span>
+                  <span style={{ color: 'var(--text-muted)' }}>{s.team}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>No students have opened the quiz page yet.</div>
+          )}
+        </div>
+      )}
 
       {/* Team Totals */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
