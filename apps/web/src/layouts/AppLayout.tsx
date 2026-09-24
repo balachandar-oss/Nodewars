@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { LogOut, Crown, User as UserIcon } from 'lucide-react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { LogOut, Crown, User as UserIcon, LayoutDashboard } from 'lucide-react';
 import { API_URL } from '../utils/api';
 
 const AppLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<{ username: string; role: string; level: number; xp: number; team?: { name: string } } | null>(null);
 
   const fetchUser = async () => {
@@ -46,7 +47,11 @@ const AppLayout = () => {
     <div className="min-h-screen flex flex-col relative">
       {/* Header */}
       <header className="glass-panel rounded-none border-x-0 border-t-0 px-6 py-3 flex justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center gap-3">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-3 text-left"
+          title="Go to dashboard"
+        >
           <div className="w-9 h-9 rounded-full flex items-center justify-center clay-inset shrink-0">
             <Crown size={18} style={{ color: 'var(--accent-purple)' }} />
           </div>
@@ -56,7 +61,7 @@ const AppLayout = () => {
             </h1>
             <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>Learn, build, and hunt bugs</span>
           </div>
-        </div>
+        </button>
 
         {user && (
           <div className="flex items-center gap-4">
@@ -68,6 +73,17 @@ const AppLayout = () => {
             <div className="sm:hidden w-8 h-8 rounded-full flex items-center justify-center clay-inset">
               <UserIcon size={14} style={{ color: 'var(--accent-purple)' }} />
             </div>
+
+            {location.pathname !== '/dashboard' && (
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="clay-button-secondary px-4 py-2 text-xs flex items-center gap-2"
+                title="Go to dashboard"
+              >
+                <LayoutDashboard size={14} />
+                <span className="hidden sm:inline">Dashboard</span>
+              </button>
+            )}
 
             <button
               onClick={handleLogout}
