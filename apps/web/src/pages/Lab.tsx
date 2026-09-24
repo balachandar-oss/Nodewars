@@ -437,12 +437,12 @@ const Lab = () => {
           ) : (
             <>
               {/* LEFT COLUMN (CODE PHASE): BOUNTY + HINTS + CASTLE */}
-              <div className="lg:col-span-4 flex flex-col relative min-h-0" style={{ borderRight: '1px solid var(--border-color)' }}>
+              <div className="lg:col-span-4 flex flex-col relative min-h-0 overflow-y-auto custom-scrollbar" style={{ borderRight: '1px solid var(--border-color)' }}>
                  <div className="shrink-0">
                    <BountyPanel missionId={mission.id} isCompleted={progress?.status === 'COMPLETE'} />
                  </div>
 
-                 <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-4">
+                 <div className="shrink-0 p-4 flex flex-col gap-4">
                    <HintPanel hints={hints} progressiveHints={content?.progressiveHints} hasFailed={!!evaluation && !evaluation.success} />
                    <button
                      onClick={() => setPhase('LEARN')}
@@ -453,7 +453,7 @@ const Lab = () => {
                  </div>
 
                  {showMonitor && (
-                   <div className="h-48 min-h-0 shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
+                   <div className="h-48 min-h-[12rem] shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
                      <CastleEventFeed isConnected={isConnected} events={events} />
                    </div>
                  )}
