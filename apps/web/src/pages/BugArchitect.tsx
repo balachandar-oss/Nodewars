@@ -12,6 +12,7 @@ interface HuntStatus {
 const BugArchitect = () => {
   const navigate = useNavigate();
   const [bug, setBug] = useState<BugAssignment | null>(null);
+  const [eligibility, setEligibility] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [huntStatus, setHuntStatus] = useState<HuntStatus | null>(null);
@@ -26,13 +27,18 @@ const BugArchitect = () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/bugs/my-assignment`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const [res, eligRes] = await Promise.all([
+        fetch(`${API_URL}/api/bugs/my-assignment`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/quiz/eligibility`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
 
-      if (res.status === 403) {
-        navigate('/dashboard');
+      if (res.status === 403 || eligRes.status === 403) {
+        navigate('/both-castles');
         return;
+      }
+
+      if (eligRes.ok) {
+        setEligibility(await eligRes.json());
       }
 
       if (res.ok) {
@@ -147,8 +153,19 @@ const BugArchitect = () => {
             <h1 className="text-2xl md:text-3xl font-display font-bold" style={{ color: 'var(--text-primary)' }}>
               Bug Architect
             </h1>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-2">
               <span className="chip chip-purple">
+                TEAM: {eligibility?.team || 'UNKNOWN'}
+              </span>
+              <span className="chip chip-gold">
+                ROYAL: {eligibility?.royal || 'UNKNOWN'}
+              </span>
+              <span className="chip chip-mint">
+                RANK: #{eligibility?.teamRank || '?'} IN TEAM
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="chip chip-purple opacity-70">
                 Bug placement window {huntStatus ? `· ${huntStatus.phase}` : ''}
               </span>
             </div>

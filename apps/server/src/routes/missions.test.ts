@@ -36,6 +36,9 @@ jest.mock('../utils/prisma', () => {
           },
           mission: {
             findFirst: jest.fn().mockResolvedValue({ id: 'mission-02' })
+          },
+          submission: {
+            create: jest.fn()
           }
         };
         await cb(tx);

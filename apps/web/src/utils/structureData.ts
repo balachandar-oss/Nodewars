@@ -9,7 +9,7 @@ import {
   Target
 } from 'lucide-react';
 
-export type StructureType = 'TERMINAL' | 'SMART_DOOR' | 'SECURITY_GATE' | 'RESOURCE_VAULT' | 'ASYNC_ENGINE' | 'LIVE_MONITOR' | 'CORE_PATCH';
+export type StructureType = 'TERMINAL' | 'SMART_DOOR' | 'SECURITY_GATE' | 'RESOURCE_VAULT';
 
 export interface StructureInfo {
   id: string;
@@ -180,76 +180,7 @@ server.listen(3000);`,
         { id: 'res-003', type: 'AUDIT_LOG', created: '2024-09-21', status: 'ACTIVE' },
       ],
     },
-  },
-  ASYNC_ENGINE: {
-    id: 'structure-async-mission-05',
-    type: 'ASYNC_ENGINE',
-    mission: 'mission-05',
-    missionNumber: 5,
-    title: 'ASYNC ENGINE',
-    description: 'Non-blocking async operations and event queue',
-    icon: GitMerge,
-    color: 'amber',
-    radius: 50,
-    content: {
-      title: 'ASYNC ENGINE (Mission 05)',
-      subtitle: 'ASYNC PROCESSING & QUEUING',
-      details: [
-        { label: 'Queue Status', value: 'PROCESSING' },
-        { label: 'Pending Jobs', value: 12 },
-        { label: 'Completed', value: 1543 },
-        { label: 'Failed', value: 2 },
-      ],
-    },
-  },
-  LIVE_MONITOR: {
-    id: 'structure-monitor-mission-06',
-    type: 'LIVE_MONITOR',
-    mission: 'mission-06',
-    missionNumber: 6,
-    title: 'EVENT MONITOR',
-    description: 'Real-time event streaming and monitoring',
-    icon: Activity,
-    color: 'purple',
-    radius: 50,
-    content: {
-      title: 'LIVE MONITOR (Mission 06)',
-      subtitle: 'REAL-TIME EVENT STREAM',
-      details: [
-        { label: 'Stream Status', value: 'ACTIVE' },
-        { label: 'Events/sec', value: 42 },
-        { label: 'Connected Clients', value: 8 },
-      ],
-      eventStream: [
-        { event: 'PLAYER_ENTERED', timestamp: '2024-09-21T14:32:15Z', payload: { player: 'user-123', zone: 'core' } },
-        { event: 'DOOR_OPENED', timestamp: '2024-09-21T14:31:42Z', payload: { door_id: 'door-02', auth: true } },
-        { event: 'RESOURCE_CREATED', timestamp: '2024-09-21T14:31:15Z', payload: { type: 'token', id: 'tok-456' } },
-        { event: 'BUG_FOUND', timestamp: '2024-09-21T14:30:08Z', payload: { category: 'auth', severity: 'high' } },
-        { event: 'SYSTEM_PING', timestamp: '2024-09-21T14:29:55Z', payload: { latency_ms: 42 } },
-      ],
-    },
-  },
-  CORE_PATCH: {
-    id: 'structure-core-mission-07',
-    type: 'CORE_PATCH',
-    mission: 'mission-07',
-    missionNumber: 7,
-    title: 'SECURITY TEST RANGE',
-    description: 'Controlled adversarial testing environment',
-    icon: Target,
-    color: 'amber',
-    radius: 50,
-    content: {
-      title: 'CORE PATCH (Mission 07)',
-      subtitle: 'CONTROLLED BREACH TEST',
-      details: [
-        { label: 'Test Status', value: 'ACTIVE' },
-        { label: 'Attack Vectors', value: 7 },
-        { label: 'Vulnerabilities Found', value: 3 },
-        { label: 'Security Score', value: '72%' },
-      ],
-    },
-  },
+  }
 };
 
 /**

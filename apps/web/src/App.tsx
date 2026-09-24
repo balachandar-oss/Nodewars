@@ -6,6 +6,7 @@ import Showcase from './pages/Showcase';
 import Quiz from './pages/Quiz';
 import Leaderboard from './pages/Leaderboard';
 import BugArchitect from './pages/BugArchitect';
+import BothCastles from './pages/BothCastles';
 import Hunt from './pages/Hunt';
 import AdminCastle from './pages/AdminCastle';
 import InstructorMode from './pages/InstructorMode';
@@ -31,6 +32,7 @@ function App() {
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/bug-architect" element={<BugArchitect />} />
+            <Route path="/both-castles" element={<BothCastles />} />
             <Route path="/hunt" element={<Hunt />} />
             <Route path="/admin/castle" element={<AdminCastle />} />
             <Route path="/instructor" element={<InstructorMode />} />

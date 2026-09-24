@@ -72,11 +72,19 @@ export class LeaderboardService {
       return a.latestCompletedAt - b.latestCompletedAt;
     });
 
+    const teamCounts: Record<string, number> = {};
+
     return aggregated.map((entry, index) => {
-      const isBugArchitect = index < 5; // Top 5
+      const tName = entry.teamName;
+      if (!teamCounts[tName]) teamCounts[tName] = 0;
+      teamCounts[tName]++;
+      
+      const teamRank = teamCounts[tName];
+      const isBugArchitect = teamRank <= 5; // Top 5 per team
 
       return {
         rank: index + 1,
+        teamRank,
         userId: entry.userId,
         username: entry.username,
         teamId: entry.teamId,
@@ -88,9 +96,29 @@ export class LeaderboardService {
     });
   }
 
-  static async isBugArchitect(userId: string): Promise<boolean> {
+  static async getEligibility(userId: string) {
     const rankings = await this.getRankings();
     const userRank = rankings.find(r => r.userId === userId);
-    return userRank ? userRank.isBugArchitect : false;
+    
+    if (!userRank) {
+      return { isBugArchitect: false, team: 'NO TEAM', rank: 0, teamRank: 0, royal: 'NONE' };
+    }
+    
+    let royal = 'NONE';
+    if (userRank.teamName === 'PRINCES') royal = 'KING';
+    else if (userRank.teamName === 'PRINCESSES') royal = 'QUEEN';
+    
+    return {
+      isBugArchitect: userRank.isBugArchitect,
+      team: userRank.teamName,
+      rank: userRank.rank,
+      teamRank: userRank.teamRank,
+      royal
+    };
+  }
+
+  static async isBugArchitect(userId: string): Promise<boolean> {
+    const eligibility = await this.getEligibility(userId);
+    return eligibility.isBugArchitect;
   }
 }

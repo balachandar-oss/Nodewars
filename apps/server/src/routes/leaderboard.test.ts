@@ -28,25 +28,40 @@ describe('Leaderboard API', () => {
     jest.clearAllMocks();
   });
 
-  it('ranks players and marks Top 5 as Bug Architect', async () => {
-    // Generate 6 attempts
-    const mockAttempts = Array(6).fill(0).map((_, i) => ({
-      score: 100 - (i * 10), // Descending scores
-      percentage: 100 - (i * 10),
-      user: {
-        username: `user_${i}`,
-        team: { name: 'TEAM_OMEGA' }
-      }
-    }));
+  it('ranks players by team and marks Top 5 per team as Bug Architect', async () => {
+    // Generate 6 PRINCES and 6 PRINCESSES
+    const mockAttempts = [];
+    for (let i = 0; i < 6; i++) {
+      mockAttempts.push({
+        score: 100 - (i * 10),
+        percentage: 100 - (i * 10),
+        user: { username: `prince_${i}`, team: { name: 'PRINCES' } },
+        completedAt: new Date(1000)
+      });
+      mockAttempts.push({
+        score: 100 - (i * 10),
+        percentage: 100 - (i * 10),
+        user: { username: `princess_${i}`, team: { name: 'PRINCESSES' } },
+        completedAt: new Date(1000)
+      });
+    }
 
     (prismaMock.quizAttempt.findMany as jest.Mock).mockResolvedValue(mockAttempts);
 
     const res = await request(app).get('/leaderboard').set('Authorization', `Bearer ${token}`);
     
     expect(res.status).toBe(200);
-    expect(res.body.length).toBe(6);
-    expect(res.body[0].isBugArchitect).toBe(true);
-    expect(res.body[4].isBugArchitect).toBe(true);
-    expect(res.body[5].isBugArchitect).toBe(false); // 6th player is not BUG ARCHITECT
+    expect(res.body.length).toBe(12);
+
+    const princes = res.body.filter((r: any) => r.teamName === 'PRINCES');
+    const princesses = res.body.filter((r: any) => r.teamName === 'PRINCESSES');
+
+    expect(princes[0].isBugArchitect).toBe(true);
+    expect(princes[4].isBugArchitect).toBe(true);
+    expect(princes[5].isBugArchitect).toBe(false);
+
+    expect(princesses[0].isBugArchitect).toBe(true);
+    expect(princesses[4].isBugArchitect).toBe(true);
+    expect(princesses[5].isBugArchitect).toBe(false);
   });
 });

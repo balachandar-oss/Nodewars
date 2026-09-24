@@ -13,7 +13,7 @@ router.get('/showcase', authenticate, async (req: AuthRequest, res) => {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const missions = await prisma.mission.findMany({
-      where: { isBonus: false },
+      where: { isBonus: false, order: { lte: 4 } },
       orderBy: { order: 'asc' },
       select: { id: true, title: true, unlockComponent: true, order: true }
     });
@@ -46,6 +46,7 @@ router.get('/showcase', authenticate, async (req: AuthRequest, res) => {
 router.get('/', authenticate, async (req: AuthRequest, res) => {
   try {
     const missions = await prisma.mission.findMany({
+      where: { order: { lte: 4 } },
       orderBy: { order: 'asc' },
       select: {
         id: true,

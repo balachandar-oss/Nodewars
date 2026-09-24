@@ -1,124 +1,88 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Circle, ArrowRight, Trophy } from 'lucide-react';
-import { API_URL } from '../utils/api';
-
-interface ShowcaseItem {
-  missionId: string;
-  title: string;
-  unlockComponent: string | null;
-  order: number;
-  completed: boolean;
-  code: string | null;
-}
+import { CheckCircle, Trophy, Server as ServerIcon, Package, Zap, Radio, ArrowRight } from 'lucide-react';
 
 const Showcase = () => {
   const navigate = useNavigate();
-  const [items, setItems] = useState<ShowcaseItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [stage, setStage] = useState(0);
 
   useEffect(() => {
-    const fetchShowcase = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-      try {
-        const res = await fetch(`${API_URL}/api/missions/showcase`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setItems(data);
-          const firstDone = data.find((i: ShowcaseItem) => i.completed);
-          if (firstDone) setExpanded(firstDone.missionId);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchShowcase();
-  }, [navigate]);
+    // Animate through 0 -> 1 -> 2 -> 3 -> 4 -> 5
+    if (stage < 5) {
+      const timer = setTimeout(() => {
+        setStage(s => s + 1);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [stage]);
 
-  const completedCount = items.filter(i => i.completed).length;
-
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 md:p-10 animate-fade-in">
-        <div className="skeleton h-20 w-20 rounded-full mx-auto mb-4"></div>
-        <div className="skeleton h-10 w-2/3 mx-auto mb-2"></div>
-        <div className="skeleton h-4 w-1/2 mx-auto mb-10"></div>
-        <div className="space-y-4">
-          <div className="skeleton h-16"></div>
-          <div className="skeleton h-16"></div>
-          <div className="skeleton h-16"></div>
-          <div className="skeleton h-16"></div>
-        </div>
-      </div>
-    );
-  }
+  const stages = [
+    {
+      title: 'MODULES',
+      desc: 'Gate is created',
+      icon: ServerIcon,
+      color: 'var(--accent-purple)',
+      bg: 'rgba(124, 111, 224, 0.15)'
+    },
+    {
+      title: 'NPM',
+      desc: 'Capability loads',
+      icon: Package,
+      color: 'var(--accent-mint)',
+      bg: 'rgba(111, 216, 168, 0.15)'
+    },
+    {
+      title: 'EVENTS',
+      desc: 'Lever triggers Gate',
+      icon: Zap,
+      color: 'var(--accent-sky)',
+      bg: 'rgba(111, 184, 224, 0.15)'
+    },
+    {
+      title: 'DEPLOYMENT',
+      desc: 'Signal Tower connects',
+      icon: Radio,
+      color: 'var(--accent-gold)',
+      bg: 'rgba(232, 184, 75, 0.15)'
+    }
+  ];
 
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-10 animate-slide-in">
-      <div className="text-center mb-10">
-        <div className="clay-inset w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Trophy size={36} style={{ color: 'var(--accent-gold)' }} />
-        </div>
-        <h1 className="text-3xl md:text-4xl font-display font-bold" style={{ color: 'var(--text-primary)' }}>
-          What you just built
+    <div className="max-w-4xl mx-auto p-6 md:p-10 flex flex-col items-center justify-center min-h-[calc(100vh-100px)] animate-slide-in">
+      <div className="text-center mb-12">
+        <h1 className="text-3xl md:text-5xl font-display font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--text-primary)' }}>
+          The System Awakens
         </h1>
-        <p className="text-sm mt-3 max-w-xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-          Four small systems. Each one is a real piece of how this exact castle you're standing in actually runs.
+        <p className="text-sm max-w-xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+          You built one connected Node.js system. Watch it come online.
         </p>
-        <div className="mt-4 inline-block">
-          <span className="chip chip-sky">{completedCount} / {items.length} systems online</span>
-        </div>
       </div>
 
-      <div className="space-y-4">
-        {items.map((item, idx) => {
-          const isOpen = expanded === item.missionId;
+      <div className="w-full flex flex-col md:flex-row items-center justify-center gap-4 mb-16">
+        {stages.map((s, i) => {
+          const isActive = stage > i;
+          const Icon = s.icon;
           return (
-            <div
-              key={item.missionId}
-              className={`glass-panel overflow-hidden transition-all ${!item.completed ? 'opacity-50' : ''}`}
-            >
-              <button
-                onClick={() => item.completed && setExpanded(isOpen ? null : item.missionId)}
-                disabled={!item.completed}
-                className="w-full flex items-center justify-between p-4 md:p-5 text-left"
+            <div key={i} className="flex flex-col md:flex-row items-center gap-4">
+              <div 
+                className={`flex flex-col items-center p-6 rounded-2xl border-2 transition-all duration-700 transform ${isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-30 grayscale'}`}
+                style={{ 
+                  backgroundColor: isActive ? s.bg : 'var(--bg-secondary)', 
+                  borderColor: isActive ? s.color : 'var(--border-color)',
+                  width: '180px'
+                }}
               >
-                <div className="flex items-center gap-4">
-                  <div className="text-[10px] w-6" style={{ color: 'var(--text-muted)' }}>{String(idx + 1).padStart(2, '0')}</div>
-                  {item.completed ? (
-                    <CheckCircle size={18} className="shrink-0" style={{ color: 'var(--accent-sky)' }} />
-                  ) : (
-                    <Circle size={18} className="shrink-0" style={{ color: 'var(--text-muted)' }} />
-                  )}
-                  <div>
-                    <div className="text-sm md:text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      {item.title}
-                    </div>
-                    <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      {item.completed ? item.unlockComponent || 'Online' : 'Not completed'}
-                    </div>
-                  </div>
+                <Icon size={40} style={{ color: isActive ? s.color : 'var(--text-muted)' }} className={`mb-4 ${isActive && stage === i + 1 ? 'animate-bounce' : ''}`} />
+                <div className="font-bold text-sm tracking-wider uppercase mb-1" style={{ color: isActive ? s.color : 'var(--text-muted)' }}>
+                  0{i + 1} — {s.title}
                 </div>
-                {item.completed && (
-                  <ArrowRight size={16} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} style={{ color: 'var(--text-muted)' }} />
-                )}
-              </button>
-
-              {isOpen && item.code && (
-                <div className="p-4 md:p-5" style={{ borderTop: '1px solid var(--border-color)' }}>
-                  <div className="text-[10px] mb-2" style={{ color: 'var(--accent-mint)' }}>
-                    Your working solution
-                  </div>
-                  <pre className="text-[11px] md:text-xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto custom-scrollbar clay-inset p-3 rounded-xl" style={{ color: 'var(--text-secondary)' }}>
-                    {item.code}
-                  </pre>
+                <div className="text-[10px] text-center" style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                  {s.desc}
+                </div>
+              </div>
+              {i < stages.length - 1 && (
+                <div className={`transition-all duration-700 ${stage > i + 1 ? 'opacity-100' : 'opacity-20'}`}>
+                  <ArrowRight size={24} style={{ color: 'var(--text-secondary)' }} className="rotate-90 md:rotate-0" />
                 </div>
               )}
             </div>
@@ -126,18 +90,23 @@ const Showcase = () => {
         })}
       </div>
 
-      <div className="mt-10 text-center">
-        <p className="text-xs mb-6 max-w-lg mx-auto" style={{ color: 'var(--text-muted)' }}>
-          Every one of these is a small version of something already running the real game you're about to play.
-          Now it's time to see who understood it best.
-        </p>
-        <button
-          onClick={() => navigate('/quiz')}
-          className="clay-button px-10 py-4 text-sm font-bold"
-        >
-          Continue to the quiz
-        </button>
-      </div>
+      {stage === 5 && (
+        <div className="flex flex-col items-center animate-slide-up">
+          <div className="clay-inset px-10 py-6 rounded-2xl flex flex-col items-center border border-[var(--accent-mint)] mb-8" style={{ backgroundColor: 'rgba(111, 216, 168, 0.05)' }}>
+            <div className="flex items-center gap-4 text-3xl font-display font-bold" style={{ color: 'var(--accent-mint)' }}>
+              <CheckCircle size={32} />
+              CASTLE SYSTEM: OPERATIONAL
+            </div>
+          </div>
+          
+          <button
+            onClick={() => navigate('/quiz')}
+            className="clay-button px-12 py-4 text-sm font-bold uppercase tracking-wider hover:scale-105 transition-transform"
+          >
+            Enter the Royal Trial
+          </button>
+        </div>
+      )}
     </div>
   );
 };

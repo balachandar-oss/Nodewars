@@ -114,16 +114,16 @@ const TeachingLayer: React.FC<TeachingLayerProps> = ({ missionNumber, content, o
 
                 {/* 2. Visual Flow (if exists) */}
                 {currentConcept.visualFlow && currentConcept.visualFlow.length > 0 && (
-                  <div className="py-4" style={{ borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }} data-testid="visual-flow">
-                    <div className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Conceptual flow</div>
-                    <div className="flex flex-wrap items-center gap-3">
+                  <div className="py-6 px-4 rounded-xl bg-[#1a1825] border border-[var(--border-color)]" data-testid="visual-flow">
+                    <div className="text-[10px] uppercase tracking-wider mb-4 font-bold" style={{ color: 'var(--text-muted)' }}>Castle relationship</div>
+                    <div className="flex flex-wrap items-center justify-center gap-3">
                       {currentConcept.visualFlow.map((node, i) => (
                         <React.Fragment key={i}>
-                          <div className="chip chip-sky">
+                          <div className="px-4 py-2 rounded-lg font-bold text-xs" style={{ backgroundColor: 'rgba(124, 111, 224, 0.1)', color: 'var(--accent-purple)', border: '1px solid rgba(124, 111, 224, 0.3)' }}>
                             {node}
                           </div>
                           {i < currentConcept.visualFlow!.length - 1 && (
-                            <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} />
+                            <ArrowRight size={16} style={{ color: 'var(--text-secondary)' }} />
                           )}
                         </React.Fragment>
                       ))}
@@ -167,11 +167,11 @@ const TeachingLayer: React.FC<TeachingLayerProps> = ({ missionNumber, content, o
 
                 {/* 5. Key Takeaway (if exists) */}
                 {currentConcept.keyTakeaway && (
-                  <div className="mt-4 p-4 flex items-start gap-3 rounded-xl" style={{ backgroundColor: 'rgba(111, 216, 168, 0.1)', border: '1px solid rgba(111, 216, 168, 0.3)' }} data-testid="key-takeaway">
-                    <Lightbulb size={16} className="shrink-0 mt-0.5" style={{ color: 'var(--accent-mint)' }} />
+                  <div className="mt-4 p-5 flex items-start gap-4 rounded-xl shadow-lg" style={{ backgroundColor: 'rgba(111, 216, 168, 0.05)', border: '1px solid rgba(111, 216, 168, 0.2)', borderLeft: '4px solid var(--accent-mint)' }} data-testid="key-takeaway">
+                    <Lightbulb size={20} className="shrink-0 mt-0.5" style={{ color: 'var(--accent-mint)' }} />
                     <div>
-                      <div className="text-xs font-semibold mb-1" style={{ color: 'var(--accent-mint)' }}>Key takeaway</div>
-                      <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
+                      <div className="text-[10px] font-bold mb-1 uppercase tracking-wider" style={{ color: 'var(--accent-mint)' }}>What this means for the castle</div>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                         {currentConcept.keyTakeaway}
                       </p>
                     </div>

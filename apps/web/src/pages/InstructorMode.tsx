@@ -6,15 +6,14 @@ import { ChevronLeft, ChevronRight, Play, Pause, RotateCcw } from 'lucide-react'
 // The 150-minute seminar schedule template
 const SEMINAR_SCHEDULE = [
   { time: '0–5', task: 'Introduction / Node Lab briefing' },
-  { time: '5–15', task: 'Mission 01 — First Server' },
-  { time: '15–30', task: 'Mission 02 — Smart Door' },
-  { time: '30–45', task: 'Mission 03 — Security Gate' },
-  { time: '45–60', task: 'Mission 04 — Resource Vault' },
-  { time: '60–72', task: 'Mission 05 — Async Operations' },
-  { time: '72–87', task: 'Mission 06 — Live Security Monitor' },
-  { time: '87–100', task: 'Mission 07 — Break It' },
-  { time: '100–115', task: 'Official Quiz' },
-  { time: '115–120', task: 'Results / transition' }
+  { time: '5–20', task: '01 NODE CORE' },
+  { time: '20–35', task: '02 NPM SUPPLY' },
+  { time: '35–55', task: '03 EVENT SYSTEM' },
+  { time: '55–70', task: '04 SIGNAL TOWER' },
+  { time: '70–80', task: 'SHOWCASE' },
+  { time: '80–90', task: 'ROYAL TRIAL' },
+  { time: '90–95', task: 'BUG ARCHITECTS' },
+  { time: '95–120', task: 'BUG HUNT' }
 ];
 
 const CHECKLIST = [
@@ -23,7 +22,7 @@ const CHECKLIST = [
   'Database available',
   'Demo account verified',
   'Student accounts ready',
-  'Missions 01–07 available',
+  'Missions 01–04 available',
   'Quiz available',
   'Display/projector tested'
 ];

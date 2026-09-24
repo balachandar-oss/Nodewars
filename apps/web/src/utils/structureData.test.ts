@@ -49,14 +49,6 @@ describe('structureData utilities', () => {
       expect(info.content.resources!.length).toBeGreaterThan(0);
     });
 
-    it('includes event stream for LIVE_MONITOR', () => {
-      const info = getStructureInfo('LIVE_MONITOR', { x: 100, y: 100 });
-
-      expect(info.content.eventStream).toBeDefined();
-      expect(info.content.eventStream!.length).toBeGreaterThan(0);
-      expect(info.content.eventStream!.some(evt => evt.event === 'PLAYER_ENTERED')).toBe(true);
-    });
-
     it('all structure types in registry have complete info', () => {
       const types = Object.keys(structureRegistry) as Array<keyof typeof structureRegistry>;
 
@@ -205,7 +197,7 @@ describe('structureData utilities', () => {
 
   describe('structureRegistry', () => {
     it('contains all 7 mission structures', () => {
-      expect(Object.keys(structureRegistry)).toHaveLength(7);
+      expect(Object.keys(structureRegistry)).toHaveLength(4);
     });
 
     it('maps missions correctly', () => {
@@ -213,9 +205,6 @@ describe('structureData utilities', () => {
       expect(structureRegistry.SMART_DOOR.missionNumber).toBe(2);
       expect(structureRegistry.SECURITY_GATE.missionNumber).toBe(3);
       expect(structureRegistry.RESOURCE_VAULT.missionNumber).toBe(4);
-      expect(structureRegistry.ASYNC_ENGINE.missionNumber).toBe(5);
-      expect(structureRegistry.LIVE_MONITOR.missionNumber).toBe(6);
-      expect(structureRegistry.CORE_PATCH.missionNumber).toBe(7);
     });
 
     it('each structure has unique mission ID', () => {

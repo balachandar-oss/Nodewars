@@ -159,6 +159,14 @@ const BugArchitectPanel: React.FC<BugArchitectPanelProps> = ({ bug, onPlanted })
                   Structure: <span style={{ color: 'var(--text-primary)' }}>{bug.structureType}</span>
                 </div>
               )}
+              <div className="mt-4 pt-4 w-full" style={{ borderTop: '1px solid var(--border-color)' }}>
+                <button
+                  onClick={() => window.location.href = '/both-castles'}
+                  className="clay-button w-full px-4 py-3 font-bold text-sm"
+                >
+                  Await Retaliation
+                </button>
+              </div>
             </div>
           ) : (
             <>
