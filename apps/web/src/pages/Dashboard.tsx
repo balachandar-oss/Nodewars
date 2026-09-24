@@ -155,6 +155,11 @@ const Dashboard = () => {
             </div>
           </span>
           <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Systems {completedCount} / 4</span>
+          {completedCount >= 4 && (
+            <button onClick={() => navigate('/quiz')} className="clay-button px-5 py-2 text-xs font-bold">
+              Enter Quiz
+            </button>
+          )}
         </div>
       </div>
 

@@ -4,10 +4,6 @@ import Dashboard from './pages/Dashboard';
 import Lab from './pages/Lab';
 import Showcase from './pages/Showcase';
 import Quiz from './pages/Quiz';
-import Leaderboard from './pages/Leaderboard';
-import BugArchitect from './pages/BugArchitect';
-import BothCastles from './pages/BothCastles';
-import Hunt from './pages/Hunt';
 import AdminCastle from './pages/AdminCastle';
 import InstructorMode from './pages/InstructorMode';
 import AdminDashboard from './pages/AdminDashboard';
@@ -30,10 +26,6 @@ function App() {
             <Route path="/lab/:missionId" element={<Lab />} />
             <Route path="/showcase" element={<Showcase />} />
             <Route path="/quiz" element={<Quiz />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/bug-architect" element={<BugArchitect />} />
-            <Route path="/both-castles" element={<BothCastles />} />
-            <Route path="/hunt" element={<Hunt />} />
             <Route path="/admin/castle" element={<AdminCastle />} />
             <Route path="/instructor" element={<InstructorMode />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

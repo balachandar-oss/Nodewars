@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import { authenticate } from '../middleware/auth';
 import prisma from '../utils/prisma';
 
@@ -61,6 +61,12 @@ router.post('/start', authenticate, async (req: any, res) => {
       return res.status(403).json({ error: `Quiz Locked. Complete all missions first.` });
     }
 
+    // 1b. The quiz only runs during the admin-controlled synchronized session.
+    const session = await prisma.gameState.findUnique({ where: { id: 'singleton' } });
+    if (session?.phase !== 'QUIZ_ACTIVE' && req.user?.role !== 'ADMIN') {
+      return res.status(403).json({ error: session?.phase === 'QUIZ_ENDED' ? 'The quiz has already ended.' : 'The quiz has not started yet. Wait for your admin to begin it.' });
+    }
+
     // 2. Check for existing attempt
     let attempt = await prisma.quizAttempt.findUnique({
       where: { userId: req.user.id },
@@ -69,12 +75,13 @@ router.post('/start', authenticate, async (req: any, res) => {
           include: {
             question: {
               select: {
-                id: true,
-                question: true,
-                options: true,
-                points: true,
-                difficulty: true
-              }
+                  id: true,
+                  question: true,
+                  options: true,
+                  points: true,
+                  difficulty: true,
+                  type: true
+                }
             }
           },
           orderBy: { order: 'asc' }
@@ -104,9 +111,8 @@ router.post('/start', authenticate, async (req: any, res) => {
       where: { missionId: { in: coreMissionIds } }
     });
 
-    // Shuffle and pick 20
-    const shuffled = allQuestions.sort(() => 0.5 - Math.random());
-    const selectedQuestions = shuffled.slice(0, 20);
+    // Shuffle - all questions in the pool are used (curated to ~12 for the rapid quiz)
+    const selectedQuestions = allQuestions.sort(() => 0.5 - Math.random());
 
     // Create the attempt in a transaction
     attempt = await prisma.$transaction(async (tx) => {
@@ -139,7 +145,8 @@ router.post('/start', authenticate, async (req: any, res) => {
                   question: true,
                   options: true,
                   points: true,
-                  difficulty: true
+                  difficulty: true,
+                  type: true
                 }
               }
             },
@@ -255,4 +262,41 @@ router.get('/eligibility', authenticate, async (req: any, res) => {
   }
 });
 
+// GET /api/quiz/team-results - which team (PRINCE or PRINCESS) is winning/won, plus top 10 per team
+router.get('/team-results', authenticate, async (req: any, res) => {
+  try {
+    const { LeaderboardService } = await import('../services/LeaderboardService');
+    const rankings = await LeaderboardService.getRankings();
+
+    const teams: Record<string, { total: number; top10: any[] }> = {
+      PRINCE: { total: 0, top10: [] },
+      PRINCESS: { total: 0, top10: [] }
+    };
+
+    for (const entry of rankings) {
+      const teamName = entry.teamName;
+      if (!teams[teamName]) continue;
+      teams[teamName].total += entry.score;
+      if (entry.teamRank <= 10) {
+        teams[teamName].top10.push({
+          username: entry.username,
+          score: entry.score,
+          percentage: entry.percentage,
+          teamRank: entry.teamRank
+        });
+      }
+    }
+
+    let winner: string | 'TIE' = 'TIE';
+    if (teams.PRINCE.total > teams.PRINCESS.total) winner = 'PRINCE';
+    else if (teams.PRINCESS.total > teams.PRINCE.total) winner = 'PRINCESS';
+
+    res.json({ winner, teams });
+  } catch (error) {
+    console.error('Failed to get team results', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;
+
