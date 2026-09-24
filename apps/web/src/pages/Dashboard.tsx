@@ -104,9 +104,11 @@ const Dashboard = () => {
     );
   }
 
-  const nextLevelXp = user.level * 200;
+  const totalPossibleXp = missions.reduce((sum, m) => sum + (m.xpReward || 0), 0) || user.level * 200;
+  const nextLevelXp = totalPossibleXp;
   const xpProgress = (user.xp / nextLevelXp) * 100;
   const completedCount = missions.filter(m => m.status === 'COMPLETE').length;
+  const isMaxLevel = missions.length > 0 && completedCount >= missions.length;
 
   // Helpers for Castle Blueprint
   const getMissionVisualState = (order: number): SystemVisualState => {
@@ -147,7 +149,9 @@ const Dashboard = () => {
         </div>
         <div className="flex items-center gap-6 flex-wrap">
           <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Team {user.team?.name || 'Unassigned'}</span>
-          <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Level {user.level}</span>
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            {isMaxLevel ? 'MAX LEVEL' : `Level ${user.level}`}
+          </span>
           <span className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
             XP {user.xp} / {nextLevelXp}
             <div className="w-24 h-2 rounded-full clay-inset overflow-hidden">

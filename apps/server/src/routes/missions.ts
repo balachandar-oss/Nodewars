@@ -245,15 +245,19 @@ router.post('/:id/run', authenticate, async (req: AuthRequest, res) => {
         const user = await tx.user.findUnique({ where: { id: userId } });
         if (user) {
           const newXp = user.xp + mission.xpReward;
-          // Calculate new level (Level up every 200 XP for now, based on dashboard logic)
-          const newLevel = Math.floor(newXp / 200) + 1; 
+          const newMissionsCompleted = user.missionsCompleted + 1;
+          // Level up once per mission completed (there are only 4 missions, so
+          // this always reaches a real "maxed out" state) rather than an
+          // arbitrary XP-per-200 bucket, which left students stuck just short
+          // of the next level after finishing everything.
+          const newLevel = newMissionsCompleted + 1;
 
           await tx.user.update({
             where: { id: userId },
             data: {
               xp: newXp,
               level: newLevel,
-              missionsCompleted: user.missionsCompleted + 1
+              missionsCompleted: newMissionsCompleted
             }
           });
         }
