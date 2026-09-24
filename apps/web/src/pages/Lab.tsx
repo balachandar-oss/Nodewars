@@ -521,6 +521,7 @@ const Lab = () => {
                          executionErrors={evaluation?.errors ?? []}
                          hasRun={!!evaluation}
                          systemName={identity.systemName}
+                         onNext={() => setPhase('COMPLETE')}
                        />
                      </div>
                   </div>

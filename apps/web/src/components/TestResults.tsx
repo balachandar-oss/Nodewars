@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, X, AlertTriangle, Play, ChevronDown, ChevronRight, Code } from 'lucide-react';
+import { Check, X, AlertTriangle, Play, ChevronDown, ChevronRight, Code, ArrowRight } from 'lucide-react';
 import type { FailureGuidance, SuccessGuidance } from '@node-wars/shared';
 
 interface CheckResult {
@@ -20,6 +20,7 @@ interface TestResultsProps {
   hasRun?: boolean;
   executionErrors?: string[];
   systemName?: string;
+  onNext?: () => void;
 }
 
 const TestResults: React.FC<TestResultsProps> = ({
@@ -32,7 +33,8 @@ const TestResults: React.FC<TestResultsProps> = ({
   isEvaluating,
   hasRun,
   executionErrors = [],
-  systemName
+  systemName,
+  onNext
 }) => {
   const [showRaw, setShowRaw] = useState(false);
 
@@ -124,11 +126,21 @@ const TestResults: React.FC<TestResultsProps> = ({
           <div className="animate-slide-in space-y-6">
 
             {/* Header */}
-            <div className="pb-4 text-xs" style={{ borderBottom: '1px solid var(--border-color)', color: success ? 'var(--accent-sky)' : 'var(--accent-rose)' }}>
-              <div className="text-lg font-display font-bold mb-1">
-                {success ? 'Nice work, all checks passed' : 'Not quite there yet'}
+            <div className="pb-4 text-xs flex items-center justify-between gap-4" style={{ borderBottom: '1px solid var(--border-color)', color: success ? 'var(--accent-sky)' : 'var(--accent-rose)' }}>
+              <div>
+                <div className="text-lg font-display font-bold mb-1">
+                  {success ? 'Nice work, all checks passed' : 'Not quite there yet'}
+                </div>
+                <div>{score} / {total} checks passed</div>
               </div>
-              <div>{score} / {total} checks passed</div>
+              {success && onNext && (
+                <button
+                  onClick={onNext}
+                  className="clay-button px-5 py-2.5 text-xs font-bold flex items-center gap-2 shrink-0"
+                >
+                  Next <ArrowRight size={14} />
+                </button>
+              )}
             </div>
 
             {/* FAILED CHECKS */}
