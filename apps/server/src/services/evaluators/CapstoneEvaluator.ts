@@ -17,8 +17,10 @@ export class CapstoneEvaluator implements MissionEvaluator {
       message: hasModuleExports ? 'Module correctly exports the lever.' : 'Missing module.exports = ... for the lever.'
     });
 
-    // Check 2: PACKAGE - an NPM-style (non-relative) require
-    const hasPackageImport = /(const|let|var)\s+\w+\s*=\s*require\s*\(\s*['"](?!\.\.?\/)([^'"]+)['"]\s*\)/.test(strippedCode);
+    // Check 2: PACKAGE - an NPM-style (non-relative) require, excluding
+    // "events" since that's the built-in module already used by the starter
+    // code for the event-wiring check, not something the student added.
+    const hasPackageImport = /(const|let|var)\s+\w+\s*=\s*require\s*\(\s*['"](?!\.\.?\/)(?!events['"])([^'"]+)['"]\s*\)/.test(strippedCode);
     checks.push({
       id: 'package_import',
       label: 'Package: NPM capability imported',
