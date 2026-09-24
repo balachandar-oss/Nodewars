@@ -191,7 +191,22 @@ async function main() {
       create: m,
     });
   }
-  
+
+  // Remove stale missions from older mission ID schemes (e.g. mission-05..08)
+  // and their dependent rows, so this stays idempotent across restructures.
+  const currentMissionIds = missions.map(m => m.id);
+  const staleMissions = await prisma.mission.findMany({
+    where: { id: { notIn: currentMissionIds } },
+    select: { id: true },
+  });
+  if (staleMissions.length > 0) {
+    const staleIds = staleMissions.map(m => m.id);
+    console.log(`Removing stale missions: ${staleIds.join(', ')}`);
+    await prisma.submission.deleteMany({ where: { missionId: { in: staleIds } } });
+    await prisma.missionProgress.deleteMany({ where: { missionId: { in: staleIds } } });
+    await prisma.mission.deleteMany({ where: { id: { in: staleIds } } });
+  }
+
   // Create progress entries for demo player
   for (const m of missions) {
     await prisma.missionProgress.upsert({
