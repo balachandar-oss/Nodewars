@@ -494,6 +494,12 @@ const Lab = () => {
                       overviewRulerLanes: 0,
                       hideCursorInOverviewRuler: true,
                       scrollbar: { vertical: 'hidden' },
+                      // Enter must always insert a newline, never silently accept
+                      // an open autocomplete suggestion instead - that was
+                      // collapsing students' multi-line code onto one line
+                      // whenever they pressed Enter with a suggestion popup open.
+                      acceptSuggestionOnEnter: 'off',
+                      wordWrap: 'on',
                     }}
                   />
                 </div>
