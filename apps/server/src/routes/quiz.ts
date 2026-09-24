@@ -262,29 +262,28 @@ router.get('/eligibility', authenticate, async (req: any, res) => {
   }
 });
 
-// GET /api/quiz/team-results - which team (PRINCE or PRINCESS) is winning/won, plus top 10 per team
+// GET /api/quiz/team-results - which team (PRINCE or PRINCESS) is winning/won,
+// with every student's score (ranked by score, then by who submitted first)
 router.get('/team-results', authenticate, async (req: any, res) => {
   try {
     const { LeaderboardService } = await import('../services/LeaderboardService');
     const rankings = await LeaderboardService.getRankings();
 
-    const teams: Record<string, { total: number; top10: any[] }> = {
-      PRINCE: { total: 0, top10: [] },
-      PRINCESS: { total: 0, top10: [] }
+    const teams: Record<string, { total: number; students: any[] }> = {
+      PRINCE: { total: 0, students: [] },
+      PRINCESS: { total: 0, students: [] }
     };
 
     for (const entry of rankings) {
       const teamName = entry.teamName;
       if (!teams[teamName]) continue;
       teams[teamName].total += entry.score;
-      if (entry.teamRank <= 10) {
-        teams[teamName].top10.push({
-          username: entry.username,
-          score: entry.score,
-          percentage: entry.percentage,
-          teamRank: entry.teamRank
-        });
-      }
+      teams[teamName].students.push({
+        username: entry.username,
+        score: entry.score,
+        percentage: entry.percentage,
+        teamRank: entry.teamRank
+      });
     }
 
     let winner: string | 'TIE' = 'TIE';

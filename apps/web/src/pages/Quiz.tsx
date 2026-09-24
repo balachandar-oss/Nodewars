@@ -24,7 +24,7 @@ interface SessionState {
 
 interface TeamResult {
   total: number;
-  top10: Array<{ username: string; score: number; percentage: number; teamRank: number }>;
+  students: Array<{ username: string; score: number; percentage: number; teamRank: number }>;
 }
 
 interface TeamResults {
@@ -147,6 +147,27 @@ const Quiz = () => {
     }
   }, [answers, attempt]);
 
+  // Anti-cheat: if a student leaves this tab/window while actively taking
+  // the quiz (e.g. to search something in another tab), their quiz ends
+  // immediately via auto-submit, exactly like running out of time.
+  useEffect(() => {
+    if (!attempt || submittedRef.current) return;
+
+    const handleLeave = () => {
+      if (document.hidden && !submittedRef.current) {
+        handleSubmit();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleLeave);
+    window.addEventListener('blur', handleLeave);
+    return () => {
+      document.removeEventListener('visibilitychange', handleLeave);
+      window.removeEventListener('blur', handleLeave);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attempt]);
+
   // Poll session state until active, then poll for results after submit/end
   useEffect(() => {
     let cancelled = false;
@@ -171,7 +192,8 @@ const Quiz = () => {
       if (state.phase === 'QUIZ_ACTIVE' && !attempt && !submittedRef.current) {
         await startAttempt();
       }
-      if (state.phase === 'QUIZ_ENDED') {
+      if (submittedRef.current) {
+        // Live leaderboard updates while waiting for everyone else to finish.
         await fetchResults();
       }
     };
@@ -218,52 +240,53 @@ const Quiz = () => {
     );
   }
 
-  // RESULTS SCREEN - once the session has ended (or this student has submitted and the session ended while waiting)
-  if (results) {
-    const winner = results.winner;
-    const winnerLabel = winner === 'TIE' ? "IT'S A TIE" : `${winner} TEAM WINS`;
+  // LIVE LEADERBOARD - shown from the moment this student submits, updating
+  // as other students finish, until the admin ends the quiz for everyone.
+  if (submitted) {
+    const ended = session?.phase === 'QUIZ_ENDED';
+    const winner = results?.winner;
+
     return (
       <div className="max-w-5xl mx-auto mt-8 animate-slide-in pb-10">
         <div className="clay-panel p-10 flex flex-col items-center text-center mb-8">
-          <Crown size={64} style={{ color: 'var(--accent-gold)' }} className="mb-4" />
-          <h1 className="text-3xl font-display font-bold mb-2 uppercase tracking-widest" style={{ color: 'var(--text-primary)' }}>
-            {winnerLabel}
-          </h1>
+          {ended ? (
+            <>
+              <Crown size={64} style={{ color: 'var(--accent-gold)' }} className="mb-4" />
+              <h1 className="text-3xl font-display font-bold mb-2 uppercase tracking-widest" style={{ color: 'var(--text-primary)' }}>
+                {winner === 'TIE' ? "IT'S A TIE" : `${winner} TEAM WINS`}
+              </h1>
+            </>
+          ) : (
+            <>
+              <ShieldCheck size={64} style={{ color: 'var(--accent-mint)' }} className="mb-4" />
+              <h1 className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Quiz submitted</h1>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Live standings - updating as everyone finishes.</p>
+            </>
+          )}
           <div className="flex gap-8 mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <div>PRINCE total: <span className="font-bold" style={{ color: 'var(--accent-purple)' }}>{results.teams.PRINCE.total}</span></div>
-            <div>PRINCESS total: <span className="font-bold" style={{ color: 'var(--accent-purple)' }}>{results.teams.PRINCESS.total}</span></div>
+            <div>PRINCE total: <span className="font-bold" style={{ color: 'var(--accent-purple)' }}>{results?.teams.PRINCE.total ?? 0}</span></div>
+            <div>PRINCESS total: <span className="font-bold" style={{ color: 'var(--accent-purple)' }}>{results?.teams.PRINCESS.total ?? 0}</span></div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {(['PRINCE', 'PRINCESS'] as const).map(team => (
             <div key={team} className="clay-panel p-6">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--accent-gold)' }}>{team} — Top 10</h3>
-              <div className="space-y-2">
-                {results.teams[team].top10.map(p => (
+              <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--accent-gold)' }}>{team}</h3>
+              <div className="space-y-2 max-h-[28rem] overflow-y-auto custom-scrollbar pr-1">
+                {(results?.teams[team].students || []).map(p => (
                   <div key={p.username} className="flex justify-between items-center clay-inset px-3 py-2 rounded-lg text-xs">
                     <span style={{ color: 'var(--text-primary)' }}>#{p.teamRank} {p.username}</span>
                     <span style={{ color: 'var(--accent-mint)' }}>{p.score} pts</span>
                   </div>
                 ))}
-                {results.teams[team].top10.length === 0 && (
+                {(!results || results.teams[team].students.length === 0) && (
                   <div className="text-xs" style={{ color: 'var(--text-muted)' }}>No completed attempts yet.</div>
                 )}
               </div>
             </div>
           ))}
         </div>
-      </div>
-    );
-  }
-
-  // SUBMITTED - waiting for everyone else / for the admin to end the quiz
-  if (submitted) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-center">
-        <ShieldCheck size={64} style={{ color: 'var(--accent-mint)' }} className="mb-4" />
-        <h2 className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Quiz submitted</h2>
-        <p style={{ color: 'var(--text-secondary)' }}>Waiting for the quiz to end for everyone before showing results...</p>
       </div>
     );
   }

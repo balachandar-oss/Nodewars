@@ -15,7 +15,7 @@ interface WaitingRoom {
 
 interface TeamResult {
   total: number;
-  top10: Array<{ username: string; score: number; percentage: number; teamRank: number }>;
+  students: Array<{ username: string; score: number; percentage: number; teamRank: number }>;
 }
 
 interface TeamResults {
@@ -223,19 +223,19 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* Top 10 per team */}
+      {/* All students per team */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {(['PRINCE', 'PRINCESS'] as const).map(team => (
           <div key={team} className="clay-panel p-6">
-            <div className="text-xs font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>{team} — Top 10</div>
-            <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
-              {(results?.teams[team].top10 || []).map(p => (
+            <div className="text-xs font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>{team}</div>
+            <div className="space-y-2 max-h-[32rem] overflow-y-auto custom-scrollbar">
+              {(results?.teams[team].students || []).map(p => (
                 <div key={p.username} className="flex items-center justify-between text-sm p-2 rounded-xl clay-inset">
                   <span style={{ color: 'var(--text-primary)' }}>#{p.teamRank} {p.username}</span>
                   <span className="font-bold" style={{ color: 'var(--accent-mint)' }}>{p.score}</span>
                 </div>
               ))}
-              {(!results || results.teams[team].top10.length === 0) && (
+              {(!results || results.teams[team].students.length === 0) && (
                 <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>No completed attempts yet</div>
               )}
             </div>
