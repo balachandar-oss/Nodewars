@@ -92,6 +92,27 @@ const AdminDashboard = () => {
     }
   };
 
+  const startAgain = async () => {
+    if (!confirm('Clear all quiz attempts and start the quiz over from the waiting room?')) return;
+    setIsBusy(true);
+    setError('');
+    try {
+      await fetch(`${API_URL}/api/quiz-session/reset`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/quiz-session/start`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        setSession(await res.json());
+        setResults(null);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || 'Failed to start quiz again');
+      }
+    } catch {
+      setError('Network error');
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
   const phase = session?.phase || 'QUIZ_WAITING';
   const phaseLabel = phase === 'QUIZ_WAITING' ? 'Waiting room' : phase === 'QUIZ_ACTIVE' ? 'Quiz active' : 'Quiz ended';
   const phaseChip = phase === 'QUIZ_WAITING' ? 'chip-gold' : phase === 'QUIZ_ACTIVE' ? 'chip-mint' : 'chip-rose';
@@ -123,13 +144,18 @@ const AdminDashboard = () => {
 
           <div className="flex gap-3 flex-wrap">
             {phase === 'QUIZ_WAITING' && (
-              <button onClick={() => call('start')} disabled={isBusy} className="clay-button px-4 py-2 text-sm flex items-center gap-2">
+              <button onClick={() => call('start', 'Start the quiz now? This begins the 10-minute timer for everyone waiting.')} disabled={isBusy} className="clay-button px-4 py-2 text-sm flex items-center gap-2">
                 <Play size={14} /> Start quiz (10 min)
               </button>
             )}
             {phase === 'QUIZ_ACTIVE' && (
               <button onClick={() => call('end', 'End the quiz now for everyone?')} disabled={isBusy} className="clay-button-secondary px-4 py-2 text-sm flex items-center gap-2" style={{ color: '#c14d72' }}>
                 <Square size={14} /> End quiz now
+              </button>
+            )}
+            {phase === 'QUIZ_ENDED' && (
+              <button onClick={startAgain} disabled={isBusy} className="clay-button px-4 py-2 text-sm flex items-center gap-2">
+                <RotateCcw size={14} /> Start again
               </button>
             )}
             {phase !== 'QUIZ_WAITING' && (
