@@ -129,6 +129,12 @@ const Quiz = () => {
     } catch {
       // ignore
     }
+
+    // Only fetch results after the submit request has actually completed -
+    // fetching earlier (e.g. reactively off the `submitted` state, which
+    // flips true before this await resolves) could show a stale snapshot
+    // from before this student's own score was saved.
+    await fetchResults();
   };
 
   // Persist in-progress answers locally so a reload mid-quiz doesn't lose them
@@ -178,12 +184,6 @@ const Quiz = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Also poll for results right after the student submits, in case others are still finishing
-  useEffect(() => {
-    if (submitted) fetchResults();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [submitted]);
 
   // Local countdown driven off the server's endTime
   useEffect(() => {
