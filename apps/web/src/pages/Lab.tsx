@@ -12,6 +12,7 @@ import TeachingLayer from '../components/TeachingLayer';
 import PostMissionDebrief from '../components/PostMissionDebrief';
 import NarrativeBriefing from '../components/NarrativeBriefing';
 import BountyInteract from '../components/BountyInteract';
+import BountyPanel from '../components/BountyPanel';
 import { teachingRegistry } from '@node-wars/shared';
 import { getMissionIdentity } from '../utils/missionIdentity';
 import { getSystemVisualState } from '../utils/systemState';
@@ -278,8 +279,9 @@ const Lab = () => {
       {(phase === 'INTERACT' || phase === 'CODE' || phase === 'COMPLETE') && (
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 min-h-0 glass-panel overflow-hidden">
 
-          {/* LEFT COLUMN: MISSION CONTROL */}
-          <div className="lg:col-span-3 flex flex-col relative overflow-hidden min-h-0" style={{ borderRight: '1px solid var(--border-color)' }}>
+          {/* LEFT COLUMN: MISSION CONTROL (Only in INTERACT) */}
+          {phase === 'INTERACT' && (
+            <div className="lg:col-span-3 flex flex-col relative overflow-hidden min-h-0" style={{ borderRight: '1px solid var(--border-color)' }}>
             <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isFinalMission ? 'rgba(232, 184, 75, 0.06)' : 'rgba(124, 111, 224, 0.06)' }}>
               <div className="flex items-center gap-2 mb-2">
                 <identity.icon size={16} style={{ color: accentColor }} />
@@ -373,8 +375,9 @@ const Lab = () => {
                    <BookOpen size={12} /> Review lesson
                  </button>
               </div>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* CENTER & RIGHT CONTENT AREA */}
           {phase === 'INTERACT' ? (
@@ -383,8 +386,35 @@ const Lab = () => {
             </div>
           ) : (
             <>
-              {/* CENTER COLUMN: CODE WORKBENCH */}
-              <div className="lg:col-span-6 flex flex-col relative min-h-0" style={{ borderRight: '1px solid var(--border-color)' }}>
+              {/* LEFT COLUMN (CODE PHASE): BOUNTY + CASTLE */}
+              <div className="lg:col-span-4 flex flex-col relative min-h-0" style={{ borderRight: '1px solid var(--border-color)' }}>
+                 <div className="shrink-0 min-h-0">
+                   <BountyPanel missionId={mission.id} isCompleted={progress?.status === 'COMPLETE'} />
+                 </div>
+                 
+                 {/* Castle State */}
+                 <div className="flex-[1.5] min-h-0 shrink-0 p-4 flex flex-col" style={{ borderTop: '1px solid var(--border-color)' }}>
+                    <div className="text-xs font-semibold mb-4 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                      Castle State
+                    </div>
+                    <div className="flex-1 w-full relative min-h-0">
+                      <CastlePreview
+                        componentName={mission.unlockComponent}
+                        missionOrder={mission.order}
+                        isUnlocked={progress?.status === 'COMPLETE'}
+                      />
+                    </div>
+                 </div>
+
+                 {showMonitor && (
+                   <div className="h-48 min-h-0 shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
+                     <CastleEventFeed isConnected={isConnected} events={events} />
+                   </div>
+                 )}
+              </div>
+
+              {/* RIGHT COLUMN (CODE PHASE): MONACO + TERMINAL + TEST RESULTS */}
+              <div className="lg:col-span-8 flex flex-col relative min-h-0">
                 <div className="flex items-center justify-between p-3" style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <div className="flex items-center gap-3">
                     <TerminalIcon size={14} style={{ color: accentColor }} />
@@ -403,10 +433,17 @@ const Lab = () => {
                     >
                       <RotateCcw size={10} /> Reset
                     </button>
+                    <button
+                      onClick={() => setPhase('INTERACT')}
+                      className="flex items-center gap-1.5 text-[11px] transition-colors"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                       Back to Briefing
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex-1 relative p-2 min-h-0" style={{ backgroundColor: '#1e1c2e' }}>
+                <div className="flex-[2] relative p-2 min-h-0" style={{ backgroundColor: '#1e1c2e' }}>
                   <Editor
                     height="100%"
                     defaultLanguage="javascript"
@@ -427,7 +464,7 @@ const Lab = () => {
                 </div>
 
                 {/* Main Action Bar */}
-                <div className="p-4 flex justify-between items-center relative shrink-0 z-20" style={{ borderTop: '1px solid var(--border-color)' }}>
+                <div className="p-3 flex justify-between items-center relative shrink-0 z-20" style={{ borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
                   <div className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
                     <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-mint)' }}></span>
                     Ready to run
@@ -436,7 +473,7 @@ const Lab = () => {
                   <button
                     onClick={handleRun}
                     disabled={isEvaluating}
-                    className="clay-button px-8 py-3 font-bold flex items-center justify-center gap-3 text-xs w-full md:w-auto"
+                    className="clay-button px-8 py-2 font-bold flex items-center justify-center gap-3 text-xs w-full md:w-auto"
                   >
                     {isEvaluating ? (
                       <>
@@ -457,55 +494,32 @@ const Lab = () => {
                   </button>
                 </div>
 
-                {/* TERMINAL ATTACHED DIRECTLY BELOW */}
-                <div className="h-48 shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
-                  <div className="h-full w-full">
-                    <Terminal logs={logs} isEvaluating={isEvaluating} />
+                {/* BOTTOM SPLIT: TERMINAL | TEST RESULTS */}
+                <div className="flex-1 min-h-[250px] shrink-0 flex flex-row">
+                  <div className="flex-1 relative" style={{ borderRight: '1px solid var(--border-color)' }}>
+                    <div className="absolute inset-0">
+                      <Terminal logs={logs} isEvaluating={isEvaluating} />
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              {/* RIGHT COLUMN: CASTLE DIAGNOSTICS */}
-              <div className="lg:col-span-3 flex flex-col relative min-h-0">
-                {/* Castle Console */}
-                <div className="flex-[1.2] min-h-0 shrink-0 p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
-                   <div className="text-xs font-semibold mb-4 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                     Castle State
-                   </div>
-                   <div className="h-full w-full relative">
-                     <CastlePreview
-                       componentName={mission.unlockComponent}
-                       missionOrder={mission.order}
-                       isUnlocked={progress?.status === 'COMPLETE'}
-                     />
-                   </div>
-                </div>
-
-                {showMonitor && (
-                  <div className="h-48 min-h-0 shrink-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <CastleEventFeed isConnected={isConnected} events={events} />
+                  <div className="flex-1 relative bg-[var(--bg-primary)]">
+                     <div className="absolute inset-0 overflow-y-auto p-4 custom-scrollbar">
+                       <div className="text-xs font-semibold mb-4 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                         Security diagnostics
+                       </div>
+                       <TestResults
+                         checks={evaluation?.checks || []}
+                         score={evaluation?.score || 0}
+                         total={evaluation?.checks?.length || 0}
+                         success={evaluation?.success}
+                         failureGuidance={content?.failureGuidance}
+                         successGuidance={content?.successGuidance}
+                         isEvaluating={isEvaluating}
+                         executionErrors={evaluation?.errors ?? []}
+                         hasRun={!!evaluation}
+                         systemName={identity.systemName}
+                       />
+                     </div>
                   </div>
-                )}
-
-                {/* Test Results Console */}
-                <div className="flex-1 min-h-0 p-4">
-                   <div className="text-xs font-semibold mb-4 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                     Security diagnostics
-                   </div>
-                   <div className="h-full w-full">
-                     <TestResults
-                       checks={evaluation?.checks || []}
-                       score={evaluation?.score || 0}
-                       total={evaluation?.checks?.length || 0}
-                       success={evaluation?.success}
-                       failureGuidance={content?.failureGuidance}
-                       successGuidance={content?.successGuidance}
-                       isEvaluating={isEvaluating}
-                       executionErrors={evaluation?.errors ?? []}
-                       hasRun={!!evaluation}
-                       systemName={identity.systemName}
-                     />
-                   </div>
                 </div>
               </div>
             </>

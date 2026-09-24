@@ -15,7 +15,7 @@ vi.mock('@node-wars/shared', () => {
     teachingRegistry: {
       'mission-01': {
         missionId: 'mission-01',
-        title: 'FIRST SERVER',
+        title: 'NODE CORE',
         instructorGuide: {
           timeLabel: '10 minutes',
           durationMinutes: 10,
@@ -31,17 +31,17 @@ vi.mock('@node-wars/shared', () => {
       },
       'mission-02': {
         missionId: 'mission-02',
-        title: 'SMART DOOR',
+        title: 'NPM SUPPLY',
         instructorGuide: { durationMinutes: 15, teach: [] }
       },
       'mission-03': {
         missionId: 'mission-03',
-        title: 'SECURITY GATE',
+        title: 'EVENT SYSTEM',
         instructorGuide: { durationMinutes: 15, teach: [] }
       },
       'mission-04': {
         missionId: 'mission-04',
-        title: 'RESOURCE VAULT',
+        title: 'SIGNAL TOWER',
         instructorGuide: { durationMinutes: 15, teach: [] }
       },
       'mission-05': {
@@ -86,16 +86,16 @@ describe('InstructorMode', () => {
     expect(screen.queryByText('NODE LAB // INSTRUCTOR MODE')).not.toBeInTheDocument();
   });
 
-  it('D. All 7 InstructorGuides load (can navigate to them).', () => {
+  it('D. All 4 InstructorGuides load (can navigate to them).', () => {
     (useOutletContext as any).mockReturnValue({ user: { role: 'ADMIN' } });
     render(<InstructorMode />);
     
     // Check initial mission
-    expect(screen.getByText('FIRST SERVER')).toBeInTheDocument();
+    expect(screen.getByText('NODE CORE')).toBeInTheDocument();
     
     // Click Next
     fireEvent.click(screen.getByText('[ NEXT MISSION ]'));
-    expect(screen.getByText('SMART DOOR')).toBeInTheDocument();
+    expect(screen.getByText('NPM SUPPLY')).toBeInTheDocument();
 
     // Click Next until Mission 07
     fireEvent.click(screen.getByText('[ NEXT MISSION ]')); // 03
@@ -148,11 +148,11 @@ describe('InstructorMode', () => {
     
     expect(prevBtn).toBeDisabled(); // Disabled on first mission
     fireEvent.click(nextBtn);
-    expect(screen.getByText('SMART DOOR')).toBeInTheDocument();
+    expect(screen.getByText('NPM SUPPLY')).toBeInTheDocument();
     expect(prevBtn).not.toBeDisabled();
     
     fireEvent.click(prevBtn);
-    expect(screen.getByText('FIRST SERVER')).toBeInTheDocument();
+    expect(screen.getByText('NODE CORE')).toBeInTheDocument();
     expect(prevBtn).toBeDisabled();
   });
 

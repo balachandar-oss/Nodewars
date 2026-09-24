@@ -3,27 +3,24 @@ import { missionIdentities, getMissionIdentity } from './missionIdentity';
 import { teachingRegistry } from '@node-wars/shared';
 
 describe('Mission Identity', () => {
-  it('contains exactly 7 mission identities', () => {
+  it('contains exactly 4 mission identities', () => {
     const keys = Object.keys(missionIdentities);
-    expect(keys.length).toBe(7);
+    expect(keys.length).toBe(4);
   });
 
-  it('does not contain mission-08', () => {
-    expect(missionIdentities['mission-08']).toBeUndefined();
+  it('does not contain mission-05', () => {
+    expect(missionIdentities['mission-05']).toBeUndefined();
   });
 
-  it('maps missions 01-07 correctly', () => {
+  it('maps missions 01-04 correctly', () => {
     expect(getMissionIdentity('mission-01').systemName).toBe('NODE CORE');
-    expect(getMissionIdentity('mission-02').systemName).toBe('API GATEWAY');
-    expect(getMissionIdentity('mission-03').systemName).toBe('ACCESS CONTROL');
-    expect(getMissionIdentity('mission-04').systemName).toBe('RESOURCE VAULT');
-    expect(getMissionIdentity('mission-05').systemName).toBe('ASYNC ENGINE');
-    expect(getMissionIdentity('mission-06').systemName).toBe('EVENT MONITOR');
-    expect(getMissionIdentity('mission-07').systemName).toBe('SECURITY TEST RANGE');
+    expect(getMissionIdentity('mission-02').systemName).toBe('NPM SUPPLY');
+    expect(getMissionIdentity('mission-03').systemName).toBe('EVENT SYSTEM');
+    expect(getMissionIdentity('mission-04').systemName).toBe('SIGNAL TOWER');
   });
 
   it('ensures NarrativeContent.systemName aligns with MissionIdentity.systemName', () => {
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 4; i++) {
       const missionId = `mission-0${i}`;
       const identity = getMissionIdentity(missionId);
       const narrativeSystemName = teachingRegistry[missionId]?.narrative?.systemName;

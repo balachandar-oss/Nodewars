@@ -286,14 +286,17 @@ const Dashboard = () => {
                       @keyframes flow { to { stroke-dashoffset: -24; } }
                     `}
                   </style>
+                  {/* Decorative background grids */}
+                  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(124,111,224,0.05)" strokeWidth="1" />
+                  </pattern>
                 </defs>
 
-                {/* Outer Fortress Wall */}
-                <rect x="50" y="50" width="900" height="900" fill="rgba(124,111,224,0.03)" stroke="rgba(124,111,224,0.1)" strokeWidth="1" />
-                <rect x="70" y="70" width="860" height="860" fill="none" stroke="rgba(124,111,224,0.15)" strokeWidth="2" strokeDasharray="10 5" />
+                <rect width="1000" height="1000" fill="url(#grid)" />
 
-                {/* Inner Fortress Wall */}
-                <rect x="180" y="240" width="640" height="520" fill="rgba(124,111,224,0.03)" stroke="rgba(124,111,224,0.15)" strokeWidth="1" />
+                {/* Elegant structural spine */}
+                <line x1="500" y1="50" x2="500" y2="850" stroke="rgba(124,111,224,0.15)" strokeWidth="40" strokeLinecap="round" />
+                <line x1="500" y1="50" x2="500" y2="850" stroke="rgba(124,111,224,0.05)" strokeWidth="80" strokeLinecap="round" />
 
                 {/* Data Conduits (Paths) */}
                 <path d="M 500 800 L 500 600" className={getPathClass(1, 2)} />
@@ -302,6 +305,10 @@ const Dashboard = () => {
 
                 {/* Final Connection to Royal Crown */}
                 <path d="M 500 200 L 500 50" className={getPathClass(4, 5)} />
+
+                {/* Crown Node Placeholder */}
+                <circle cx="500" cy="50" r="30" fill="rgba(255, 215, 0, 0.1)" stroke="rgba(255, 215, 0, 0.5)" strokeWidth="2" strokeDasharray="4" />
+                <text x="500" y="55" fill="rgba(255, 215, 0, 0.7)" fontSize="14" textAnchor="middle" fontFamily="monospace" fontWeight="bold">ROYAL</text>
 
               </svg>
 

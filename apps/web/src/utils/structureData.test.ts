@@ -205,7 +205,7 @@ describe('structureData utilities', () => {
 
   describe('structureRegistry', () => {
     it('contains all 7 mission structures', () => {
-      expect(Object.keys(structureRegistry)).toHaveLength(7);
+      expect(Object.keys(structureRegistry)).toHaveLength(4);
     });
 
     it('maps missions correctly', () => {

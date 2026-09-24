@@ -180,7 +180,7 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
           className="clay-button flex-1 py-3 text-xs flex items-center justify-center gap-2"
         >
           {isFinalMission
-            ? 'Continue to the quiz'
+            ? 'Continue to Showcase'
             : `Next: ${nextMissionId ? getMissionIdentity(nextMissionId).systemName : 'Continue'}`} <ArrowRight size={14} />
         </button>
       </div>
