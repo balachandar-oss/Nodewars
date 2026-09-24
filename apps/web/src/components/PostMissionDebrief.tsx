@@ -37,7 +37,7 @@ const PullTheLever: React.FC<{ code: string }> = ({ code }) => {
       // Runs the student's own code, in their own browser tab - no different in
       // exposure than them opening devtools themselves. console.log is captured
       // so they can see exactly what their code printed.
-      const fn = new Function('require', 'module', 'console', code);
+      const fn = new Function('require', 'module', 'console', 'process', code);
       const fakeModule = { exports: {} };
       const fakeRequire = (name: string) => {
         if (name === 'events') return BrowserEventEmitter;
@@ -45,7 +45,11 @@ const PullTheLever: React.FC<{ code: string }> = ({ code }) => {
         // only the parts we can actually run safely in-browser matter here.
         return new Proxy(function () {}, { get: () => () => {}, apply: () => {} });
       };
-      fn(fakeRequire, fakeModule, fakeConsole);
+      // Node's process.env.PORT is never set in the browser, so this always
+      // hits the student's own fallback - which is exactly the behavior
+      // Mission 4 taught them to write, so it's the correct simulation.
+      const fakeProcess = { env: {} };
+      fn(fakeRequire, fakeModule, fakeConsole, fakeProcess);
       setGateOpen(true);
     } catch (err: any) {
       lines.push(`Error: ${err.message}`);
