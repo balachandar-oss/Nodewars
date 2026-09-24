@@ -3,7 +3,6 @@ import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { Play, CheckCircle, RotateCcw, Terminal as TerminalIcon, BookOpen } from 'lucide-react';
 import Terminal from '../components/Terminal';
-import CastlePreview from '../components/CastlePreview';
 import HintPanel from '../components/HintPanel';
 import TestResults from '../components/TestResults';
 import { useGameSocket } from '../hooks/useGameSocket';
@@ -401,22 +400,8 @@ const Lab = () => {
             <>
               {/* LEFT COLUMN (CODE PHASE): BOUNTY + CASTLE */}
               <div className="lg:col-span-4 flex flex-col relative min-h-0" style={{ borderRight: '1px solid var(--border-color)' }}>
-                 <div className="shrink-0 min-h-0">
+                 <div className="shrink-0 min-h-0 flex-1">
                    <BountyPanel missionId={mission.id} isCompleted={progress?.status === 'COMPLETE'} />
-                 </div>
-                 
-                 {/* Castle State */}
-                 <div className="flex-[1.5] min-h-0 shrink-0 p-4 flex flex-col" style={{ borderTop: '1px solid var(--border-color)' }}>
-                    <div className="text-xs font-semibold mb-4 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                      Castle State
-                    </div>
-                    <div className="flex-1 w-full relative min-h-0">
-                      <CastlePreview
-                        componentName={mission.unlockComponent}
-                        missionOrder={mission.order}
-                        isUnlocked={progress?.status === 'COMPLETE'}
-                      />
-                    </div>
                  </div>
 
                  {showMonitor && (
