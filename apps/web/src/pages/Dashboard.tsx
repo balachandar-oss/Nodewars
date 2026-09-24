@@ -126,10 +126,10 @@ const Dashboard = () => {
   };
 
   const positions = {
-    1: { left: '50%', top: '80%' },
-    2: { left: '50%', top: '60%' },
-    3: { left: '50%', top: '40%' },
-    4: { left: '50%', top: '20%' },
+    1: { left: '50%', top: '88%' },
+    2: { left: '50%', top: '63%' },
+    3: { left: '50%', top: '38%' },
+    4: { left: '50%', top: '13%' },
   };
 
   return (
@@ -389,9 +389,9 @@ const Dashboard = () => {
                     </button>
 
                     {/* Static Label below node */}
-                    <div className="mt-3 flex flex-col items-center text-center px-2 py-1 rounded-full glass-panel" style={{ color: nodeColor }}>
-                      <span className="opacity-80 text-[9px]">{mission.order.toString().padStart(2, '0')} &middot; {statusLabel}</span>
-                      <span className="text-[10px] font-semibold">{displaySystemName}</span>
+                    <div className="mt-2 flex flex-col items-center text-center px-2 py-0.5 rounded-full glass-panel whitespace-nowrap" style={{ color: nodeColor }}>
+                      <span className="opacity-80 text-[8px] leading-tight">{mission.order.toString().padStart(2, '0')} &middot; {statusLabel}</span>
+                      <span className="text-[9px] font-semibold leading-tight">{displaySystemName}</span>
                     </div>
                   </div>
                 );

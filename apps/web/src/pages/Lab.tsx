@@ -147,9 +147,9 @@ const Lab = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/missions/\${missionId}/run`, {
+      const res = await fetch(`${API_URL}/api/missions/${missionId}/run`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer \${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ code })
       });
 
@@ -173,7 +173,7 @@ const Lab = () => {
         setProgress((prev: any) => ({ ...prev, status: 'COMPLETE' }));
         setLogs(prev => [
           ...prev,
-          { type: 'success', message: `Mission \${mission.order} complete. +\${mission.xpReward} XP awarded.` }
+          { type: 'success', message: `Mission ${mission.order} complete. +${mission.xpReward} XP awarded.` }
         ]);
         window.dispatchEvent(new Event('user-progress-updated'));
         
@@ -205,7 +205,7 @@ const Lab = () => {
     }
     const next = allMissions.find(m => m.order === mission.order + 1);
     if (next) {
-      navigate(`/lab/\${next.id}`);
+      navigate(`/lab/${next.id}`);
     } else {
       navigate('/showcase');
     }
@@ -239,7 +239,7 @@ const Lab = () => {
   const visualState = getSystemVisualState(progress?.status || 'LOCKED', true);
 
   const getStatusText = () => {
-    if (visualState === 'COMPLETED') return `\${identity.systemName} online`;
+    if (visualState === 'COMPLETED') return `${identity.systemName} online`;
     switch (identity.missionId) {
       case 'mission-01': return 'Boot sequence';
       case 'mission-02': return 'Package layer';
@@ -341,7 +341,7 @@ const Lab = () => {
             <div className="flex-1 overflow-y-auto custom-scrollbar scroll-fade-bottom flex flex-col min-h-0 p-4 gap-6">
               <div data-testid="bounty-task">
                 <div className="text-xs font-semibold mb-3 pb-1" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)' }}>Mission Objective</div>
-                <p className="text-xs leading-relaxed mb-6 clay-inset p-3 rounded-xl" style={{ color: 'var(--text-primary)', borderLeft: `2px solid \${accentColor}` }}>
+                <p className="text-xs leading-relaxed mb-6 clay-inset p-3 rounded-xl" style={{ color: 'var(--text-primary)', borderLeft: `2px solid ${accentColor}` }}>
                   {content?.guidedTask?.task || mission.description}
                 </p>
 
@@ -368,7 +368,7 @@ const Lab = () => {
                       const isChecked = evaluation?.success === true;
                       return (
                         <li key={i} className="flex gap-3 text-xs items-center">
-                          <div className="w-4 h-4 rounded-md flex items-center justify-center shrink-0" style={{ border: `1px solid \${isChecked ? 'var(--accent-mint)' : 'var(--border-color)'}`, color: isChecked ? 'var(--accent-mint)' : 'transparent' }}>
+                          <div className="w-4 h-4 rounded-md flex items-center justify-center shrink-0" style={{ border: `1px solid ${isChecked ? 'var(--accent-mint)' : 'var(--border-color)'}`, color: isChecked ? 'var(--accent-mint)' : 'transparent' }}>
                             <CheckCircle size={10} />
                           </div>
                           <span className="leading-tight" style={{ color: isChecked ? 'var(--text-muted)' : 'var(--text-primary)' }}>{obj}</span>
