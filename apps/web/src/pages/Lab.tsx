@@ -486,6 +486,15 @@ const Lab = () => {
                     >
                        Back to Briefing
                     </button>
+                    {progress?.status === 'COMPLETE' && (
+                      <button
+                        onClick={() => setPhase('COMPLETE')}
+                        className="flex items-center gap-1.5 text-[11px] transition-colors"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                         View debrief
+                      </button>
+                    )}
                   </div>
                 </div>
 

@@ -160,12 +160,12 @@ const Dashboard = () => {
             </div>
           </span>
           <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Systems {completedCount} / 4</span>
-          {completedCount >= 4 && !capstoneComplete && (
-            <button onClick={() => navigate('/lab/capstone')} className="clay-button px-5 py-2 text-xs font-bold">
-              Build Game
+          {completedCount >= 4 && (
+            <button onClick={() => navigate('/lab/capstone')} className={capstoneComplete ? 'clay-button-secondary px-5 py-2 text-xs font-bold' : 'clay-button px-5 py-2 text-xs font-bold'}>
+              {capstoneComplete ? 'Review Build' : 'Build Game'}
             </button>
           )}
-          {completedCount >= 4 && capstoneComplete && (
+          {capstoneComplete && (
             <button onClick={() => navigate('/quiz')} className="clay-button px-5 py-2 text-xs font-bold">
               Enter Quiz
             </button>
