@@ -8,8 +8,8 @@ export class Mission02Evaluator implements MissionEvaluator {
 
     const strippedCode = code.replace(/\/\/.*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
 
-    // Check 1: require() used with a package (no ./)
-    const hasPackageImport = /(const|let|var)\s+\w+\s*=\s*require\s*\(\s*['"]([^.\/]['"]*)['"]\s*\)/.test(strippedCode);
+    // Check 1: require() used with a package (no ./ or ../ prefix)
+    const hasPackageImport = /(const|let|var)\s+\w+\s*=\s*require\s*\(\s*['"](?!\.\.?\/)([^'"]+)['"]\s*\)/.test(strippedCode);
     checks.push({
       id: 'import_package',
       label: 'Capability package imported',

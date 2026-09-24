@@ -32,7 +32,7 @@ interface TeamResults {
   teams: { PRINCE: TeamResult; PRINCESS: TeamResult };
 }
 
-const POLL_MS = 3000;
+const POLL_MS = 5000;
 
 const Quiz = () => {
   const navigate = useNavigate();
@@ -116,6 +116,13 @@ const Quiz = () => {
     let cancelled = false;
 
     const tick = async () => {
+      // Once the attempt is loaded and the student hasn't submitted, they're actively
+      // taking the quiz - the local countdown (driven off the server endTime already
+      // fetched) is authoritative, so there's no need to keep polling every few
+      // seconds for the whole 10-minute window. Resume polling once submitted, to
+      // detect QUIZ_ENDED and fetch results.
+      if (attempt && !submittedRef.current) return;
+
       const state = await fetchSessionState();
       if (cancelled || !state) return;
 
