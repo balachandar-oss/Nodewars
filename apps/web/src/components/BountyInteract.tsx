@@ -97,12 +97,35 @@ const BountyInteract: React.FC<BountyInteractProps> = ({ missionId, onOpenCode }
     </div>
   );
 
+  const knownMissionIds = ['mission-01', 'mission-02', 'mission-03', 'mission-04'];
+  const isKnownMission = knownMissionIds.includes(missionId);
+
+  const renderUnknownMission = () => (
+    <div className="flex flex-col items-center">
+      <div className="w-64 border-2 border-[var(--border-color)] bg-[var(--bg-secondary)] p-6 rounded-2xl flex flex-col items-center mb-8">
+        <ShieldAlert size={32} className="mb-4 text-white/50" />
+        <div className="text-sm font-bold tracking-widest text-white/50 mb-6 text-center">CASTLE SYSTEM</div>
+        {!interacted ? (
+          <button onClick={handleInteract} className="clay-button py-2 px-6 text-xs w-full">
+            [ INSPECT ]
+          </button>
+        ) : (
+          <div className="text-center w-full">
+            <div className="text-[10px] text-[var(--accent-red)] font-mono animate-pulse mb-1">FAULT DETECTED</div>
+            <div className="text-[10px] text-white/50 font-mono">SYSTEM OFFLINE</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col items-center justify-center h-full w-full max-w-xl mx-auto p-8 animate-fade-in">
       {missionId === 'mission-01' && renderMission1()}
       {missionId === 'mission-02' && renderMission2()}
       {missionId === 'mission-03' && renderMission3()}
       {missionId === 'mission-04' && renderMission4()}
+      {!isKnownMission && renderUnknownMission()}
 
       {bountyDetected && (
         <div className="w-full bg-black/40 border border-[var(--accent-gold)] rounded-xl p-6 shadow-2xl animate-slide-in relative overflow-hidden">
@@ -140,6 +163,13 @@ const BountyInteract: React.FC<BountyInteractProps> = ({ missionId, onOpenCode }
                  <div><span className="text-[10px] text-white/50 tracking-wider">TARGET:</span> <span className="text-xs ml-2 text-[var(--accent-purple)] font-bold">SIGNAL TOWER</span></div>
                  <div><span className="text-[10px] text-white/50 tracking-wider">SYMPTOM:</span> <span className="text-xs ml-2 text-[var(--accent-red)]">Application cannot become publicly reachable.</span></div>
                  <div><span className="text-[10px] text-white/50 tracking-wider">OBJECTIVE:</span> <span className="text-xs ml-2 text-[var(--accent-sky)]">Repair deployment configuration.</span></div>
+               </>
+             )}
+             {!isKnownMission && (
+               <>
+                 <div><span className="text-[10px] text-white/50 tracking-wider">TARGET:</span> <span className="text-xs ml-2 text-[var(--accent-purple)] font-bold">CASTLE SYSTEM</span></div>
+                 <div><span className="text-[10px] text-white/50 tracking-wider">SYMPTOM:</span> <span className="text-xs ml-2 text-[var(--accent-red)]">System not responding as expected.</span></div>
+                 <div><span className="text-[10px] text-white/50 tracking-wider">OBJECTIVE:</span> <span className="text-xs ml-2 text-[var(--accent-sky)]">Open the code editor to investigate.</span></div>
                </>
              )}
           </div>
