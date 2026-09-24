@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { Play, CheckCircle, RotateCcw, Terminal as TerminalIcon, BookOpen } from 'lucide-react';
@@ -279,7 +280,7 @@ const Lab = () => {
       )}
       
       {/* PHASE 5: COMPLETE / DEBRIEF */}
-      {phase === 'COMPLETE' && content && (
+      {phase === 'COMPLETE' && content && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-fade-in">
           <div className="w-full max-w-2xl max-h-[90vh] bg-[var(--bg-primary)] rounded-2xl shadow-2xl overflow-hidden border border-[var(--border-color)] flex flex-col">
             <PostMissionDebrief
@@ -290,7 +291,8 @@ const Lab = () => {
               nextMissionId={allMissions.find(m => m.order === mission.order + 1)?.id || ''}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* WORKSTATION GRID (Visible during INTERACT and CODE phases) */}
