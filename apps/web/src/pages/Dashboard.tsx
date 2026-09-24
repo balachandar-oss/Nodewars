@@ -128,10 +128,10 @@ const Dashboard = () => {
   };
 
   const positions = {
-    1: { left: '50%', top: '88%' },
-    2: { left: '50%', top: '63%' },
+    1: { left: '50%', top: '80%' },
+    2: { left: '50%', top: '59%' },
     3: { left: '50%', top: '38%' },
-    4: { left: '50%', top: '13%' },
+    4: { left: '50%', top: '17%' },
   };
 
   return (
@@ -379,8 +379,8 @@ const Dashboard = () => {
                     {/* Core Rings (only if core) */}
                     {isCore && (
                       <>
-                        <div className="absolute inset-[-20px] rounded-full animate-spin-slow opacity-40" style={{ border: `1px dashed ${nodeBorder}` }}></div>
-                        <div className="absolute inset-[-40px] rounded-full animate-reverse-spin opacity-25" style={{ border: `1px dotted ${nodeBorder}` }}></div>
+                        <div className="absolute inset-[-12px] rounded-full animate-spin-slow opacity-40" style={{ border: `1px dashed ${nodeBorder}` }}></div>
+                        <div className="absolute inset-[-24px] rounded-full animate-reverse-spin opacity-25" style={{ border: `1px dotted ${nodeBorder}` }}></div>
                       </>
                     )}
 
