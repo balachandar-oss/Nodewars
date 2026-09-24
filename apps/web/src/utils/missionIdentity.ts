@@ -6,7 +6,8 @@ import {
   GitMerge,
   Activity,
   Target,
-  Radio
+  Radio,
+  Gamepad2
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -22,35 +23,43 @@ export interface MissionIdentity {
 export const missionIdentities: Record<string, MissionIdentity> = {
   'mission-01': {
     missionId: 'mission-01',
-    systemName: 'NODE CORE',
-    shortName: 'NODE CORE',
+    systemName: 'IGNITION',
+    shortName: 'IGNITION',
     designation: '01',
     systemRole: 'Node.js + Modules',
     icon: Cpu
   },
   'mission-02': {
     missionId: 'mission-02',
-    systemName: 'NPM SUPPLY',
-    shortName: 'NPM SUPPLY',
+    systemName: 'SUPPLY RUN',
+    shortName: 'SUPPLY RUN',
     designation: '02',
     systemRole: 'NPM + Packages',
     icon: Network
   },
   'mission-03': {
     missionId: 'mission-03',
-    systemName: 'EVENT SYSTEM',
-    shortName: 'EVENT SYSTEM',
+    systemName: 'SPARK',
+    shortName: 'SPARK',
     designation: '03',
     systemRole: 'Events + EventEmitter',
     icon: Activity
   },
   'mission-04': {
     missionId: 'mission-04',
-    systemName: 'SIGNAL TOWER',
-    shortName: 'SIGNAL TOWER',
+    systemName: 'LAUNCH',
+    shortName: 'LAUNCH',
     designation: '04',
     systemRole: 'Deployment + Hosting',
     icon: Radio
+  },
+  'capstone': {
+    missionId: 'capstone',
+    systemName: 'THE BUILD',
+    shortName: 'THE BUILD',
+    designation: '05',
+    systemRole: 'Everything, combined',
+    icon: Gamepad2
   }
 };
 

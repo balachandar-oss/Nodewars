@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, CheckCircle, ArrowRight, XCircle, ShieldCheck } from 'lucide-react';
+import { BookOpen, CheckCircle, ArrowRight, XCircle, ShieldCheck, Zap, Terminal as TerminalIcon } from 'lucide-react';
 import type { MissionTeachingContent } from '@node-wars/shared';
 import { getMissionIdentity } from '../utils/missionIdentity';
 
@@ -9,14 +9,87 @@ interface PostMissionDebriefProps {
   onContinue: () => void;
   isFinalMission: boolean;
   nextMissionId?: string;
+  code?: string;
 }
+
+// Minimal browser-safe stand-in for Node's EventEmitter, just enough for
+// on()/emit() to work the same way the student already saw in Mission 3.
+class BrowserEventEmitter {
+  private listeners: Record<string, Array<(...args: any[]) => void>> = {};
+  on(event: string, handler: (...args: any[]) => void) {
+    (this.listeners[event] ||= []).push(handler);
+    return this;
+  }
+  emit(event: string, ...args: any[]) {
+    (this.listeners[event] || []).forEach(h => h(...args));
+    return this;
+  }
+}
+
+const PullTheLever: React.FC<{ code: string }> = ({ code }) => {
+  const [output, setOutput] = useState<string[] | null>(null);
+  const [gateOpen, setGateOpen] = useState(false);
+
+  const pullLever = () => {
+    const lines: string[] = [];
+    const fakeConsole = { log: (...args: any[]) => lines.push(args.map(String).join(' ')) };
+    try {
+      // Runs the student's own code, in their own browser tab - no different in
+      // exposure than them opening devtools themselves. console.log is captured
+      // so they can see exactly what their code printed.
+      const fn = new Function('require', 'module', 'console', code);
+      const fakeModule = { exports: {} };
+      const fakeRequire = (name: string) => {
+        if (name === 'events') return BrowserEventEmitter;
+        // Any other package (e.g. their NPM capability line) is stubbed out -
+        // only the parts we can actually run safely in-browser matter here.
+        return new Proxy(function () {}, { get: () => () => {}, apply: () => {} });
+      };
+      fn(fakeRequire, fakeModule, fakeConsole);
+      setGateOpen(true);
+    } catch (err: any) {
+      lines.push(`Error: ${err.message}`);
+      setGateOpen(false);
+    }
+    setOutput(lines);
+  };
+
+  return (
+    <div className="mb-6 clay-panel p-6 flex flex-col items-center text-center" style={{ borderColor: 'var(--accent-gold)' }}>
+      <Zap size={28} style={{ color: 'var(--accent-gold)' }} className="mb-3" />
+      <h3 className="text-sm font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--accent-gold)' }}>Pull the lever</h3>
+      <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>This runs the code you actually wrote, right now.</p>
+      <button onClick={pullLever} className="clay-button px-8 py-3 text-xs font-bold mb-4">
+        [ PULL THE LEVER ]
+      </button>
+      {output && (
+        <div className="w-full text-left">
+          <div className={`text-sm font-bold mb-2 ${gateOpen ? '' : 'opacity-80'}`} style={{ color: gateOpen ? 'var(--accent-mint)' : 'var(--accent-rose)' }}>
+            {gateOpen ? 'GATE OPENED' : 'Nothing happened'}
+          </div>
+          <div className="clay-inset p-3 rounded-xl">
+            <div className="flex items-center gap-2 text-[10px] mb-2" style={{ color: 'var(--text-muted)' }}>
+              <TerminalIcon size={10} /> Output
+            </div>
+            {output.length === 0 ? (
+              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>(no output)</div>
+            ) : output.map((line, i) => (
+              <div key={i} className="text-xs font-mono" style={{ color: 'var(--text-primary)' }}>{line}</div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
   content,
   onReviewLesson,
   onContinue,
   isFinalMission,
-  nextMissionId
+  nextMissionId,
+  code
 }) => {
   // Store selected answer index for each question index
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -34,6 +107,8 @@ const PostMissionDebrief: React.FC<PostMissionDebriefProps> = ({
           <ShieldCheck size={18} /> CASTLE ELEMENT RESTORED
         </div>
       </div>
+
+      {content.missionId === 'capstone' && code && <PullTheLever code={code} />}
 
       {content.narrative && (
         <div className="mb-6 rounded-2xl p-4" style={{ backgroundColor: 'rgba(111, 216, 168, 0.08)', border: '1px solid rgba(111, 216, 168, 0.3)' }}>

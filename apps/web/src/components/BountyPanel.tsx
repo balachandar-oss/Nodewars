@@ -41,6 +41,14 @@ const getBountyData = (missionId: string) => {
         symptom: 'Application cannot become publicly reachable.',
         objective: 'Repair deployment configuration.',
       };
+    case 'capstone':
+      return {
+        number: '05',
+        title: 'THE GATEHOUSE',
+        target: 'GATEHOUSE',
+        symptom: 'Every system works alone. Nothing has been combined yet.',
+        objective: 'Wire the module, package, event, and deployment port together.',
+      };
     default:
       return {
         number: '??',

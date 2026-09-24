@@ -55,10 +55,22 @@ router.post('/start', authenticate, async (req: any, res) => {
         })
       : null;
 
-    const isUnlocked = !lastCoreMission || (lastCoreProgress && lastCoreProgress.status === 'COMPLETE');
+    const coreDone = !lastCoreMission || (lastCoreProgress && lastCoreProgress.status === 'COMPLETE');
+
+    // 1a. The capstone (combining all four concepts) must also be completed
+    // before the quiz unlocks, if it exists.
+    const capstoneMission = await prisma.mission.findUnique({ where: { id: 'capstone' } });
+    const capstoneProgress = capstoneMission
+      ? await prisma.missionProgress.findUnique({
+          where: { userId_missionId: { userId: req.user.id, missionId: 'capstone' } }
+        })
+      : null;
+    const capstoneDone = !capstoneMission || capstoneProgress?.status === 'COMPLETE';
+
+    const isUnlocked = coreDone && capstoneDone;
 
     if (!isUnlocked && req.user?.role !== 'DEMO' && req.user?.role !== 'ADMIN' && req.user?.role !== 'INSTRUCTOR') {
-      return res.status(403).json({ error: `Quiz Locked. Complete all missions first.` });
+      return res.status(403).json({ error: coreDone ? 'Quiz Locked. Complete The Build first.' : 'Quiz Locked. Complete all missions first.' });
     }
 
     // 1b. The quiz only runs during the admin-controlled synchronized session.

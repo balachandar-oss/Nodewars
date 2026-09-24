@@ -111,7 +111,7 @@ export interface MissionTeachingContent {
 export const teachingRegistry: Record<string, MissionTeachingContent> = {
   'mission-01': {
     missionId: 'mission-01',
-    title: 'NODE CORE',
+    title: 'IGNITION',
     briefing: 'The castle\'s core is broken. A critical element is offline due to a missing connection. We must establish the connection using Node\'s module system.',
     learningObjectives: [
       { id: 'm1-obj1', description: 'Understand what a Node.js module is' },
@@ -195,14 +195,14 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
     ],
     narrative: {
       act: 'ACT I — AWAKEN',
-      systemName: 'NODE CORE',
+      systemName: 'IGNITION',
       threatStatus: 'The castle\'s Node core is offline.',
       objective: 'Repair the core by linking the broken modules.',
       systemConnection: 'Modules are the fundamental building blocks of the entire castle infrastructure.',
       successMessage: 'NODE CORE ONLINE',
       systemStatus: 'The castle modules are communicating.',
       nextThreat: 'The core is awake, but it lacks advanced capabilities.',
-      nextObjective: 'NEXT SYSTEM: NPM SUPPLY'
+      nextObjective: 'NEXT SYSTEM: SUPPLY RUN'
     },
     instructorGuide: {
       timeLabel: '15 minutes',
@@ -223,7 +223,7 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
   },
   'mission-02': {
     missionId: 'mission-02',
-    title: 'NPM SUPPLY',
+    title: 'SUPPLY RUN',
     briefing: 'The castle needs a specific capability to function, but we do not have the code for it. We must supply the missing capability using NPM (Node Package Manager).',
     learningObjectives: [
       { id: 'm2-obj1', description: 'Understand NPM and package.json' },
@@ -308,14 +308,14 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
     ],
     narrative: {
       act: 'ACT II — SUPPLY',
-      systemName: 'NPM SUPPLY',
+      systemName: 'SUPPLY RUN',
       threatStatus: 'The core is alive, but a critical component is missing external dependencies.',
       objective: 'Supply the missing capability through NPM.',
       systemConnection: 'The modules we built now rely on external capabilities to function fully.',
       successMessage: 'CAPABILITY SUPPLIED',
       systemStatus: 'The castle is now utilizing external packages.',
       nextThreat: 'The components are built and supplied, but they do not communicate in real-time.',
-      nextObjective: 'NEXT SYSTEM: EVENT SYSTEM'
+      nextObjective: 'NEXT SYSTEM: SPARK'
     },
     instructorGuide: {
       timeLabel: '15 minutes',
@@ -337,7 +337,7 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
   },
   'mission-03': {
     missionId: 'mission-03',
-    title: 'EVENT SYSTEM',
+    title: 'SPARK',
     briefing: 'The castle\'s circuits are dead. The Lever is pulled, but the Gate does not respond. We must repair the circuit using the Node.js Event system.',
     learningObjectives: [
       { id: 'm3-obj1', description: 'Explain what an event is and event-driven programming' },
@@ -423,14 +423,14 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
     ],
     narrative: {
       act: 'ACT III — CONNECT',
-      systemName: 'EVENT SYSTEM',
+      systemName: 'SPARK',
       threatStatus: 'The systems are built, but they are isolated and dead.',
       objective: 'Connect the castle elements using events.',
       systemConnection: 'Events allow isolated modules to communicate seamlessly in real time.',
       successMessage: 'CIRCUIT REPAIRED',
       systemStatus: 'Castle elements are now communicating dynamically.',
       nextThreat: 'The castle works internally, but no one on the outside can reach it.',
-      nextObjective: 'NEXT SYSTEM: SIGNAL TOWER'
+      nextObjective: 'NEXT SYSTEM: LAUNCH'
     },
     instructorGuide: {
       timeLabel: '20 minutes',
@@ -451,7 +451,7 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
   },
   'mission-04': {
     missionId: 'mission-04',
-    title: 'SIGNAL TOWER',
+    title: 'LAUNCH',
     briefing: 'The castle works perfectly on your local machine, but it is isolated. We must take it online by fixing its deployment configuration so others can reach it.',
     learningObjectives: [
       { id: 'm4-obj1', description: 'Understand deployment and hosting' },
@@ -540,14 +540,14 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
     ],
     narrative: {
       act: 'ACT IV — DEPLOY',
-      systemName: 'SIGNAL TOWER',
+      systemName: 'LAUNCH',
       threatStatus: 'The castle is isolated from the outside world.',
       objective: 'Configure the deployment settings to take the castle online.',
       systemConnection: 'The final step is to make all our connected systems publicly accessible.',
       successMessage: 'CASTLE ONLINE',
       systemStatus: 'The Signal Tower is broadcasting. The castle is deployed.',
       nextThreat: 'THE SYSTEM WILL NOW BE TESTED.',
-      nextObjective: 'NEXT PHASE: SHOWCASE'
+      nextObjective: 'NEXT: THE BUILD'
     },
     instructorGuide: {
       timeLabel: '15 minutes',
@@ -564,6 +564,59 @@ export const teachingRegistry: Record<string, MissionTeachingContent> = {
       letStudentsCode: 'Allow students to fix the deployment configuration.',
       debrief: 'Explain how these standard conventions apply across almost all hosting providers (Render, Heroku, etc.).',
       transition: 'The castle is fully operational and online. It is time for the final showcase.'
+    }
+  },
+  'capstone': {
+    missionId: 'capstone',
+    title: 'THE BUILD',
+    briefing: 'You have all four systems working on their own: a module, a package, an event, and a deployment config. Now combine all four in one build - the Gatehouse - and pull the lever yourself to see it work.',
+    learningObjectives: [
+      { id: 'cap-obj1', description: 'Combine a local module, an NPM package, an event connection, and a deployment port in one file' },
+      { id: 'cap-obj2', description: 'See your own code run and produce a real result' }
+    ],
+    concepts: [
+      {
+        id: 'cap-c1',
+        title: 'Everything You Built, Combined',
+        explanation: 'A local module (require("./file")), an NPM package (require("package")), an event connection (on()/emit()), and a deployment port (process.env.PORT) rarely work alone - real applications combine all four in the same file. The Gatehouse needs all four wired correctly before the lever will work.',
+        visualFlow: ['MODULE', 'PACKAGE', 'EVENT', 'PORT', 'GATEHOUSE ONLINE'],
+        keyTakeaway: 'These four mechanisms are the real foundation of almost every Node.js application, including multiplayer games.'
+      }
+    ],
+    guidedTask: {
+      task: 'Build the Gatehouse: wire together a module, a package, an event, and a deployment port in one file.',
+      requirements: [
+        'Export the lever object with module.exports.',
+        'Require an NPM capability package.',
+        'Listen for "lever_pulled" and emit it.',
+        'Read the port from process.env.PORT with a 3000 fallback.'
+      ],
+      successCondition: 'All four systems are wired correctly - then you can pull the lever yourself.'
+    },
+    progressiveHints: [
+      { label: 'CONCEPT', text: 'This is exactly the same four things you already did in missions 1 through 4 - just in one file this time.' },
+      { label: 'DIRECTION', text: 'Work through it top to bottom: export, require, on()/emit(), then process.env.PORT.' },
+      { label: 'PARTIAL SOLUTION', text: 'module.exports = lever; then const capability = require("chalk"); then gate.on(...)/gate.emit(...); then const PORT = process.env.PORT || 3000;' },
+      { label: 'STRONG GUIDANCE', text: 'Check each of the four TODOs one at a time - the checklist tells you exactly which one is still missing.' }
+    ],
+    failureGuidance: {
+      whyItMatters: 'If any one of the four pieces is missing, the Gatehouse can\'t fully come online - just like a real app needs all its parts working together.',
+      thinkAbout: 'Which of the four systems (module, package, event, port) is still showing as missing below?'
+    },
+    successGuidance: {
+      whatYouDid: 'You combined everything from the whole lab - modules, packages, events, and deployment - into one working build.',
+      whyItWorks: 'Every one of these four mechanisms is a real, load-bearing part of how Node.js applications (including multiplayer games) are actually built.'
+    },
+    narrative: {
+      act: 'FINAL BUILD',
+      systemName: 'THE BUILD',
+      threatStatus: 'Every system works alone. Nothing has been combined yet.',
+      objective: 'Wire all four systems together in the Gatehouse.',
+      systemConnection: 'This is what a real application looks like - modules, packages, events, and deployment, all in one place.',
+      successMessage: 'GATEHOUSE ONLINE',
+      systemStatus: 'All four systems are online and wired together.',
+      nextThreat: '',
+      nextObjective: 'NEXT: THE ROYAL TRIAL'
     }
   }
 };

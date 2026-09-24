@@ -120,7 +120,7 @@ async function main() {
   const missions = [
     {
       id: 'mission-01',
-      title: 'NODE CORE',
+      title: 'IGNITION',
       description: 'The castle\'s core is broken. A critical element is offline due to a missing connection. We must establish the connection using Node\'s module system.',
       order: 1,
       difficulty: 'EASY',
@@ -136,7 +136,7 @@ async function main() {
     },
     {
       id: 'mission-02',
-      title: 'NPM SUPPLY',
+      title: 'SUPPLY RUN',
       description: 'The castle needs a specific capability to function, but we do not have the code for it. We must supply the missing capability using NPM.',
       order: 2,
       difficulty: 'EASY',
@@ -152,7 +152,7 @@ async function main() {
     },
     {
       id: 'mission-03',
-      title: 'EVENT SYSTEM',
+      title: 'SPARK',
       description: 'The castle\'s circuits are dead. The Lever is pulled, but the Gate does not respond. We must repair the circuit using the Node.js Event system.',
       order: 3,
       difficulty: 'EASY',
@@ -168,7 +168,7 @@ async function main() {
     },
     {
       id: 'mission-04',
-      title: 'SIGNAL TOWER',
+      title: 'LAUNCH',
       description: 'The castle works perfectly on your local machine, but it is isolated. We must take it online by fixing its deployment configuration so others can reach it.',
       order: 4,
       difficulty: 'EASY',
@@ -181,6 +181,22 @@ async function main() {
       prerequisites: JSON.stringify(['mission-03']),
       unlockComponent: 'SIGNAL TOWER',
       isBonus: false
+    },
+    {
+      id: 'capstone',
+      title: 'THE BUILD',
+      description: 'Combine everything from the whole lab - a module, an NPM package, an event connection, and a deployment port - into one working build, then pull the lever yourself.',
+      order: 5,
+      difficulty: 'MEDIUM',
+      xpReward: 150,
+      concepts: JSON.stringify(['Modules', 'NPM', 'Events', 'Deployment', 'Combining it all together']),
+      objectives: JSON.stringify(['Export a module', 'Require an NPM package', 'Wire an event with on()/emit()', 'Read process.env.PORT with a fallback']),
+      instructions: 'Wire together everything you have learned into the Gatehouse, then pull the lever.',
+      starterCode: '// GATEHOUSE — bring every system online\n\n// 1. MODULE: export this file\'s lever object\nconst lever = { state: "ready" };\n// TODO 1: export the lever\n\n\n// 2. PACKAGE: bring in an NPM capability\n// TODO 2: require a capability package\n\n\n// 3. EVENT: wire the lever to the gate\nconst EventEmitter = require("events");\nconst gate = new EventEmitter();\n// TODO 3: listen for "lever_pulled" and log a message\n\n\n// 4. DEPLOY: read the port so this can go live\n// TODO 4: read PORT from process.env with a 3000 fallback\n\n\n// Pull the lever!\ngate.emit("lever_pulled");\n',
+      hints: JSON.stringify(['module.exports = lever;', 'const capability = require("chalk");', 'gate.on("lever_pulled", () => console.log("Gate opening!"));', 'const PORT = process.env.PORT || 3000;']),
+      prerequisites: JSON.stringify(['mission-04']),
+      unlockComponent: 'GATEHOUSE',
+      isBonus: true
     }
   ];
 

@@ -318,6 +318,7 @@ const Lab = () => {
               onContinue={handleContinue}
               isFinalMission={allMissions.length > 0 && mission.order >= allMissions[allMissions.length - 1].order}
               nextMissionId={allMissions.find(m => m.order === mission.order + 1)?.id || ''}
+              code={code}
             />
           </div>
         </div>,
