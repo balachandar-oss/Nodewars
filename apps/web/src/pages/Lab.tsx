@@ -96,9 +96,15 @@ const Lab = () => {
           const hasViewedNarrative = sessionStorage.getItem(`node-lab-narrative-viewed-${missionId}`);
           const hasViewedLesson = sessionStorage.getItem(`node-lab-lesson-viewed-${missionId}`);
           
+          const hasContent = !!teachingRegistry[missionId];
+
           if (progressData.status === 'COMPLETE') {
              // If already complete, skip directly to CODE for review
              setPhase('CODE');
+          } else if (!hasContent) {
+             // No teaching content for this mission ID (e.g. stale/unseeded data) - never
+             // get stuck on a briefing/lesson screen that can't render.
+             setPhase('INTERACT');
           } else if (!hasViewedNarrative) {
              setPhase('BRIEFING');
           } else if (!hasViewedLesson) {
