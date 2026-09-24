@@ -279,7 +279,7 @@ const Lab = () => {
 
   if (!mission) {
     return (
-      <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 p-6 max-w-[1920px] mx-auto animate-fade-in">
+      <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 -mb-6 p-6 max-w-[1920px] mx-auto animate-fade-in">
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
           <div className="lg:col-span-3 flex flex-col gap-3">
             <div className="skeleton h-24"></div>
@@ -323,7 +323,7 @@ const Lab = () => {
   const accentColor = isMission7 ? 'var(--accent-gold)' : 'var(--accent-purple)';
 
   return (
-    <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 p-6 max-w-[1920px] mx-auto z-10 relative animate-slide-in">
+    <div className="flex flex-col h-[calc(100vh-60px)] -mt-6 -mb-6 p-6 max-w-[1920px] mx-auto z-10 relative animate-slide-in">
 
       {showNarrativeBriefing && content && (
         <NarrativeBriefing
@@ -551,11 +551,11 @@ const Lab = () => {
         <div className="lg:col-span-3 flex flex-col relative min-h-0">
 
           {/* Castle Console */}
-          <div className="flex-[1.2] min-h-0 shrink-0 p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+          <div className="flex-[1.2] min-h-0 shrink-0 p-4 overflow-y-auto custom-scrollbar" style={{ borderBottom: '1px solid var(--border-color)' }}>
              <div className="text-xs font-semibold mb-4" style={{ color: 'var(--text-muted)' }}>
                Infrastructure
              </div>
-             <div className="h-full w-full relative">
+             <div className="h-full w-full relative clay-inset rounded-2xl">
                <CastlePreview
                  componentName={mission.unlockComponent}
                  missionOrder={mission.order}
@@ -571,7 +571,7 @@ const Lab = () => {
           )}
 
           {/* Test Results Console */}
-          <div className="flex-1 min-h-0 p-4">
+          <div className="flex-1 min-h-0 p-4 overflow-y-auto custom-scrollbar">
              <div className="text-xs font-semibold mb-4" style={{ color: 'var(--text-muted)' }}>
                Security diagnostics
              </div>
