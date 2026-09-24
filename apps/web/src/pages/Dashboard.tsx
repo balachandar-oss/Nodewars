@@ -110,6 +110,9 @@ const Dashboard = () => {
   const completedCount = missions.filter(m => m.status === 'COMPLETE').length;
   const isMaxLevel = missions.length > 0 && completedCount >= missions.length;
   const capstoneComplete = user.progress?.find(p => p.missionId === 'capstone')?.status === 'COMPLETE';
+  // Organizer/demo roles skip actually completing missions, so give them
+  // direct access to the capstone and quiz for testing regardless of progress.
+  const isPrivilegedRole = user.role === 'DEMO' || user.role === 'ADMIN' || user.role === 'INSTRUCTOR';
 
   // Helpers for Castle Blueprint
   const getMissionVisualState = (order: number): SystemVisualState => {
@@ -160,12 +163,12 @@ const Dashboard = () => {
             </div>
           </span>
           <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Systems {completedCount} / 4</span>
-          {completedCount >= 4 && (
+          {(completedCount >= 4 || isPrivilegedRole) && (
             <button onClick={() => navigate('/lab/capstone')} className={capstoneComplete ? 'clay-button-secondary px-5 py-2 text-xs font-bold' : 'clay-button px-5 py-2 text-xs font-bold'}>
               {capstoneComplete ? 'Review Build' : 'Build Game'}
             </button>
           )}
-          {capstoneComplete && (
+          {(capstoneComplete || isPrivilegedRole) && (
             <button onClick={() => navigate('/quiz')} className="clay-button px-5 py-2 text-xs font-bold">
               Enter Quiz
             </button>
