@@ -13,7 +13,7 @@ interface Question {
 interface Attempt {
   attemptId: string;
   isCompleted: boolean;
-  questions: Array<{ question: Question }>;
+  questions: Array<{ question: Question; submittedAnswer?: string | null }>;
 }
 
 interface SessionState {
@@ -78,6 +78,21 @@ const Quiz = () => {
         setSubmitted(true);
       } else {
         setAttempt(data);
+        // The backend only persists answers on final submit, so mid-quiz
+        // progress (before submitting) is restored from localStorage instead -
+        // otherwise a reload during the quiz would silently discard everything
+        // the student had already picked.
+        const restored: Record<string, string> = {};
+        data.questions.forEach((q: any) => {
+          if (q.submittedAnswer) restored[q.question.id] = q.submittedAnswer;
+        });
+        try {
+          const saved = localStorage.getItem(`quiz-answers-${data.attemptId}`);
+          if (saved) Object.assign(restored, JSON.parse(saved));
+        } catch {
+          // ignore corrupt local data
+        }
+        if (Object.keys(restored).length > 0) setAnswers(restored);
       }
     } catch {
       setError('Connection error');
@@ -109,7 +124,22 @@ const Quiz = () => {
     } catch {
       // best-effort - the 10 minute deadline is server-authoritative regardless
     }
+    try {
+      localStorage.removeItem(`quiz-answers-${attempt.attemptId}`);
+    } catch {
+      // ignore
+    }
   };
+
+  // Persist in-progress answers locally so a reload mid-quiz doesn't lose them
+  useEffect(() => {
+    if (!attempt || submittedRef.current || Object.keys(answers).length === 0) return;
+    try {
+      localStorage.setItem(`quiz-answers-${attempt.attemptId}`, JSON.stringify(answers));
+    } catch {
+      // ignore - non-critical
+    }
+  }, [answers, attempt]);
 
   // Poll session state until active, then poll for results after submit/end
   useEffect(() => {

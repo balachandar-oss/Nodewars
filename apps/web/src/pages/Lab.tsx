@@ -89,7 +89,17 @@ const Lab = () => {
           setMission(missionData);
           setProgress(progressData);
           const solvedCode = isInstructorRole ? INSTRUCTOR_SOLUTIONS[missionId] : undefined;
-          setCode(solvedCode || missionData.starterCode);
+          // Restore any in-progress (not yet passing) code from a previous
+          // session on this mission, so a reload doesn't wipe unsaved work.
+          let savedCode: string | null = null;
+          if (!solvedCode) {
+            try {
+              savedCode = localStorage.getItem(`node-lab-code-${missionId}`);
+            } catch {
+              // ignore
+            }
+          }
+          setCode(solvedCode || savedCode || missionData.starterCode);
           setLogs([{ type: 'info', message: 'Mission loaded. Your environment is ready.' }]);
           setEvaluation(null);
 
@@ -130,6 +140,16 @@ const Lab = () => {
 
     fetchMission();
   }, [missionId, navigate, isDemoRole, isInstructorRole]);
+
+  // Persist in-progress code locally so a reload doesn't lose unsaved work
+  useEffect(() => {
+    if (!missionId || !code) return;
+    try {
+      localStorage.setItem(`node-lab-code-${missionId}`, code);
+    } catch {
+      // ignore - non-critical
+    }
+  }, [missionId, code]);
 
   const handleEnterMission = () => {
     if (missionId) sessionStorage.setItem(`node-lab-narrative-viewed-${missionId}`, 'true');
@@ -182,7 +202,12 @@ const Lab = () => {
           { type: 'success', message: `Mission ${mission.order} complete. +${mission.xpReward} XP awarded.` }
         ]);
         window.dispatchEvent(new Event('user-progress-updated'));
-        
+        try {
+          localStorage.removeItem(`node-lab-code-${missionId}`);
+        } catch {
+          // ignore
+        }
+
         // Move to complete phase after a short delay for celebration
         setTimeout(() => setPhase('COMPLETE'), 2000);
       }
