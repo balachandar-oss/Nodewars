@@ -281,11 +281,13 @@ router.get('/team-results', authenticate, async (req: any, res) => {
   try {
     if (req.user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin privileges required' });
 
-    // Every team member appears here, even if they never started or
+    // Every real team member appears here, even if they never started or
     // completed the quiz - those default to a score of 0 rather than being
     // left out entirely, so the admin sees the full roster either way.
+    // Synthetic seed/demo accounts (not real students) are excluded.
+    const SEED_ACCOUNT_USERNAMES = ['demo_player', 'seminar_demo', 'bug_architect_omega', 'bug_architect_beta'];
     const users = await prisma.user.findMany({
-      where: { teamId: { not: null } },
+      where: { teamId: { not: null }, username: { notIn: SEED_ACCOUNT_USERNAMES } },
       include: { team: true, quizAttempts: true }
     });
 
