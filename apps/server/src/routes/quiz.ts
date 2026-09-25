@@ -275,9 +275,11 @@ router.get('/eligibility', authenticate, async (req: any, res) => {
 });
 
 // GET /api/quiz/team-results - which team (PRINCE or PRINCESS) is winning/won,
-// with every student's score (ranked by score, then by who submitted first)
+// with every student's score (ranked by score, then by who submitted first).
+// Admin-only - students never see scores or the team leaderboard.
 router.get('/team-results', authenticate, async (req: any, res) => {
   try {
+    if (req.user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin privileges required' });
     const { LeaderboardService } = await import('../services/LeaderboardService');
     const rankings = await LeaderboardService.getRankings();
 

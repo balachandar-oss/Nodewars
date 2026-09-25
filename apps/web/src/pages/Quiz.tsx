@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, ShieldCheck, Clock, Code, BookOpen, Crown } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Clock, Code, BookOpen } from 'lucide-react';
 import { API_URL } from '../utils/api';
 
 interface Question {
@@ -22,16 +22,6 @@ interface SessionState {
   endTime: string | null;
 }
 
-interface TeamResult {
-  total: number;
-  students: Array<{ username: string; score: number; percentage: number; teamRank: number }>;
-}
-
-interface TeamResults {
-  winner: 'PRINCE' | 'PRINCESS' | 'TIE';
-  teams: { PRINCE: TeamResult; PRINCESS: TeamResult };
-}
-
 const POLL_MS = 5000;
 
 const Quiz = () => {
@@ -42,7 +32,6 @@ const Quiz = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
-  const [results, setResults] = useState<TeamResults | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const submittedRef = useRef(false);
@@ -99,15 +88,6 @@ const Quiz = () => {
     }
   };
 
-  const fetchResults = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/quiz/team-results`, { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setResults(await res.json());
-    } catch {
-      // ignore, will retry on next poll
-    }
-  };
-
   const handleSubmit = async () => {
     if (!attempt || submittedRef.current) return;
     submittedRef.current = true;
@@ -129,12 +109,6 @@ const Quiz = () => {
     } catch {
       // ignore
     }
-
-    // Only fetch results after the submit request has actually completed -
-    // fetching earlier (e.g. reactively off the `submitted` state, which
-    // flips true before this await resolves) could show a stale snapshot
-    // from before this student's own score was saved.
-    await fetchResults();
   };
 
   // Persist in-progress answers locally so a reload mid-quiz doesn't lose them
@@ -168,17 +142,15 @@ const Quiz = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attempt]);
 
-  // Poll session state until active, then poll for results after submit/end
+  // Poll session state only while waiting for the quiz to start
   useEffect(() => {
     let cancelled = false;
 
     const tick = async () => {
-      // Once the attempt is loaded and the student hasn't submitted, they're actively
-      // taking the quiz - the local countdown (driven off the server endTime already
-      // fetched) is authoritative, so there's no need to keep polling every few
-      // seconds for the whole 20-minute window. Resume polling once submitted, to
-      // detect QUIZ_ENDED and fetch results.
-      if (attempt && !submittedRef.current) return;
+      // Once submitted (or actively taking the quiz), there's nothing left for
+      // this student to see - no score or leaderboard is ever shown to
+      // students, so there's no reason to keep polling after that point.
+      if (submittedRef.current || attempt) return;
 
       const state = await fetchSessionState();
       if (cancelled || !state) return;
@@ -191,10 +163,6 @@ const Quiz = () => {
       }
       if (state.phase === 'QUIZ_ACTIVE' && !attempt && !submittedRef.current) {
         await startAttempt();
-      }
-      if (submittedRef.current) {
-        // Live leaderboard updates while waiting for everyone else to finish.
-        await fetchResults();
       }
     };
 
@@ -240,53 +208,14 @@ const Quiz = () => {
     );
   }
 
-  // LIVE LEADERBOARD - shown from the moment this student submits, updating
-  // as other students finish, until the admin ends the quiz for everyone.
+  // SUBMITTED - students never see their own score or any leaderboard. Only
+  // the admin dashboard shows scores and the team winner.
   if (submitted) {
-    const ended = session?.phase === 'QUIZ_ENDED';
-    const winner = results?.winner;
-
     return (
-      <div className="max-w-5xl mx-auto mt-8 animate-slide-in pb-10">
-        <div className="clay-panel p-10 flex flex-col items-center text-center mb-8">
-          {ended ? (
-            <>
-              <Crown size={64} style={{ color: 'var(--accent-gold)' }} className="mb-4" />
-              <h1 className="text-3xl font-display font-bold mb-2 uppercase tracking-widest" style={{ color: 'var(--text-primary)' }}>
-                {winner === 'TIE' ? "IT'S A TIE" : `${winner} TEAM WINS`}
-              </h1>
-            </>
-          ) : (
-            <>
-              <ShieldCheck size={64} style={{ color: 'var(--accent-mint)' }} className="mb-4" />
-              <h1 className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Quiz submitted</h1>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Live standings - updating as everyone finishes.</p>
-            </>
-          )}
-          <div className="flex gap-8 mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <div>PRINCE total: <span className="font-bold" style={{ color: 'var(--accent-purple)' }}>{results?.teams.PRINCE.total ?? 0}</span></div>
-            <div>PRINCESS total: <span className="font-bold" style={{ color: 'var(--accent-purple)' }}>{results?.teams.PRINCESS.total ?? 0}</span></div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {(['PRINCE', 'PRINCESS'] as const).map(team => (
-            <div key={team} className="clay-panel p-6">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--accent-gold)' }}>{team}</h3>
-              <div className="space-y-2 max-h-[28rem] overflow-y-auto custom-scrollbar pr-1">
-                {(results?.teams[team].students || []).map(p => (
-                  <div key={p.username} className="flex justify-between items-center clay-inset px-3 py-2 rounded-lg text-xs">
-                    <span style={{ color: 'var(--text-primary)' }}>#{p.teamRank} {p.username}</span>
-                    <span style={{ color: 'var(--accent-mint)' }}>{p.score} pts</span>
-                  </div>
-                ))}
-                {(!results || results.teams[team].students.length === 0) && (
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>No completed attempts yet.</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <ShieldCheck size={64} style={{ color: 'var(--accent-mint)' }} className="mb-4" />
+        <h2 className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Quiz submitted</h2>
+        <p style={{ color: 'var(--text-secondary)' }}>Thanks for playing - results will be announced by your instructor.</p>
       </div>
     );
   }
@@ -310,7 +239,7 @@ const Quiz = () => {
       <div className="flex flex-col items-center justify-center h-full text-center">
         <ShieldAlert size={64} style={{ color: 'var(--accent-rose)' }} className="mb-4" />
         <h2 className="text-2xl font-display font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Quiz has ended</h2>
-        <p style={{ color: 'var(--text-secondary)' }}>Loading results...</p>
+        <p style={{ color: 'var(--text-secondary)' }}>Results will be announced by your instructor.</p>
       </div>
     );
   }
