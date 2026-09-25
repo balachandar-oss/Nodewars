@@ -487,6 +487,15 @@ const Lab = () => {
                     theme="vs-dark"
                     value={code}
                     onChange={(val) => setCode(val || '')}
+                    onMount={(editor) => {
+                      // Students must type their own code - block paste (keyboard,
+                      // right-click menu, or drag-drop all land here) by immediately
+                      // undoing any change Monaco flags as a paste.
+                      editor.onDidPaste(() => {
+                        editor.trigger('source', 'undo', null);
+                        setLogs(prev => [...prev, { type: 'error', message: 'Pasting is disabled here - please type your code.' }]);
+                      });
+                    }}
                     options={{
                       minimap: { enabled: false },
                       fontSize: 14,
