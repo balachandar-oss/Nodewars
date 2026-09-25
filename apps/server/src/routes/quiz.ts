@@ -280,24 +280,37 @@ router.get('/eligibility', authenticate, async (req: any, res) => {
 router.get('/team-results', authenticate, async (req: any, res) => {
   try {
     if (req.user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin privileges required' });
-    const { LeaderboardService } = await import('../services/LeaderboardService');
-    const rankings = await LeaderboardService.getRankings();
+
+    // Every team member appears here, even if they never started or
+    // completed the quiz - those default to a score of 0 rather than being
+    // left out entirely, so the admin sees the full roster either way.
+    const users = await prisma.user.findMany({
+      where: { teamId: { not: null } },
+      include: { team: true, quizAttempts: true }
+    });
 
     const teams: Record<string, { total: number; students: any[] }> = {
       PRINCE: { total: 0, students: [] },
       PRINCESS: { total: 0, students: [] }
     };
 
-    for (const entry of rankings) {
-      const teamName = entry.teamName;
-      if (!teams[teamName]) continue;
-      teams[teamName].total += entry.score;
+    for (const user of users) {
+      const teamName = user.team?.name;
+      if (!teamName || !teams[teamName]) continue;
+      const attempt = user.quizAttempts.find(a => a.isCompleted);
+      const score = attempt?.score || 0;
+      teams[teamName].total += score;
       teams[teamName].students.push({
-        username: entry.username,
-        score: entry.score,
-        percentage: entry.percentage,
-        teamRank: entry.teamRank
+        username: user.username,
+        score,
+        percentage: attempt?.percentage || 0,
+        attempted: !!attempt
       });
+    }
+
+    for (const teamName of Object.keys(teams)) {
+      teams[teamName].students.sort((a, b) => b.score - a.score);
+      teams[teamName].students.forEach((s, i) => { s.teamRank = i + 1; });
     }
 
     let winner: string | 'TIE' = 'TIE';

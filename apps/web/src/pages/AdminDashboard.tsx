@@ -246,7 +246,7 @@ const AdminDashboard = () => {
                     </div>
                   ))}
                   {(!results || results.teams[team].students.length === 0) && (
-                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>No completed attempts yet</div>
+                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>No students assigned to this team yet</div>
                   )}
                 </div>
               </div>
