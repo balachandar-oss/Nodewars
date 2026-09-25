@@ -488,13 +488,22 @@ const Lab = () => {
                     value={code}
                     onChange={(val) => setCode(val || '')}
                     onMount={(editor) => {
-                      // Students must type their own code - block paste (keyboard,
-                      // right-click menu, or drag-drop all land here) by immediately
-                      // undoing any change Monaco flags as a paste.
-                      editor.onDidPaste(() => {
-                        editor.trigger('source', 'undo', null);
+                      // Students must type their own code. Blocking at the DOM
+                      // paste-event level (capture phase) catches every source -
+                      // Ctrl+V, the right-click "Paste" menu, and drag-drop - before
+                      // Monaco's own editor logic ever sees the clipboard content.
+                      const domNode = editor.getDomNode();
+                      const blockPaste = (e: ClipboardEvent) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         setLogs(prev => [...prev, { type: 'error', message: 'Pasting is disabled here - please type your code.' }]);
-                      });
+                      };
+                      domNode?.addEventListener('paste', blockPaste, true);
+                      domNode?.addEventListener('drop', (e: DragEvent) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setLogs(prev => [...prev, { type: 'error', message: 'Dragging text in is disabled here - please type your code.' }]);
+                      }, true);
                     }}
                     options={{
                       minimap: { enabled: false },
