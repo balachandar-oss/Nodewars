@@ -250,155 +250,229 @@ async function main() {
     // Module 1: Node.js + Modules
     {
       missionId: 'mission-01',
-      type: 'THEORY',
-      question: 'What is the purpose of the `require()` function in Node.js?',
-      options: JSON.stringify([
-        'To delete a file from disk',
-        'To load and import a module or file into the current file',
-        'To create a new HTTP request',
-        'To compile JavaScript to binary'
-      ]),
-      correctAnswer: 'To load and import a module or file into the current file',
-      explanation: 'require() is used to load modules, built-in Node modules, or local files and makes their exports available.'
+      type: 'CODE',
+      question: '`// a.js\\nlet x = 5;\\nmodule.exports.x = x;\\nx = 10;\\n\\n// b.js\\nconst a = require("./a");\\nconsole.log(a.x);`\\nWhat does this log?',
+      options: JSON.stringify(['5', '10', 'undefined', 'ReferenceError']),
+      correctAnswer: '5',
+      explanation: 'The value of x (5) was copied onto module.exports.x at the moment of export. Reassigning x afterward does not change the already-exported copy.'
     },
     {
       missionId: 'mission-01',
       type: 'THEORY',
-      question: 'What does `module.exports` do in Node.js?',
+      question: 'If two different files both `require("./config")` in the same running app, how many times does config.js actually execute?',
+      options: JSON.stringify(['Twice - once per require() call', 'Once - the result is cached and reused on every later require()', 'Zero - only require.main executes files', 'It depends on file size']),
+      correctAnswer: 'Once - the result is cached and reused on every later require()',
+      explanation: 'Node caches modules by resolved file path. The second require() returns the cached exports object instead of re-running the file.'
+    },
+    {
+      missionId: 'mission-01',
+      type: 'THEORY',
+      question: 'Why does reassigning `exports = { foo: "bar" }` directly (instead of `module.exports = ...`) silently fail to export anything?',
       options: JSON.stringify([
-        'It imports external libraries',
-        'It exports code from the current module so other files can require() it',
-        'It creates a new module file',
-        'It establishes an HTTP connection'
+        'exports is just a local variable pointing at module.exports - reassigning it breaks that link, while module.exports (what require() actually returns) is untouched',
+        'exports is read-only and throws an error',
+        'There is no difference; both work identically',
+        'exports only works inside async functions'
       ]),
-      correctAnswer: 'It exports code from the current module so other files can require() it',
-      explanation: 'module.exports allows you to define what your module exposes when it is required by other files.'
+      correctAnswer: 'exports is just a local variable pointing at module.exports - reassigning it breaks that link, while module.exports (what require() actually returns) is untouched',
+      explanation: 'require() returns module.exports specifically. exports starts as a reference to it, but reassigning exports just repoints the local variable - module.exports (and what the caller receives) never changes.'
     },
     {
       missionId: 'mission-01',
       type: 'CODE',
-      question: '`// lever.js\\nmodule.exports = { state: "pulled" };\\n\\n// gate.js\\nconst lever = require("./lever");\\nconsole.log(lever.state);`\\nWhat does this log?',
-      options: JSON.stringify(['undefined', '"pulled"', 'an error - require() cannot load local files', '{}']),
-      correctAnswer: '"pulled"',
-      explanation: 'gate.js requires lever.js, which exports an object with state: "pulled", so lever.state logs "pulled".'
+      question: '`// gate.js\\nconst lever = require("./lever");\\nconsole.log(typeof lever.pull);`\\nIf lever.js never defines module.exports at all, what is logged?',
+      options: JSON.stringify(['"function"', '"undefined"', 'It throws before logging anything', '"object"']),
+      correctAnswer: '"undefined"',
+      explanation: 'A module with no module.exports assignment still resolves to an empty object ({}) by default, so .pull on it is simply undefined - no crash.'
+    },
+    {
+      missionId: 'mission-01',
+      type: 'THEORY',
+      question: 'What is the key architectural risk of two modules requiring each other (A requires B, and B requires A)?',
+      options: JSON.stringify([
+        'Node.js crashes immediately with a stack overflow',
+        'One of the two modules receives a partial/incomplete exports object, since the circular require returns whatever has been exported so far, not the final version',
+        'It works exactly the same as no circular dependency',
+        'npm refuses to install the project'
+      ]),
+      correctAnswer: 'One of the two modules receives a partial/incomplete exports object, since the circular require returns whatever has been exported so far, not the final version',
+      explanation: 'Node does not loop forever or crash - but whichever module finishes loading second sees an incomplete version of the other, which is a common source of subtle bugs.'
     },
 
     // Module 2: NPM
     {
       missionId: 'mission-02',
-      type: 'THEORY',
-      question: 'What is the role of package.json in a Node.js project?',
-      options: JSON.stringify([
-        'It stores encrypted passwords for the database',
-        'It is a configuration file that lists dependencies, scripts, and project metadata',
-        'It is the main server file that runs the application',
-        'It stores all user data'
-      ]),
-      correctAnswer: 'It is a configuration file that lists dependencies, scripts, and project metadata',
-      explanation: 'package.json is the manifest file for a Node.js project, containing dependencies (from npm), scripts, version, and other metadata.'
+      type: 'CODE',
+      question: 'package.json lists `"chalk": "^4.1.2"`. Which of these could `npm install` legally install today?',
+      options: JSON.stringify(['4.9.0', '5.0.0', '3.9.9', '4.0.0']),
+      correctAnswer: '4.9.0',
+      explanation: 'The caret (^) allows any newer minor/patch version within the same major version (4.x.x), but never jumps to 5.0.0 or drops below 4.1.2.'
     },
     {
       missionId: 'mission-02',
       type: 'THEORY',
-      question: 'Why is it a bad idea to commit the node_modules folder to Git?',
+      question: 'What specifically does package-lock.json guarantee that package.json alone does not?',
       options: JSON.stringify([
-        'It is usually very large, OS-specific, and can be regenerated via npm install',
-        'Git cannot track folders named node_modules',
-        'It contains your source code',
-        'It crashes the Git repository'
+        'Nothing - they contain the same information',
+        'The exact resolved version of every package in the full dependency tree, so every install is byte-for-byte reproducible',
+        'It stores your environment variables',
+        'It lists which files to upload to npm'
       ]),
-      correctAnswer: 'It is usually very large, OS-specific, and can be regenerated via npm install',
-      explanation: 'node_modules is generated from package.json/package-lock.json. Committing it wastes space and causes OS conflicts.'
+      correctAnswer: 'The exact resolved version of every package in the full dependency tree, so every install is byte-for-byte reproducible',
+      explanation: 'package.json allows a version range (like ^4.1.2); package-lock.json pins the exact version that was actually resolved, including for nested/transitive dependencies.'
+    },
+    {
+      missionId: 'mission-02',
+      type: 'THEORY',
+      question: 'Your node_modules folder is deleted. A teammate has a package-lock.json committed to the repo. What is the correct command to restore the exact same dependency versions they have?',
+      options: JSON.stringify(['npm update', 'npm install', 'npm ci', 'npm audit fix']),
+      correctAnswer: 'npm ci',
+      explanation: 'npm ci installs strictly from package-lock.json with no version resolution, guaranteeing an identical tree. npm install can still shift versions within allowed ranges.'
     },
     {
       missionId: 'mission-02',
       type: 'CODE',
-      question: 'You run `require("chalk")` but never ran `npm install chalk` and it is not in package.json. What happens?',
+      question: 'What is the critical difference between `require("./utils")` and `require("utils")`?',
       options: JSON.stringify([
-        'Node.js automatically downloads it at runtime',
-        'It throws "Cannot find module \'chalk\'" and the app crashes',
-        'It silently returns an empty object',
-        'It works fine as long as you are online'
+        'No difference, both resolve the same way',
+        'The leading ./ means "look for a local file relative to this file"; without it, Node searches node_modules for an installed package named utils',
+        './ means it is a built-in Node module',
+        'require("utils") is faster'
       ]),
-      correctAnswer: 'It throws "Cannot find module \'chalk\'" and the app crashes',
-      explanation: 'require() only looks in node_modules on disk - it does not fetch packages over the network at runtime.'
+      correctAnswer: 'The leading ./ means "look for a local file relative to this file"; without it, Node searches node_modules for an installed package named utils',
+      explanation: 'This exact distinction is what the capstone\'s package-import check relies on - relative paths are your own files, bare names are installed packages.'
+    },
+    {
+      missionId: 'mission-02',
+      type: 'THEORY',
+      question: 'A package is listed only under devDependencies. What happens if you deploy with `npm install --production` (or `--omit=dev`)?',
+      options: JSON.stringify([
+        'It installs normally, same as any other dependency',
+        'It is skipped entirely, so requiring it in production code would crash with "Cannot find module"',
+        'It gets installed but disabled',
+        'It causes the install itself to fail'
+      ]),
+      correctAnswer: 'It is skipped entirely, so requiring it in production code would crash with "Cannot find module"',
+      explanation: 'devDependencies (test runners, linters, bundlers) are intentionally excluded from production installs - using one in actual runtime code is a common deployment bug.'
     },
 
     // Module 3: Events
     {
       missionId: 'mission-03',
-      type: 'THEORY',
-      question: 'What is the primary purpose of emit()?',
-      options: JSON.stringify([
-        'To register a function to be called later.',
-        'To trigger an event and announce that something happened.',
-        'To load an NPM module into the application.',
-        'To compile JavaScript.'
-      ]),
-      correctAnswer: 'To trigger an event and announce that something happened.',
-      explanation: 'emit() announces the event, causing any registered listeners to run.'
+      type: 'CODE',
+      question: '`const e = new EventEmitter();\\ne.on("x", () => console.log(1));\\ne.on("x", () => console.log(2));\\ne.emit("x");`\\nWhat is logged, and in what order?',
+      options: JSON.stringify(['Only 2 (last listener wins)', '1 then 2 - listeners run synchronously in the order they were registered', '2 then 1', 'Nothing - only once() listeners fire'] ),
+      correctAnswer: '1 then 2 - listeners run synchronously in the order they were registered',
+      explanation: 'EventEmitter supports multiple listeners per event and calls all of them, in registration order, synchronously within the emit() call.'
     },
     {
       missionId: 'mission-03',
       type: 'THEORY',
-      question: 'What is a major benefit of an event-driven architecture?',
+      question: 'Is EventEmitter.emit() synchronous or asynchronous?',
       options: JSON.stringify([
-        'It makes code execution faster.',
-        'It decouples components so they do not need to know about each other directly.',
-        'It prevents any errors from occurring.',
-        'It encrypts data automatically.'
+        'Asynchronous - it queues listeners on the next tick',
+        'Synchronous - every matching listener runs to completion before emit() returns',
+        'It depends on the Node.js version',
+        'Synchronous for one listener, asynchronous for multiple'
       ]),
-      correctAnswer: 'It decouples components so they do not need to know about each other directly.',
-      explanation: 'Event-driven systems decouple the emitter from the listener, making the code more modular and flexible.'
+      correctAnswer: 'Synchronous - every matching listener runs to completion before emit() returns',
+      explanation: 'This is a common misconception - emit() is fully synchronous. If you need async behavior, the listener functions themselves must handle it (e.g. with a Promise).'
     },
     {
       missionId: 'mission-03',
       type: 'CODE',
-      question: '`const e = new EventEmitter();\\ne.emit("ping");\\ne.on("ping", () => console.log("pong"));`\\nDoes "pong" get logged?',
+      question: '`e.once("x", () => console.log("fired"));\\ne.emit("x");\\ne.emit("x");`\\nHow many times does "fired" get logged?',
+      options: JSON.stringify(['0', '1', '2', 'Infinitely']),
+      correctAnswer: '1',
+      explanation: '.once() automatically removes its own listener immediately after the first time it fires, so the second emit("x") has nothing left to call.'
+    },
+    {
+      missionId: 'mission-03',
+      type: 'THEORY',
+      question: 'What is special about Node.js EventEmitter\'s handling of the specific event name "error"?',
       options: JSON.stringify([
-        'Yes, immediately',
-        'No - emit() ran before the listener was registered, so it is never called',
-        'Yes, but only after 1 second',
-        'It throws an error'
+        'Nothing - it behaves exactly like any other event name',
+        'If an "error" event is emitted with zero listeners registered for it, Node.js throws that error and can crash the process',
+        'error events are always ignored silently',
+        '"error" events pause the entire event loop'
       ]),
-      correctAnswer: 'No - emit() ran before the listener was registered, so it is never called',
-      explanation: 'emit() is synchronous and only notifies listeners already registered at the moment it runs.'
+      correctAnswer: 'If an "error" event is emitted with zero listeners registered for it, Node.js throws that error and can crash the process',
+      explanation: 'This is a real gotcha in production code - EventEmitter treats "error" as special. Always register an "error" listener on emitters that might emit one.'
+    },
+    {
+      missionId: 'mission-03',
+      type: 'CODE',
+      question: '`const e = new EventEmitter();\\nfunction log() { console.log("hi"); }\\ne.on("x", log);\\ne.off("x", log);\\ne.emit("x");`\\nWhat happens?',
+      options: JSON.stringify(['"hi" is logged once', 'Nothing is logged - the listener was removed with off() before the event fired', 'It throws because off() is not a real method', '"hi" is logged twice']),
+      correctAnswer: 'Nothing is logged - the listener was removed with off() before the event fired',
+      explanation: '.off() (alias for removeListener()) unregisters a specific listener function. Once removed, that function will not run on future emits.'
     },
 
     // Module 4: Deployment
     {
       missionId: 'mission-04',
-      type: 'THEORY',
-      question: 'What does "deploying" an application actually mean?',
+      type: 'CODE',
+      question: '`const PORT = process.env.PORT ?? 3000;`\\nIf the hosting platform sets `process.env.PORT` to the empty string `""`, what port does this listen on - and how is that different from using `||` instead of `??`?',
       options: JSON.stringify([
-        'Compressing your code into a zip file',
-        'Getting your code running on a computer that stays on 24/7, reachable by others',
-        'Writing unit tests for your code',
-        'Deleting unused npm packages'
+        'Both ?? and || would fall back to 3000 - no difference',
+        '?? only falls back on null/undefined, so it keeps the empty string "" (a broken port); || falls back to 3000 because "" is falsy',
+        '?? always throws an error on empty strings',
+        '|| is not valid JavaScript syntax'
       ]),
-      correctAnswer: 'Getting your code running on a computer that stays on 24/7, reachable by others',
-      explanation: 'Deployment moves your code from a local machine to one that is always on and reachable by everyone else.'
+      correctAnswer: '?? only falls back on null/undefined, so it keeps the empty string "" (a broken port); || falls back to 3000 because "" is falsy',
+      explanation: 'This is a genuine gotcha: ?? (nullish coalescing) only triggers on null/undefined, not on other falsy values like "" or 0 - unlike ||, which treats any falsy value as a reason to fall back.'
     },
     {
       missionId: 'mission-04',
       type: 'THEORY',
-      question: 'What does the "start" script in package.json do?',
+      question: 'Why exactly can\'t a hosting platform route traffic to your app if you hardcode `server.listen(3000)` instead of reading process.env.PORT?',
       options: JSON.stringify([
-        'It lists your project dependencies',
-        'It tells hosting platforms (and `npm start`) the exact command to launch your app',
-        'It starts your code editor',
-        'It runs your test suite'
+        'Port 3000 is banned by all cloud providers',
+        'The platform assigns your container a specific port at runtime (often different from 3000) and only forwards external traffic to that exact port - if your app listens elsewhere, the connection never reaches it',
+        'Hardcoded ports run the app twice as slow',
+        'It is purely a style preference with no functional effect'
       ]),
-      correctAnswer: 'It tells hosting platforms (and `npm start`) the exact command to launch your app',
-      explanation: 'Most hosting platforms run `npm start` automatically, which runs whatever command is defined under scripts.start.'
+      correctAnswer: 'The platform assigns your container a specific port at runtime (often different from 3000) and only forwards external traffic to that exact port - if your app listens elsewhere, the connection never reaches it',
+      explanation: 'This is the actual mechanical reason, not just convention - the platform\'s reverse proxy only knows about the port it assigned you.'
+    },
+    {
+      missionId: 'mission-04',
+      type: 'THEORY',
+      question: 'A .env file containing a real database password gets accidentally committed and pushed to a public GitHub repo, then removed in the very next commit. Is the secret still compromised?',
+      options: JSON.stringify([
+        'No - deleting it in the next commit removes it completely',
+        'Yes - it still exists in the Git history of that earlier commit, which is publicly viewable and often already scraped by bots within minutes',
+        'Only if someone stars the repository',
+        'No, GitHub automatically scrubs secrets from history'
+      ]),
+      correctAnswer: 'Yes - it still exists in the Git history of that earlier commit, which is publicly viewable and often already scraped by bots within minutes',
+      explanation: 'Git history is permanent unless you rewrite it (and force-push). A committed secret must be treated as compromised and rotated immediately, not just deleted going forward.'
     },
     {
       missionId: 'mission-04',
       type: 'CODE',
-      question: '`const PORT = process.env.PORT || 3000;\\nserver.listen(PORT);`\\nOn the hosting platform, process.env.PORT is 8080. What port does the server listen on?',
-      options: JSON.stringify(['3000', '8080', 'Both at once', 'It crashes']),
-      correctAnswer: '8080',
-      explanation: 'process.env.PORT is 8080 (truthy), so it is used instead of falling back to 3000.'
+      question: '`"scripts": { "start": "node index.js" }` but your actual entry file is named `server.js`. What happens when a hosting platform runs `npm start`?',
+      options: JSON.stringify([
+        'It automatically finds server.js instead',
+        'It fails with "Cannot find module \'index.js\'" - npm start runs exactly the command written, nothing more',
+        'It merges index.js and server.js',
+        'It silently does nothing'
+      ]),
+      correctAnswer: 'It fails with "Cannot find module \'index.js\'" - npm start runs exactly the command written, nothing more',
+      explanation: 'The start script is not "smart" - it runs the literal command string. A mismatch between the script and your actual entry file is a very common real-world deploy failure.'
+    },
+    {
+      missionId: 'mission-04',
+      type: 'THEORY',
+      question: 'What is the functional difference between the "start" script and a custom script like "dev" in package.json?',
+      options: JSON.stringify([
+        'There is no difference; both are custom names',
+        '"start" is a reserved npm lifecycle script name that hosting platforms (and plain `npm start`) run automatically; "dev" is just a custom label that must be explicitly invoked with `npm run dev`',
+        '"dev" always runs faster than "start"',
+        '"start" can only run JavaScript files, "dev" can run any file type'
+      ]),
+      correctAnswer: '"start" is a reserved npm lifecycle script name that hosting platforms (and plain `npm start`) run automatically; "dev" is just a custom label that must be explicitly invoked with `npm run dev`',
+      explanation: 'npm recognizes a small set of reserved script names (start, test, install, etc.) that can be run without "run". Everything else, including "dev", needs the explicit `npm run <name>`.'
     }
   ];
 
