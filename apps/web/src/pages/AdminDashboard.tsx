@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Play, Square, RotateCcw, Clock, Crown, AlertCircle, Users } from 'lucide-react';
+import { Play, Square, RotateCcw, Clock, Crown, AlertCircle, Users, Trophy } from 'lucide-react';
 import { API_URL } from '../utils/api';
 
 interface SessionState {
@@ -30,6 +30,7 @@ const AdminDashboard = () => {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState('');
+  const [showResults, setShowResults] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const token = localStorage.getItem('token');
@@ -97,6 +98,7 @@ const AdminDashboard = () => {
       if (res.ok) {
         setSession(await res.json());
         setResults(null);
+        setShowResults(false);
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error || `Failed to ${path} quiz`);
@@ -118,6 +120,7 @@ const AdminDashboard = () => {
       if (res.ok) {
         setSession(await res.json());
         setResults(null);
+        setShowResults(false);
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error || 'Failed to start quiz again');
@@ -169,8 +172,13 @@ const AdminDashboard = () => {
                 <Square size={14} /> End quiz now
               </button>
             )}
+            {phase === 'QUIZ_ENDED' && !showResults && (
+              <button onClick={() => setShowResults(true)} className="clay-button px-4 py-2 text-sm flex items-center gap-2">
+                <Trophy size={14} /> Show Results
+              </button>
+            )}
             {phase === 'QUIZ_ENDED' && (
-              <button onClick={startAgain} disabled={isBusy} className="clay-button px-4 py-2 text-sm flex items-center gap-2">
+              <button onClick={startAgain} disabled={isBusy} className="clay-button-secondary px-4 py-2 text-sm flex items-center gap-2">
                 <RotateCcw size={14} /> Start again
               </button>
             )}
@@ -207,41 +215,45 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* Team Totals */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {(['PRINCE', 'PRINCESS'] as const).map(team => (
-          <div key={team} className="clay-panel p-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{team} team</span>
-              {results?.winner === team && <Crown size={16} style={{ color: 'var(--accent-gold)' }} />}
-            </div>
-            <div className="text-3xl font-display font-bold" style={{ color: 'var(--accent-purple)' }}>
-              {results?.teams[team].total ?? 0}
-            </div>
-            <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>total points</div>
-          </div>
-        ))}
-      </div>
-
-      {/* All students per team */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {(['PRINCE', 'PRINCESS'] as const).map(team => (
-          <div key={team} className="clay-panel p-6">
-            <div className="text-xs font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>{team}</div>
-            <div className="space-y-2 max-h-[32rem] overflow-y-auto custom-scrollbar">
-              {(results?.teams[team].students || []).map(p => (
-                <div key={p.username} className="flex items-center justify-between text-sm p-2 rounded-xl clay-inset">
-                  <span style={{ color: 'var(--text-primary)' }}>#{p.teamRank} {p.username}</span>
-                  <span className="font-bold" style={{ color: 'var(--accent-mint)' }}>{p.score}</span>
+      {showResults && (
+        <>
+          {/* Team Totals */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(['PRINCE', 'PRINCESS'] as const).map(team => (
+              <div key={team} className="clay-panel p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{team} team</span>
+                  {results?.winner === team && <Crown size={16} style={{ color: 'var(--accent-gold)' }} />}
                 </div>
-              ))}
-              {(!results || results.teams[team].students.length === 0) && (
-                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>No completed attempts yet</div>
-              )}
-            </div>
+                <div className="text-3xl font-display font-bold" style={{ color: 'var(--accent-purple)' }}>
+                  {results?.teams[team].total ?? 0}
+                </div>
+                <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>total points</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+
+          {/* All students per team */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {(['PRINCE', 'PRINCESS'] as const).map(team => (
+              <div key={team} className="clay-panel p-6">
+                <div className="text-xs font-semibold mb-4" style={{ color: 'var(--text-secondary)' }}>{team}</div>
+                <div className="space-y-2 max-h-[32rem] overflow-y-auto custom-scrollbar">
+                  {(results?.teams[team].students || []).map(p => (
+                    <div key={p.username} className="flex items-center justify-between text-sm p-2 rounded-xl clay-inset">
+                      <span style={{ color: 'var(--text-primary)' }}>#{p.teamRank} {p.username}</span>
+                      <span className="font-bold" style={{ color: 'var(--accent-mint)' }}>{p.score}</span>
+                    </div>
+                  ))}
+                  {(!results || results.teams[team].students.length === 0) && (
+                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>No completed attempts yet</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };
