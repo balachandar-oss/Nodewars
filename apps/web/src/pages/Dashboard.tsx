@@ -157,7 +157,7 @@ const Dashboard = () => {
             {isMaxLevel ? 'MAX LEVEL' : `Level ${user.level}`}
           </span>
           <span className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            XP {user.xp} / {nextLevelXp}
+            XP {user.xp}
             <div className="w-24 h-2 rounded-full clay-inset overflow-hidden">
               <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(xpProgress, 100)}%`, backgroundColor: 'var(--accent-gold)' }}></div>
             </div>
