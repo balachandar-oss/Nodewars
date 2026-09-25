@@ -17,6 +17,49 @@ import { getSystemVisualState } from '../utils/systemState';
 import { API_URL } from '../utils/api';
 
 const INSTRUCTOR_SOLUTIONS: Record<string, string> = {
+  'mission-01': `const lever = { state: "pulled" };
+
+// TODO 1: export the lever
+module.exports = lever;
+
+
+// --- In gate.js ---
+// TODO 2: require the lever
+const lever2 = require("./lever");
+`,
+  'mission-02': `// TODO: require the missing capability package that you installed via NPM
+const capability = require("chalk");
+
+console.log("Capability loaded!");`,
+  'mission-03': `const EventEmitter = require("events");
+const castle = new EventEmitter();
+
+// TODO 1: listen for "lever_pulled"
+castle.on("lever_pulled", () => {
+  console.log("Gate opening!");
+});
+
+// TODO 2: emit "lever_pulled"
+castle.emit("lever_pulled");
+`,
+  'capstone': `const lever = { state: "ready" };
+// TODO 1: export the lever
+module.exports = lever;
+
+// TODO 2: require a capability package
+const capability = require("chalk");
+
+const EventEmitter = require("events");
+const gate = new EventEmitter();
+// TODO 3: listen for "lever_pulled" and log a message
+gate.on("lever_pulled", () => console.log("Gate opening!"));
+
+// TODO 4: read PORT from process.env with a 3000 fallback
+const PORT = process.env.PORT || 3000;
+
+// Pull the lever!
+gate.emit("lever_pulled");
+`,
   'mission-04': `const http = require("http");
 
 // Read the port from the environment, falling back to 3000 for local testing
