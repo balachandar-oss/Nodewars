@@ -462,7 +462,7 @@ const Lab = () => {
 
           {/* CENTER & RIGHT CONTENT AREA */}
           {phase === 'INTERACT' ? (
-            <div className="lg:col-span-9 flex items-center justify-center relative min-h-0">
+            <div className="lg:col-span-9 flex items-center justify-center relative min-h-0 overflow-y-auto custom-scrollbar">
                <BountyInteract missionId={mission.id} onOpenCode={handleOpenCode} />
             </div>
           ) : (
