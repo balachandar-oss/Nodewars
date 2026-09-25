@@ -487,23 +487,35 @@ const Lab = () => {
                     theme="vs-dark"
                     value={code}
                     onChange={(val) => setCode(val || '')}
-                    onMount={(editor) => {
-                      // Students must type their own code. Blocking at the DOM
-                      // paste-event level (capture phase) catches every source -
-                      // Ctrl+V, the right-click "Paste" menu, and drag-drop - before
-                      // Monaco's own editor logic ever sees the clipboard content.
+                    onMount={(editor, monaco) => {
+                      // Students must type their own code. Two independent layers,
+                      // since either one alone can be bypassed depending on browser/OS:
+                      const warn = (msg: string) => setLogs(prev => [...prev, { type: 'error', message: msg }]);
+
+                      // Layer 1: intercept the native paste/drop events on the editor's
+                      // DOM node in the capture phase, before Monaco's internal
+                      // keybinding/command handling ever runs.
                       const domNode = editor.getDomNode();
-                      const blockPaste = (e: ClipboardEvent) => {
+                      domNode?.addEventListener('paste', (e: ClipboardEvent) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setLogs(prev => [...prev, { type: 'error', message: 'Pasting is disabled here - please type your code.' }]);
-                      };
-                      domNode?.addEventListener('paste', blockPaste, true);
+                        warn('Pasting is disabled here - please type your code.');
+                      }, true);
                       domNode?.addEventListener('drop', (e: DragEvent) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setLogs(prev => [...prev, { type: 'error', message: 'Dragging text in is disabled here - please type your code.' }]);
+                        warn('Dragging text in is disabled here - please type your code.');
                       }, true);
+
+                      // Layer 2: override Monaco's own paste command/keybinding
+                      // directly, in case the DOM event is consumed internally
+                      // before it reaches our listener on some browsers.
+                      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+                        warn('Pasting is disabled here - please type your code.');
+                      });
+                      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyV, () => {
+                        warn('Pasting is disabled here - please type your code.');
+                      });
                     }}
                     options={{
                       minimap: { enabled: false },
@@ -520,6 +532,9 @@ const Lab = () => {
                       // whenever they pressed Enter with a suggestion popup open.
                       acceptSuggestionOnEnter: 'off',
                       wordWrap: 'on',
+                      // Removes the right-click "Paste" menu item as a third
+                      // possible path around the paste block above.
+                      contextmenu: false,
                     }}
                   />
                 </div>
