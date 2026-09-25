@@ -122,7 +122,7 @@ const Quiz = () => {
         body: JSON.stringify({ attemptId: attempt.attemptId, answers: formattedAnswers })
       });
     } catch {
-      // best-effort - the 10 minute deadline is server-authoritative regardless
+      // best-effort - the 20 minute deadline is server-authoritative regardless
     }
     try {
       localStorage.removeItem(`quiz-answers-${attempt.attemptId}`);
@@ -176,7 +176,7 @@ const Quiz = () => {
       // Once the attempt is loaded and the student hasn't submitted, they're actively
       // taking the quiz - the local countdown (driven off the server endTime already
       // fetched) is authoritative, so there's no need to keep polling every few
-      // seconds for the whole 10-minute window. Resume polling once submitted, to
+      // seconds for the whole 20-minute window. Resume polling once submitted, to
       // detect QUIZ_ENDED and fetch results.
       if (attempt && !submittedRef.current) return;
 

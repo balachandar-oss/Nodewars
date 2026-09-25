@@ -4,7 +4,7 @@ import prisma from '../utils/prisma';
 
 const router = express.Router();
 
-const QUIZ_DURATION_SECONDS = 600; // 10 minutes
+const QUIZ_DURATION_SECONDS = 1200; // 20 minutes
 const VALID_PHASES = ['QUIZ_WAITING', 'QUIZ_ACTIVE', 'QUIZ_ENDED'];
 
 // In-memory presence tracking for the waiting room - intentionally not

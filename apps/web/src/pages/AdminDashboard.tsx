@@ -160,8 +160,8 @@ const AdminDashboard = () => {
 
           <div className="flex gap-3 flex-wrap">
             {phase === 'QUIZ_WAITING' && (
-              <button onClick={() => call('start', 'Start the quiz now? This begins the 10-minute timer for everyone waiting.')} disabled={isBusy} className="clay-button px-4 py-2 text-sm flex items-center gap-2">
-                <Play size={14} /> Start quiz (10 min)
+              <button onClick={() => call('start', 'Start the quiz now? This begins the 20-minute timer for everyone waiting.')} disabled={isBusy} className="clay-button px-4 py-2 text-sm flex items-center gap-2">
+                <Play size={14} /> Start quiz (20 min)
               </button>
             )}
             {phase === 'QUIZ_ACTIVE' && (
